@@ -84,6 +84,8 @@ Pares **prohibidos** (no pasan): `#767676` como texto sobre `#F5F5F5` (4.2), cua
 | `tactil.principal` | 56 | **NUEVO** — alto del botón de acción principal (barra inferior) |
 | `tactil.separacion` | 8 | Separación mínima entre áreas tocables |
 
+**Excepción documentada — disparador de cámara** (`tactil.disparador = 72`, `medidas.bordeDisparador = 4`): es el único control circular de la app y el único con borde de 4 px. Círculo 72×72 relleno `sobreOscuro #FFFFFF`, borde 4 px `oscuro #111111` y contorno exterior sólido 2 px `#FFFFFF` (para que el borde oscuro se distinga sobre la barra `#111`). Se justifica porque es la acción principal de la cámara, se toca a ciegas con el pulgar mientras se mira el mostrador y sigue la convención universal de "obturador". Al tocar, el borde pasa a `acento` y el texto debajo cambia a "Tomando foto…" (no solo color). Sin sombra ni brillo.
+
 ### 2.4 Tipografía (fuente del sistema; `allowFontScaling` activo siempre)
 
 | Token | Tamaño / alto de línea / peso | Uso | Estado |
@@ -124,7 +126,7 @@ Sin animaciones decorativas. Permitidas solo: indicador de actividad (`ActivityI
 
 ### 2.7 Foco
 
-En RN táctil el foco visible aplica a teclado externo / TV / lectores. Cada componente tocable acepta un estado `enfocado` (vía `onFocus`/`onBlur` del `Pressable`) que dibuja **borde 2 px `foco`** con `padding` compensado (−1 px) para no mover el layout. Nunca usar `outline` con glow.
+En RN táctil el foco visible aplica a teclado externo / TV / lectores. Cada componente tocable acepta un estado `enfocado` (vía `onFocus`/`onBlur` del `Pressable`) que dibuja **borde 2 px `foco`** con `padding` compensado (−1 px) para no mover el layout. Nunca usar `outline` con glow. Implementado como token `anilloFoco` en `theme.ts`: contorno sólido 2 px `foco` separado 2 px del control (`outlineOffset`), para que se distinga incluso en controles cuyo borde ya es `#111` (botón secundario).
 
 ---
 

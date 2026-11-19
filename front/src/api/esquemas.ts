@@ -12,6 +12,7 @@ export const ItemDetectado = z.object({
   cantidad: z.number().int().nonnegative(),
   precio_unitario: z.number().nonnegative().nullable(),
   confianza: z.number().min(0).max(1),
+  /** [x, y, ancho, alto] normalizada 0–1 respecto a la foto */
   caja: z.tuple([z.number(), z.number(), z.number(), z.number()]).optional(),
 });
 export type ItemDetectado = z.infer<typeof ItemDetectado>;
@@ -69,3 +70,70 @@ export type EstadoPantalla = {
   errores_visibles: string[];
   segundos_inactivo: number;
 };
+
+// ---------- Negocio: catálogo y ventas (propuesta de 01-cobrar §5; acordar con back/) ----------
+// GET /productos?q=texto&limite=10   y   GET /productos/mas-vendidos?limite=6
+export const Producto = z.object({
+  sku: z.string(),
+  nombre: z.string(),
+  precio_unitario: z.number().nonnegative(),
+  existencia: z.number().int(), // tope del stepper y aviso "Poco"
+});
+export type Producto = z.infer<typeof Producto>;
+
+export const MetodoPago = z.enum(['efectivo', 'digital_simulado']);
+export type MetodoPago = z.infer<typeof MetodoPago>;
+
+export const ItemVenta = z.object({
+  sku: z.string().nullable(), // null solo si libre === true
+  nombre: z.string(),
+  cantidad: z.number().int().positive(),
+  precio_unitario: z.number().nonnegative(),
+  libre: z.boolean().optional(), // producto suelto: no descuenta inventario
+  corregido: z.boolean(), // útil para medir/reentrenar la visión
+});
+export type ItemVenta = z.infer<typeof ItemVenta>;
+
+// POST /ventas
+export const SolicitudVenta = z.object({
+  id_local: z.string(), // id del teléfono → idempotencia (un reintento nunca duplica)
+  imagen_id: z.string().nullable(), // de RespuestaPosCheckout, null si fue sin foto
+  metodo_pago: MetodoPago,
+  recibido: z.number().nullable(),
+  items: z.array(ItemVenta),
+  duracion_seg: z.number().optional(), // indicador "Antes vs. ahora"
+});
+export type SolicitudVenta = z.infer<typeof SolicitudVenta>;
+
+export const Existencia = z.object({
+  sku: z.string(),
+  nombre: z.string(),
+  quedan: z.number().int(),
+  bajo: z.boolean(),
+});
+export type Existencia = z.infer<typeof Existencia>;
+
+export const RespuestaVenta = z.object({
+  venta_id: z.string(),
+  folio: z.string(),
+  total: z.number(),
+  creada_en: z.string(),
+  existencias: z.array(Existencia),
+});
+export type RespuestaVenta = z.infer<typeof RespuestaVenta>;
+
+/** Cuerpo del 409 de POST /ventas. */
+export const ConflictoExistencia = z.object({ sku: z.string(), existencia: z.number().int() });
+export type ConflictoExistencia = z.infer<typeof ConflictoExistencia>;
+
+// GET /ventas?dia=hoy  y  GET /ventas/{id}  (PROPUESTA: no está en 01-cobrar §5; acordar con back/)
+export const DetalleVenta = z.object({
+  venta_id: z.string(),
+  folio: z.string(),
+  total: z.number(),
+  creada_en: z.string(),
+  metodo_pago: MetodoPago,
+  recibido: z.number().nullable(),
+  items: z.array(ItemVenta),
+});
+export type DetalleVenta = z.infer<typeof DetalleVenta>;
