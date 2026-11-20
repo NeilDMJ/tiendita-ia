@@ -6,7 +6,6 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Aviso } from '@/components/aviso';
 import { Boton } from '@/components/boton';
 import { Dialogo } from '@/components/dialogo';
-import { FabExtendido, RESERVA_FAB } from '@/components/fab-extendido';
 import { FilaVenta } from '@/components/fila-venta';
 import { Snackbar } from '@/components/snackbar';
 import { Tocable } from '@/components/tocable';
@@ -21,9 +20,12 @@ import { formatoMoneda } from '@/utils/formato-moneda';
 
 const MAX_VENTAS = 5;
 
+/** Alto de la barra de acción anclada: botón principal + márgenes. El contenido reserva este espacio. */
+const ALTO_BARRA_ACCION = tactil.principal + espacio.l * 2;
+
 const SNACKBAR_VENTA_MS = 8_000;
 
-/** Card outlined M3 tocable completa (atajo de cobro). */
+/** Tarjeta blanca tocable completa (atajo de cobro). */
 function TarjetaAtajo({
   icono,
   titulo,
@@ -44,13 +46,15 @@ function TarjetaAtajo({
       accessibilityLabel={`${titulo}. ${detalle}`}
       style={estilos.atajo}
     >
-      <MaterialCommunityIcons
-        name={icono}
-        size={iconos.linea}
-        color={color.onSurfaceVariant}
-        accessibilityElementsHidden
-        importantForAccessibility="no"
-      />
+      <View style={estilos.iconoRecuadro}>
+        <MaterialCommunityIcons
+          name={icono}
+          size={iconos.linea}
+          color={color.onPrimaryContainer}
+          accessibilityElementsHidden
+          importantForAccessibility="no"
+        />
+      </View>
       <Text style={estilos.atajoTitulo}>{titulo}</Text>
       <Text style={estilos.atajoDetalle}>{detalle}</Text>
     </Tocable>
@@ -59,7 +63,7 @@ function TarjetaAtajo({
 
 const PASOS_GUIA = ['Pon los productos en el mostrador', 'Toca "Cobrar con foto"', 'Revisa y cobra'];
 
-/** Pestaña Cobrar (01-cobrar §2.1): card guía + atajos + ventas de hoy; la acción dominante es el Extended FAB. */
+/** Pestaña Cobrar: tarjeta guía + atajos + ventas de hoy. La acción dominante es el botón anclado abajo. */
 export function PantallaCobrar() {
   const { carrito, cargado, vaciar, cargarItems, ultimaVenta } = useCarrito();
   const conectado = useConexion();
@@ -119,7 +123,7 @@ export function PantallaCobrar() {
             tipo="info"
             titulo="Venta sin terminar"
             mensaje={`Tienes una venta de ${formatoMoneda(totalBorrador)} sin cobrar (${plural(carrito.items.length, 'producto', 'productos')}).`}
-            // el Extended FAB es la única acción filled de la vista
+            // el botón anclado abajo es la única acción filled de la vista
             accion={{ texto: 'Continuar venta', variante: 'tonal', onPress: () => router.push('/revision/cobro') }}
             accionSecundaria={{
               texto: 'Descartar',
@@ -141,24 +145,29 @@ export function PantallaCobrar() {
           </>
         ) : (
           <View style={estilos.guia}>
-            <View style={estilos.filaIcono}>
+            <View style={estilos.guiaIcono}>
               <MaterialCommunityIcons
-                name="camera"
-                size={iconos.linea}
-                color={color.onSurface}
+                name="camera-outline"
+                size={iconos.grande - espacio.s}
+                color={color.onPrimaryContainer}
                 accessibilityElementsHidden
                 importantForAccessibility="no"
               />
-              <Text style={estilos.subtitulo} accessibilityRole="header">
-                Cobra en 3 pasos
-              </Text>
             </View>
-            {PASOS_GUIA.map((paso, i) => (
-              <View key={paso} style={estilos.pasoGuia}>
-                <Text style={estilos.numeroPaso}>{i + 1}</Text>
-                <Text style={estilos.textoPaso}>{paso}</Text>
-              </View>
-            ))}
+            <Text style={estilos.guiaTitulo} accessibilityRole="header">
+              Cobra con una foto
+            </Text>
+            <Text style={estilos.guiaSubtitulo}>Tú revisas lo que detectó antes de cobrar.</Text>
+            <View style={estilos.pasos}>
+              {PASOS_GUIA.map((paso, i) => (
+                <View key={paso} style={estilos.pasoGuia}>
+                  <View style={estilos.numeroPaso}>
+                    <Text style={estilos.numeroPasoTexto}>{i + 1}</Text>
+                  </View>
+                  <Text style={estilos.textoPaso}>{paso}</Text>
+                </View>
+              ))}
+            </View>
           </View>
         )}
 
@@ -240,15 +249,18 @@ export function PantallaCobrar() {
         }
         duracionMs={SNACKBAR_VENTA_MS}
         onCerrar={() => setVentaReciente(null)}
-        separacionInferior={espacio.l + tactil.principal}
+        separacionInferior={ALTO_BARRA_ACCION + espacio.s}
       />
 
-      <FabExtendido
-        texto="Cobrar con foto"
-        icono="camera"
-        onPress={abrirCamara}
-        accessibilityHint="Abre la cámara para cobrar los productos del mostrador"
-      />
+      <View style={estilos.barraAccion}>
+        <Boton
+          texto="Cobrar con foto"
+          icono="camera"
+          tamano="principal"
+          onPress={abrirCamara}
+          accessibilityHint="Abre la cámara para cobrar los productos del mostrador"
+        />
+      </View>
 
       <Dialogo
         visible={confirmarDescarte}
@@ -276,19 +288,61 @@ export function PantallaCobrar() {
 
 const estilos = StyleSheet.create({
   pantalla: { flex: 1, backgroundColor: color.surface },
-  contenido: { padding: espacio.l, paddingBottom: RESERVA_FAB + espacio.l, gap: espacio.xl },
+  contenido: { padding: espacio.l, paddingBottom: ALTO_BARRA_ACCION + espacio.l, gap: espacio.xl },
   flex: { flex: 1 },
-  filaIcono: { flexDirection: 'row', alignItems: 'center', gap: espacio.s },
-  // card filled de guía (sin botón: el botón es el FAB)
+  // tarjeta protagonista de la pantalla (sin botón: el botón está anclado abajo)
   guia: {
-    backgroundColor: color.surfaceContainerHighest,
-    borderRadius: shape.medium,
-    padding: espacio.l,
+    backgroundColor: color.surfaceContainerLowest,
+    borderRadius: shape.large,
+    borderWidth: bordes.fino,
+    borderColor: color.outlineVariant,
+    padding: espacio.xl,
     gap: espacio.s,
+    alignItems: 'center',
   },
-  pasoGuia: { flexDirection: 'row', alignItems: 'flex-start', gap: espacio.m },
-  numeroPaso: { ...type.titleSmall, color: color.onSurface, minWidth: espacio.l, textAlign: 'center' },
-  textoPaso: { ...type.bodyLarge, color: color.onSurfaceVariant, flex: 1 },
+  guiaIcono: {
+    width: tactil.principal + espacio.l,
+    height: tactil.principal + espacio.l,
+    borderRadius: shape.full,
+    backgroundColor: color.primaryContainer,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: espacio.s,
+  },
+  guiaTitulo: { ...type.headlineSmall, color: color.onSurface, textAlign: 'center' },
+  guiaSubtitulo: { ...type.bodyLarge, color: color.onSurfaceVariant, textAlign: 'center' },
+  pasos: { alignSelf: 'stretch', gap: espacio.m, marginTop: espacio.m },
+  pasoGuia: { flexDirection: 'row', alignItems: 'center', gap: espacio.m },
+  numeroPaso: {
+    width: tactil.minimo - espacio.s,
+    height: tactil.minimo - espacio.s,
+    borderRadius: shape.full,
+    backgroundColor: color.primaryContainer,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  numeroPasoTexto: { ...type.titleSmall, color: color.onPrimaryContainer },
+  textoPaso: { ...type.bodyLarge, color: color.onSurface, flex: 1 },
+  iconoRecuadro: {
+    width: tactil.minimo - espacio.s,
+    height: tactil.minimo - espacio.s,
+    borderRadius: shape.medium,
+    backgroundColor: color.primaryContainer,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: espacio.xs,
+  },
+  // barra de acción anclada: fondo opaco, separada del contenido por un borde fino
+  barraAccion: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    padding: espacio.l,
+    backgroundColor: color.surface,
+    borderTopWidth: bordes.fino,
+    borderTopColor: color.outlineVariant,
+  },
   subtitulo: { ...type.titleMedium, color: color.onSurface },
   atajos: { flexDirection: 'row', flexWrap: 'wrap', gap: espacio.l },
   atajoSolo: { flexDirection: 'row' },
@@ -299,8 +353,8 @@ const estilos = StyleSheet.create({
     minHeight: medidas.tarjetaAtajoAlto,
     borderWidth: bordes.fino,
     borderColor: color.outlineVariant,
-    borderRadius: shape.medium,
-    backgroundColor: color.surface,
+    borderRadius: shape.large,
+    backgroundColor: color.surfaceContainerLowest,
     padding: espacio.l,
     gap: espacio.xs,
   },
