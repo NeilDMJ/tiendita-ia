@@ -133,6 +133,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ─── Visión (back/vision): /vision/pos-checkout, /catalog-scan, /receipt-ocr, /salud ──
+_RAIZ_REPO = os.path.dirname(_ROOT)
+if _RAIZ_REPO not in sys.path:
+    sys.path.insert(0, _RAIZ_REPO)
+try:
+    from back.vision import router as vision_router
+
+    app.include_router(vision_router)
+except ImportError as _e:  # sin onnxruntime/pillow la API de agentes sigue funcionando
+    print(f"⚠ Visión deshabilitada: {_e}. Instala: uv add onnxruntime pillow numpy python-multipart")
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # HELPERS INTERNOS

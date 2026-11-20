@@ -107,7 +107,7 @@ class MockPostgresDB:
                 "atributos_visuales": {"color": "negro", "empaque": "pouch", "marca": "La Sierra"}
             },
             7: {
-                "id": 7, "sku": "AGUA-BON-1L", "nombre": "Agua 1 L",
+                "id": 7, "sku": "AGUA-BON-1L", "nombre": "Agua Bonafont 1 L",
                 "categoria": "bebidas", "precio_venta": 15.00, "costo_unitario": 9.00,
                 "stock_actual": 30, "stock_minimo": 10,
                 "alias": ["el agua", "el agua de litro", "agua embotellada", "bonafont"],
@@ -182,6 +182,35 @@ class MockPostgresDB:
                 "stock_actual": 35, "stock_minimo": 10,
                 "alias": ["el papel", "el papel de baño", "el papel higiénico"],
                 "atributos_visuales": {"color": "blanco", "empaque": "paquete 4", "marca": "Pétalo"}
+            },
+            # Productos que reconoce el modelo de visión (back/vision/catalogo_vision.json)
+            18: {
+                "id": 18, "sku": "AGUA-CIEL-1L", "nombre": "Agua Ciel 1 L",
+                "categoria": "bebidas", "precio_venta": 15.00, "costo_unitario": 9.00,
+                "stock_actual": 24, "stock_minimo": 8,
+                "alias": ["la ciel", "agua ciel", "el agua ciel"],
+                "atributos_visuales": {"color": "turquesa", "empaque": "botella pet", "marca": "Ciel"}
+            },
+            19: {
+                "id": 19, "sku": "AGUA-MM-1L", "nombre": "Agua Member's Mark 1 L",
+                "categoria": "bebidas", "precio_venta": 10.00, "costo_unitario": 5.50,
+                "stock_actual": 24, "stock_minimo": 8,
+                "alias": ["agua members", "el agua de sams", "member's mark"],
+                "atributos_visuales": {"color": "blanco/azul", "empaque": "botella pet", "marca": "Member's Mark"}
+            },
+            20: {
+                "id": 20, "sku": "DORITOS", "nombre": "Doritos (Nacho o Pizzerola)",
+                "categoria": "botanas", "precio_venta": 20.00, "costo_unitario": 14.00,
+                "stock_actual": 18, "stock_minimo": 6,
+                "alias": ["los doritos", "doritos nacho", "doritos pizzerola", "unos doritos"],
+                "atributos_visuales": {"color": "rojo/verde", "empaque": "bolsa", "marca": "Sabritas"}
+            },
+            21: {
+                "id": 21, "sku": "CHOKIS", "nombre": "Galletas Chokis",
+                "categoria": "galletas", "precio_venta": 20.00, "costo_unitario": 14.00,
+                "stock_actual": 15, "stock_minimo": 5,
+                "alias": ["las chokis", "unas chokis", "galletas chokis"],
+                "atributos_visuales": {"color": "azul", "empaque": "paquete", "marca": "Gamesa"}
             }
         }
 
