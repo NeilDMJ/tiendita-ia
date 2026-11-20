@@ -1,22 +1,97 @@
-# Secretos
+# ==============================================================================
+# Repositorios Subyacentes Ignorados
+# ==============================================================================
+enjambre_agentes/agripoli/
+enjambre_agentes/OptiAgent/
+enjambre_agentes/Research-Knowledge-Backend/
+**/agripoli/
+**/OptiAgent/
+**/Research-Knowledge-Backend/
+
+# ==============================================================================
+# Python & Bytecode
+# ==============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# pytest / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ==============================================================================
+# Node.js / Frontend
+# ==============================================================================
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-store/
+.next/
+out/
+.turbo/
+
+# ==============================================================================
+# Archivos de Claves, Entornos y Secretos
+# ==============================================================================
 .env
 .env.*
 !.env.example
+my_keys.py
+keys.py
+*.pem
+*.key
 
-# Python (back)
-__pycache__/
-.venv/
-venv/
-*.pyc
+# ==============================================================================
+# Bases de datos y archivos de runtime
+# ==============================================================================
+*.db
+*.sqlite
+*.sqlite3
+pipeline_states/
+ask_states/
+embedding_work/
+vectorstore/
+*.faiss
+*.pkl
 
-# Pesos y datasets pesados (documentar dónde viven en el servidor NVIDIA)
-*.pt
-*.pth
-*.safetensors
-*.onnx
-*.engine
-*.ckpt
-datasets/
-
-# Claude Code local
-.claude/settings.local.json
+# ==============================================================================
+# Archivos del Sistema Operativo e IDEs
+# ==============================================================================
+.DS_Store
+Thumbs.db
+*:Zone.Identifier
+.idea/
+.vscode/
+*.swp
+*.swo
