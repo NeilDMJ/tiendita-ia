@@ -42,7 +42,7 @@ export type RespuestaReceiptOcr = z.infer<typeof RespuestaReceiptOcr>;
 export type ModoCamara = 'cobro' | 'alta' | 'ticket';
 
 // ---------- Asistente ----------
-export const RolAsistente = z.enum(['caja', 'bodega', 'cuentas', 'promociones', 'tutor', 'general']);
+export const RolAsistente = z.enum(['caja', 'bodega', 'cuentas', 'promociones', 'tutor', 'general', 'banco']);
 export type RolAsistente = z.infer<typeof RolAsistente>;
 
 export const AccionAsistente = z.object({
@@ -53,11 +53,24 @@ export const AccionAsistente = z.object({
 });
 export type AccionAsistente = z.infer<typeof AccionAsistente>;
 
+/** Guía paso a paso de una operación bancaria (rol 'banco'). Ver docs/DISENO-agente-bancario.md §2. */
+export const PasoGuia = z.object({
+  n: z.number().int().positive(),
+  texto: z.string(),
+  pantalla: z.string().optional(),
+});
+export type PasoGuia = z.infer<typeof PasoGuia>;
+
 export const MensajeAsistente = z.object({
   rol: RolAsistente,
   texto: z.string(),
   acciones: z.array(AccionAsistente).optional(),
   no_resuelto: z.boolean().optional(),
+  // Guía bancaria (todos opcionales: el resto de roles no los usa)
+  pasos: z.array(PasoGuia).optional(),
+  advertencias: z.array(z.string()).optional(),
+  guia_verificada: z.boolean().optional(),
+  respuestas_rapidas: z.array(z.string()).optional(),
 });
 export type MensajeAsistente = z.infer<typeof MensajeAsistente>;
 

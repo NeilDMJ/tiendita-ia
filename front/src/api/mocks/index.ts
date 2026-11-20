@@ -8,6 +8,7 @@ import type {
   RespuestaPosCheckout,
   RespuestaReceiptOcr,
 } from '../esquemas';
+import { mockRespuestaBanco } from './banco';
 
 export const esperar = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -39,8 +40,9 @@ export const mockReceiptOcr: RespuestaReceiptOcr = {
 };
 
 export const mockRespuestaAsistente = (texto: string): MensajeAsistente =>
-  /vend/i.test(texto)
+  mockRespuestaBanco(texto) ??
+  (/vend/i.test(texto)
     ? { rol: 'cuentas', texto: 'Hoy llevas $1,245 en 23 ventas. Lo que más salió fue refresco de 600 ml.' }
     : /acab|stock|falta/i.test(texto)
       ? { rol: 'bodega', texto: 'Te quedan 3 litros de leche y 2 paquetes de tortillas. ¿Los agrego al pedido del proveedor?' }
-      : { rol: 'general', texto: 'No entendí bien. ¿Quieres cobrar, revisar tu inventario o ver tus ventas?', no_resuelto: true };
+      : { rol: 'general', texto: 'No entendí bien. ¿Quieres cobrar, revisar tu inventario o ver tus ventas?', no_resuelto: true });
