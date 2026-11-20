@@ -65,5 +65,5 @@ const estilos = StyleSheet.create({
     paddingLeft: espacio.s,
   },
   texto: { ...type.labelLarge },
-  textoSeleccionado: { fontWeight: pesoActivo },
+  textoSeleccionado: { ...pesoActivo },
 });

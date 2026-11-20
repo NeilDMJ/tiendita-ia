@@ -265,7 +265,7 @@ const estilos = StyleSheet.create({
   filaResumen: { flexDirection: 'row', justifyContent: 'space-between', gap: espacio.m },
   textoResumen: { ...type.bodyLarge, color: color.onSurface, flexShrink: 1 },
   textoResumenSecundario: { color: color.onSurfaceVariant },
-  destacado: { fontWeight: pesoActivo },
+  destacado: { ...pesoActivo },
   total: { ...type.amount, color: color.onSurface },
   botones: { gap: tactil.separacion },
   resultado: { gap: espacio.xs },

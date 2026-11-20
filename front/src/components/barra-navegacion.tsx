@@ -179,6 +179,6 @@ const estilos = StyleSheet.create({
   },
   textoBadge: { ...type.labelSmall, color: color.onError },
   etiqueta: { ...type.labelMedium, textAlign: 'center' },
-  etiquetaActiva: { color: color.onSurface, fontWeight: pesoActivo },
+  etiquetaActiva: { color: color.onSurface, ...pesoActivo },
   etiquetaInactiva: { color: color.onSurfaceVariant },
 });

@@ -208,7 +208,7 @@ const estilos = StyleSheet.create({
   contenedor: { gap: espacio.xs },
   filaEtiqueta: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: espacio.s },
   etiqueta: { ...type.titleSmall },
-  etiquetaActiva: { fontWeight: pesoActivo },
+  etiquetaActiva: { ...pesoActivo },
   obligatorio: { ...type.bodyLarge, color: color.onSurfaceVariant },
   caja: {
     minHeight: tactil.principal,

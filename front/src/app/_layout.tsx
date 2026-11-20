@@ -1,3 +1,11 @@
+import {
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+  Inter_800ExtraBold,
+  useFonts,
+} from '@expo-google-fonts/inter';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -8,7 +16,7 @@ import { AvisoConexion } from '@/components/aviso-conexion';
 import { ProveedorCarrito } from '@/estado/carrito';
 import { useAccesibilidad } from '@/hooks/use-accesibilidad';
 import { useSincronizarCola } from '@/hooks/use-sincronizar-cola';
-import { color, type } from '@/theme';
+import { color, fuente, type } from '@/theme';
 
 function SincronizadorCola() {
   useSincronizarCola();
@@ -20,6 +28,16 @@ export default function RootLayout() {
     () => new QueryClient({ defaultOptions: { queries: { retry: 1 }, mutations: { retry: 0 } } }),
   );
   const { reducirMovimiento } = useAccesibilidad();
+  const [fuentesListas, errorFuentes] = useFonts({
+    [fuente.regular]: Inter_400Regular,
+    [fuente.medium]: Inter_500Medium,
+    [fuente.semibold]: Inter_600SemiBold,
+    [fuente.bold]: Inter_700Bold,
+    [fuente.extrabold]: Inter_800ExtraBold,
+  });
+
+  // Si Inter no carga (error), la app sigue con la fuente del sistema en vez de quedarse en blanco.
+  if (!fuentesListas && !errorFuentes) return null;
 
   return (
     <QueryClientProvider client={clienteQuery}>
@@ -35,7 +53,7 @@ export default function RootLayout() {
               headerShadowVisible: false, // M3: la top app bar se separa por tono, no por sombra
               headerStyle: { backgroundColor: color.surface },
               headerTintColor: color.onSurface,
-              headerTitleStyle: { fontSize: type.titleLarge.fontSize, fontWeight: type.titleLarge.fontWeight },
+              headerTitleStyle: { fontSize: type.titleLarge.fontSize, fontFamily: type.titleLarge.fontFamily },
               headerBackButtonDisplayMode: 'minimal',
               contentStyle: { backgroundColor: color.surface },
               animation: reducirMovimiento ? 'none' : 'default',

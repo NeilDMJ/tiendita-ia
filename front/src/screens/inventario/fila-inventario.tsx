@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { EXISTENCIA_BAJA } from '@/constants';
-import { bordes, color, espacio, iconos, shape, type } from '@/theme';
+import { bordes, color, espacio, fuente, iconos, shape, type } from '@/theme';
 import { formatoMoneda } from '@/utils/formato-moneda';
 
 import type { ProductoInventario } from './tipos';
@@ -178,11 +178,11 @@ const estilos = StyleSheet.create({
   },
   textoCaducado: {
     color: color.error,
-    fontWeight: '700',
+    fontFamily: fuente.bold,
   },
   textoPorCaducar: {
     color: color.onTertiaryContainer,
-    fontWeight: '500',
+    fontFamily: fuente.medium,
   },
   columnaEstado: {
     alignItems: 'flex-end',

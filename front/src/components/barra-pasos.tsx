@@ -79,5 +79,5 @@ const estilos = StyleSheet.create({
   nombres: { flexDirection: 'row', gap: espacio.xs },
   nombre: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: espacio.xs },
   textoNombre: { ...type.labelLarge, color: color.onSurfaceVariant, flexShrink: 1 },
-  textoActual: { color: color.onSurface, fontWeight: pesoActivo },
+  textoActual: { color: color.onSurface, ...pesoActivo },
 });

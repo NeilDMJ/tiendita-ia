@@ -12,7 +12,7 @@ import { EXISTENCIA_BAJA, SEGUNDOS_VENTA_MANUAL } from '@/constants';
 import { useCarrito } from '@/estado/carrito';
 import { useConexion } from '@/hooks/use-conexion';
 import { useVentasHoy } from '@/hooks/use-ventas-hoy';
-import { color, elevacion, espacio, iconos, shape, tactil, type } from '@/theme';
+import { color, elevacion, espacio, fuente, iconos, shape, tactil, type } from '@/theme';
 import { calcularTotal, plural } from '@/utils/carrito';
 import { formatoMoneda } from '@/utils/formato-moneda';
 
@@ -291,7 +291,7 @@ const estilos = StyleSheet.create({
   saludoTexto: {
     ...type.headlineSmall,
     color: color.onSurface,
-    fontWeight: '700',
+    fontFamily: fuente.bold,
   },
   subtituloBienvenida: {
     ...type.bodyLarge,
@@ -321,7 +321,7 @@ const estilos = StyleSheet.create({
   tituloBotonIA: {
     ...type.titleMedium,
     color: color.onPrimary,
-    fontWeight: '700',
+    fontFamily: fuente.bold,
   },
   subtituloBotonIA: {
     ...type.bodyLarge,

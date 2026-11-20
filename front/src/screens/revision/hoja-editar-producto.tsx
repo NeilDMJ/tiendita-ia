@@ -318,7 +318,7 @@ const estilos = StyleSheet.create({
   },
   textoElegido: { color: color.onSecondaryContainer },
   secundarioElegido: { ...type.bodyLarge, color: color.onSecondaryContainer },
-  marcaElegido: { ...type.labelLarge, color: color.onSecondaryContainer, fontWeight: pesoActivo },
+  marcaElegido: { ...type.labelLarge, color: color.onSecondaryContainer, ...pesoActivo },
   sugerencia: {
     minHeight: tactil.principal,
     flexDirection: 'row',

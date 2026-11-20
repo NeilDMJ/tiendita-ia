@@ -288,7 +288,7 @@ const estilos = StyleSheet.create({
   },
   opcionElegida: { backgroundColor: color.secondaryContainer, borderColor: color.secondaryContainer },
   textoOpcion: { flex: 1, gap: espacio.xs },
-  elegido: { ...type.labelLarge, color: color.onSecondaryContainer, fontWeight: pesoActivo },
+  elegido: { ...type.labelLarge, color: color.onSecondaryContainer, ...pesoActivo },
   atajos: { flexDirection: 'row', flexWrap: 'wrap', gap: tactil.separacion },
   estadoPago: { flexDirection: 'row', alignItems: 'center', gap: espacio.s },
   textoExito: { color: color.onSurface },
