@@ -17,21 +17,21 @@ import type {
 } from '../esquemas';
 
 const catalogo: Producto[] = [
-  { sku: 'REF-COLA-600', nombre: 'Refresco de cola 600 ml', precio_unitario: 18, existencia: 12 },
-  { sku: 'PAN-BLANCO-680', nombre: 'Pan blanco grande', precio_unitario: 52, existencia: 3 },
-  { sku: 'JABON-BARRA-150', nombre: 'Jabón de barra 150 g', precio_unitario: 22, existencia: 8 },
-  { sku: 'GALL-MARIA-170', nombre: 'Galletas María 170 g', precio_unitario: 16, existencia: 12 },
-  { sku: 'GALL-CHOC-90', nombre: 'Galletas de chocolate 90 g', precio_unitario: 14, existencia: 3 },
-  { sku: 'LECHE-ENT-1L', nombre: 'Leche entera 1 L', precio_unitario: 28, existencia: 10 },
-  { sku: 'HUEVO-12', nombre: 'Huevo blanco 12 piezas', precio_unitario: 45, existencia: 6 },
-  { sku: 'TORT-1KG', nombre: 'Tortillas de maíz 1 kg', precio_unitario: 24, existencia: 2 },
-  { sku: 'FRIJOL-900', nombre: 'Frijol negro 900 g', precio_unitario: 38, existencia: 7 },
-  { sku: 'ARROZ-1KG', nombre: 'Arroz 1 kg', precio_unitario: 32, existencia: 9 },
-  { sku: 'ACEITE-1L', nombre: 'Aceite vegetal 1 L', precio_unitario: 49, existencia: 5 },
-  { sku: 'AZUCAR-1KG', nombre: 'Azúcar estándar 1 kg', precio_unitario: 34, existencia: 8 },
-  { sku: 'AGUA-1L', nombre: 'Agua natural 1 L', precio_unitario: 12, existencia: 20 },
-  { sku: 'PAPAS-45', nombre: 'Papas fritas 45 g', precio_unitario: 17, existencia: 15 },
-  { sku: 'ATUN-140', nombre: 'Atún en agua 140 g', precio_unitario: 26, existencia: 4 },
+  { sku: 'REF-COLA-600', nombre: 'Refresco de cola 600 ml', precio_unitario: 18, existencia: 12, caducidad: '2027-04-15', categoria: 'Bebidas' },
+  { sku: 'PAN-BLANCO-680', nombre: 'Pan blanco grande', precio_unitario: 52, existencia: 3, caducidad: '2026-11-22', categoria: 'Panadería' },
+  { sku: 'JABON-BARRA-150', nombre: 'Jabón de barra 150 g', precio_unitario: 22, existencia: 8, caducidad: null, categoria: 'Limpieza' },
+  { sku: 'GALL-MARIA-170', nombre: 'Galletas María 170 g', precio_unitario: 16, existencia: 12, caducidad: '2027-02-10', categoria: 'Abarrotes' },
+  { sku: 'GALL-CHOC-90', nombre: 'Galletas de chocolate 90 g', precio_unitario: 14, existencia: 3, caducidad: '2027-01-05', categoria: 'Abarrotes' },
+  { sku: 'LECHE-ENT-1L', nombre: 'Leche entera 1 L', precio_unitario: 28, existencia: 10, caducidad: '2026-11-25', categoria: 'Lácteos' },
+  { sku: 'HUEVO-12', nombre: 'Huevo blanco 12 piezas', precio_unitario: 45, existencia: 6, caducidad: '2026-12-01', categoria: 'Lácteos' },
+  { sku: 'TORT-1KG', nombre: 'Tortillas de maíz 1 kg', precio_unitario: 24, existencia: 2, caducidad: '2026-11-21', categoria: 'Panadería' },
+  { sku: 'FRIJOL-900', nombre: 'Frijol negro 900 g', precio_unitario: 38, existencia: 7, caducidad: '2027-06-30', categoria: 'Abarrotes' },
+  { sku: 'ARROZ-1KG', nombre: 'Arroz 1 kg', precio_unitario: 32, existencia: 9, caducidad: '2027-08-20', categoria: 'Abarrotes' },
+  { sku: 'ACEITE-1L', nombre: 'Aceite vegetal 1 L', precio_unitario: 49, existencia: 5, caducidad: '2027-05-14', categoria: 'Abarrotes' },
+  { sku: 'AZUCAR-1KG', nombre: 'Azúcar estándar 1 kg', precio_unitario: 34, existencia: 8, caducidad: null, categoria: 'Abarrotes' },
+  { sku: 'AGUA-1L', nombre: 'Agua natural 1 L', precio_unitario: 12, existencia: 20, caducidad: '2027-12-01', categoria: 'Bebidas' },
+  { sku: 'PAPAS-45', nombre: 'Papas fritas 45 g', precio_unitario: 17, existencia: 15, caducidad: '2027-03-18', categoria: 'Abarrotes' },
+  { sku: 'ATUN-140', nombre: 'Atún en agua 140 g', precio_unitario: 26, existencia: 4, caducidad: '2028-01-10', categoria: 'Abarrotes' },
 ];
 
 const masVendidosSkus = ['REF-COLA-600', 'TORT-1KG', 'HUEVO-12', 'LECHE-ENT-1L', 'PAN-BLANCO-680', 'AGUA-1L'];

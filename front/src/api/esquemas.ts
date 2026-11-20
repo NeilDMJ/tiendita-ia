@@ -218,6 +218,10 @@ export const Producto = z.object({
   nombre: z.string(),
   precio_unitario: z.number().nonnegative(),
   existencia: z.number().int(), // tope del stepper y aviso "Poco"
+  /** Fecha de caducidad ISO 8601 (YYYY-MM-DD). null = no aplica (ej. jabón). */
+  caducidad: z.string().nullable().optional(),
+  /** Categoría para agrupar y filtrar (ej. 'Lácteos', 'Abarrotes'). */
+  categoria: z.string().optional(),
 });
 export type Producto = z.infer<typeof Producto>;
 
