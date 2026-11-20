@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useEffect, useRef, type ComponentRef, type RefObject } from 'react';
 import {
   AccessibilityInfo,
-  findNodeHandle,
+
   Modal,
   Pressable,
   ScrollView,
@@ -17,6 +17,7 @@ import type { NombreIcono } from '@/constants';
 import { color, elevacion, espacio, iconos, medidas, motion, scrim, shape, tactil, type } from '@/theme';
 
 import { Boton, type VarianteBoton } from './boton';
+import { nodoAccesible } from '@/utils/nodo-accesible';
 
 export interface DialogoProps {
   visible: boolean;
@@ -53,7 +54,7 @@ export function Dialogo({ visible, titulo, mensaje, icono, acciones, onCerrar, r
     estabaVisible.current = visible;
     if (!cerrado || !refRetorno) return;
     const t = setTimeout(() => {
-      const nodo = refRetorno.current ? findNodeHandle(refRetorno.current) : null;
+      const nodo = refRetorno.current ? nodoAccesible(refRetorno.current) : null;
       if (nodo) AccessibilityInfo.setAccessibilityFocus(nodo);
     }, motion.duration.medium2);
     return () => clearTimeout(t);
@@ -62,7 +63,7 @@ export function Dialogo({ visible, titulo, mensaje, icono, acciones, onCerrar, r
   useEffect(() => {
     if (!visible) return;
     const t = setTimeout(() => {
-      const nodo = refTitulo.current ? findNodeHandle(refTitulo.current) : null;
+      const nodo = refTitulo.current ? nodoAccesible(refTitulo.current) : null;
       if (nodo) AccessibilityInfo.setAccessibilityFocus(nodo);
     }, motion.duration.medium2);
     return () => clearTimeout(t);

@@ -1,6 +1,6 @@
 import { useIsFocused } from 'expo-router';
 import { useEffect, useRef, useState, type ComponentRef } from 'react';
-import { AccessibilityInfo, ActivityIndicator, findNodeHandle, KeyboardAvoidingView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { AccessibilityInfo, ActivityIndicator, KeyboardAvoidingView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { parsearDatosAccion } from '@/api/acciones-asistente';
 import { USAR_MOCKS } from '@/api/cliente';
@@ -26,6 +26,7 @@ import { EstadoVacioChat, SugerenciasIniciales } from './estado-vacio';
 import { HojaEditarAlta } from './hoja-editar-alta';
 import { ListaMensajes } from './lista-mensajes';
 import { TarjetaPropuesta } from './tarjeta-propuesta';
+import { nodoAccesible } from '@/utils/nodo-accesible';
 
 type AvisoSnack =
   | { tipo: 'borrado'; copia: MensajeChat[] }
@@ -64,7 +65,7 @@ export function PantallaAsistente() {
   /** Tras enviar, el foco (teclado y lector) regresa al campo: no salta a la respuesta. */
   function enfocarCampo() {
     refCampo.current?.focus();
-    const nodo = refCampo.current ? findNodeHandle(refCampo.current) : null;
+    const nodo = refCampo.current ? nodoAccesible(refCampo.current) : null;
     if (nodo) AccessibilityInfo.setAccessibilityFocus(nodo);
   }
 

@@ -4,7 +4,7 @@ import { router, usePreventRemove } from 'expo-router';
 import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import {
   AccessibilityInfo,
-  findNodeHandle,
+
   ScrollView,
   StyleSheet,
   Text,
@@ -45,6 +45,7 @@ import { FotoDetecciones } from './revision/foto-detecciones';
 import { HojaCaja } from './revision/hoja-caja';
 import { HojaCobro, type ErrorCobro } from './revision/hoja-cobro';
 import { HojaEditarProducto, type CambiosProducto } from './revision/hoja-editar-producto';
+import { nodoAccesible } from '@/utils/nodo-accesible';
 
 type Editor = { modo: 'editar'; clave: string } | { modo: 'agregar'; id: string } | null;
 type Deshacer = { item: ItemEditable; indice: number } | null;
@@ -133,7 +134,7 @@ export function PantallaRevisionCobro({ abrirAgregar }: { abrirAgregar?: boolean
   // ---------- "Pregúntale a Caja" (02-asistente §4.3) ----------
   function enfocarFila(clave: string) {
     const ref = refsFilas.current[clave];
-    const nodo = ref ? findNodeHandle(ref) : null;
+    const nodo = ref ? nodoAccesible(ref) : null;
     if (nodo) setTimeout(() => AccessibilityInfo.setAccessibilityFocus(nodo), 400);
   }
 
@@ -242,7 +243,7 @@ export function PantallaRevisionCobro({ abrirAgregar }: { abrirAgregar?: boolean
     const y = yAyuda.current + (yFilas.current[primero.clave] ?? 0);
     scroll.current?.scrollTo({ y: Math.max(0, y - espacio.l), animated: !reducirMovimiento });
     const ref = refsFilas.current[primero.clave];
-    const nodo = ref ? findNodeHandle(ref) : null;
+    const nodo = ref ? nodoAccesible(ref) : null;
     if (nodo) setTimeout(() => AccessibilityInfo.setAccessibilityFocus(nodo), 300);
   }
 
