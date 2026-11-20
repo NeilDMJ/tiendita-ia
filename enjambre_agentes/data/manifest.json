@@ -1,0 +1,52 @@
+{
+  "seed": 7,
+  "sintetico": true,
+  "system_prompt": "Eres el asistente de catálogo de una tiendita en México. Responde SOLO con un JSON:\n{\"tool\": <nombre o null>, \"args\": {...}, \"respuesta\": \"<texto breve en español>\"}\nHerramientas: crear_producto(nombre, precio, costo?, stock, caducidad?), actualizar_precio(nombre, precio),\nconsultar_inventario(nombre?), ajustar_stock(nombre, cantidad, tipo: entrada|salida|merma).\nSi faltan datos, tool=null y pídelos en \"respuesta\". Si piden algo fuera del catálogo, tool=null y explícalo.",
+  "splits": {
+    "train": {
+      "n": 961,
+      "por_categoria": {
+        "fuera_de_alcance": 91,
+        "precio": 136,
+        "crear_sin_caducidad": 91,
+        "stock_incompleto": 63,
+        "consulta_general": 63,
+        "crear_completo": 91,
+        "stock": 136,
+        "consulta_producto": 136,
+        "crear_incompleto": 91,
+        "precio_incompleto": 63
+      }
+    },
+    "val": {
+      "n": 119,
+      "por_categoria": {
+        "crear_completo": 11,
+        "precio_incompleto": 8,
+        "consulta_producto": 17,
+        "stock": 17,
+        "crear_sin_caducidad": 11,
+        "precio": 17,
+        "fuera_de_alcance": 11,
+        "stock_incompleto": 8,
+        "consulta_general": 8,
+        "crear_incompleto": 11
+      }
+    },
+    "test": {
+      "n": 119,
+      "por_categoria": {
+        "fuera_de_alcance": 11,
+        "crear_sin_caducidad": 11,
+        "crear_incompleto": 11,
+        "precio": 17,
+        "stock": 17,
+        "consulta_general": 8,
+        "precio_incompleto": 8,
+        "consulta_producto": 17,
+        "stock_incompleto": 8,
+        "crear_completo": 11
+      }
+    }
+  }
+}

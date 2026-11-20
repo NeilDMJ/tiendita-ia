@@ -1,10 +1,40 @@
-# Secretos
-.env
-.env.*
-!.env.example
+# ==============================================================================
+# Repositorios Subyacentes Ignorados
+# ==============================================================================
+enjambre_agentes/agripoli/
+enjambre_agentes/OptiAgent/
+enjambre_agentes/Research-Knowledge-Backend/
+**/agripoli/
+**/OptiAgent/
+**/Research-Knowledge-Backend/
 
-# Python (back)
+# ==============================================================================
+# Python & Bytecode
+# ==============================================================================
 __pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
 .venv/
 venv/
 *.pyc
@@ -20,3 +50,7 @@ datasets/
 
 # Claude Code local
 .claude/settings.local.json
+
+__pycache__/
+.pytest_cache/
+.env
