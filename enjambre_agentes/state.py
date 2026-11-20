@@ -1,112 +1,225 @@
 """
-state.py — Estado unificado para la orquestación multiagente en LangGraph.
+state.py — Estado unificado para el Ecosistema Multiagente Comercial Multimodal.
 
-Combina:
-1. Historial de mensajes y memoria conversacional.
-2. Contexto recuperado de PDFs y Knowledge Hub (evidence_packages, rag_context).
-3. Resultados estructurados de herramientas de dominio (domain_results, cálculos, SymPy).
-4. Metadatos de control del Supervisor (next_agent, iteration_count, sender, errores).
+Alineado a:
+- Base de datos PostgreSQL (productos, lotes_inventario, ventas, detalle_ventas,
+  movimientos_financieros, campanas_promocionales).
+- Contratos de entrada multimodal: vision_payload y ui_state.
+- Gobernanza determinista y Human-in-the-Loop (HITL) en LangGraph.
 """
 from __future__ import annotations
 
 import operator
 from typing import TypedDict, Annotated, List, Dict, Any, Optional, Literal
 from pydantic import BaseModel, Field
-from langchain_core.messages import BaseMessage
+from langchain_core.messages import AnyMessage
 from langgraph.graph.message import add_messages
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 1. MODELOS PYDANTIC AUXILIARES
+# 1. MODELOS DE BASE DE DATOS Y CONTRATOS PYDANTIC (Python 3.11+ / Pydantic v2)
 # ─────────────────────────────────────────────────────────────────────────────
 
-class EvidencePackage(BaseModel):
-    """Esquema de un paquete de evidencia documental proveniente de Research-Knowledge-Backend."""
-    package_id: Optional[int] = Field(default=None, description="Identificador del paquete en knowledge.db")
-    title: str = Field(default="", description="Título del documento o paquete")
-    summary: str = Field(default="", description="Resumen estructurado de la evidencia")
-    detected_topics: List[str] = Field(default_factory=list, description="Tópicos identificados")
-    people: List[str] = Field(default_factory=list, description="Autores o investigadores citados")
-    organizations: List[str] = Field(default_factory=list, description="Instituciones u organizaciones")
-    projects: List[str] = Field(default_factory=list, description="Proyectos de investigación vinculados")
-    concepts: List[str] = Field(default_factory=list, description="Conceptos clave")
-    metrics: List[str] = Field(default_factory=list, description="Métricas experimentales o datos numéricos")
-    key_points: List[str] = Field(default_factory=list, description="Puntos clave extraídos")
-    links_visible: List[str] = Field(default_factory=list, description="URLs verificadas en el documento")
-    uncertainties: List[str] = Field(default_factory=list, description="Incertidumbres o campos con dudas")
-    source_pdf: Optional[str] = Field(default=None, description="Ruta o nombre del archivo PDF fuente")
-    hybrid_score: Optional[float] = Field(default=None, description="Puntaje híbrido (léxico FTS5 + semántico)")
+class ProductoDB(BaseModel):
+    """Esquema de la tabla 'productos' en PostgreSQL."""
+    id: Optional[int] = Field(default=None, description="Identificador único")
+    sku: str = Field(description="Código único de producto o código de barras")
+    nombre: str = Field(description="Nombre comercial del producto")
+    categoria: str = Field(description="Categoría (lácteos, abarrotes, bebidas, etc.)")
+    precio_venta: float = Field(ge=0.0, description="Precio de venta al público en MXN")
+    costo_unitario: float = Field(ge=0.0, description="Costo de adquisición por unidad")
+    stock_actual: int = Field(ge=0, description="Existencia física actual")
+    stock_minimo: int = Field(default=5, ge=0, description="Umbral de alerta de reorden")
+    atributos_visuales: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Características visuales (color, empaque, dimensiones, marca)"
+    )
 
 
-class DomainToolResult(BaseModel):
-    """Estructura normalizada para resultados generados por herramientas especializadas de dominio."""
-    tool_name: str = Field(description="Nombre de la herramienta que generó el resultado")
-    status: Literal["success", "error", "warning"] = Field(default="success")
-    output: Any = Field(description="Salida cruda o calculada de la herramienta")
-    latex_expression: Optional[str] = Field(default=None, description="Expresión LaTeX simplificada (ej. SymPy)")
-    citations: List[str] = Field(default_factory=list, description="Citas formales producidas (IEEE, DOI, URL)")
-    details: Dict[str, Any] = Field(default_factory=dict, description="Metadatos complementarios")
+class LoteInventarioDB(BaseModel):
+    """Esquema de la tabla 'lotes_inventario' en PostgreSQL."""
+    id: Optional[int] = Field(default=None)
+    producto_id: int = Field(description="ID de referencia a productos.id")
+    cantidad: int = Field(ge=0, description="Cantidad en el lote")
+    fecha_caducidad: str = Field(description="Fecha de vencimiento formato YYYY-MM-DD")
+    estado: Literal["activo", "proximo_a_vencer", "vencido", "agotado"] = Field(
+        default="activo", description="Estado operativo del lote"
+    )
+
+
+class DetalleVentaDB(BaseModel):
+    """Esquema de la tabla 'detalle_ventas' en PostgreSQL."""
+    id: Optional[int] = Field(default=None)
+    venta_id: Optional[int] = Field(default=None)
+    producto_id: int
+    cantidad: int = Field(ge=1)
+    precio_unitario: float = Field(ge=0.0)
+    subtotal: float = Field(ge=0.0)
+
+
+class VentaDB(BaseModel):
+    """Esquema de la tabla 'ventas' en PostgreSQL."""
+    id: Optional[int] = Field(default=None)
+    fecha: str = Field(description="Fecha ISO 8601 de la transacción")
+    total: float = Field(ge=0.0, description="Monto total cobrado")
+    metodo_pago: Literal["efectivo", "tarjeta", "spei", "qr"] = Field(default="efectivo")
+    origen_vision: bool = Field(default=False, description="True si provino de detección por cámara")
+    detalles: List[DetalleVentaDB] = Field(default_factory=list)
+
+
+class MovimientoFinancieroDB(BaseModel):
+    """Esquema de la tabla 'movimientos_financieros' en PostgreSQL."""
+    id: Optional[int] = Field(default=None)
+    tipo: Literal["gasto_operativo", "inversion_inventario"] = Field(
+        description="Clasificación financiera del movimiento"
+    )
+    proveedor: str = Field(description="Nombre o razón social del emisor/proveedor")
+    monto_total: float = Field(ge=0.0, description="Monto total del movimiento")
+    fecha: str = Field(description="Fecha del movimiento YYYY-MM-DD")
+    url_ticket: Optional[str] = Field(default=None, description="URL o ruta de imagen del ticket")
+    datos_ocr_json: Dict[str, Any] = Field(
+        default_factory=dict, description="Extracción estructurada del OCR"
+    )
+
+
+class CampanaPromocionalDB(BaseModel):
+    """Esquema de la tabla 'campanas_promocionales' en PostgreSQL."""
+    id: Optional[int] = Field(default=None)
+    producto_id: int
+    motivo: str = Field(description="Razón de la campaña (ej. próxima caducidad, sobrestock)")
+    copy_texto: str = Field(description="Texto persuasivo para WhatsApp / Redes sociales")
+    video_prompt: str = Field(description="Prompt en inglés cinematográfico vertical 9:16 (5s)")
+    video_url: Optional[str] = Field(default=None, description="URL del video generado")
+    estado_aprobacion: Literal["borrador", "pendiente_aprobacion", "aprobada", "rechazada"] = Field(
+        default="borrador"
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 2. CONTRATOS DE ENTRADA MULTIMODAL
+# ─────────────────────────────────────────────────────────────────────────────
+
+class VisionPayloadModel(BaseModel):
+    """Contrato estricto para payloads de Visión Artificial."""
+    endpoint: Literal["/catalog-scan", "/pos-checkout", "/receipt-ocr"] = Field(
+        description="Endpoint de visión que originó el payload"
+    )
+    items: List[Dict[str, Any]] = Field(
+        default_factory=list, description="Lista de ítems detectados visualmente"
+    )
+    proveedor: Optional[str] = Field(
+        default=None, description="Proveedor detectado en /receipt-ocr"
+    )
+    total: Optional[float] = Field(
+        default=None, description="Total monetario detectado en /receipt-ocr o /pos-checkout"
+    )
+    tipo_movimiento: Optional[str] = Field(
+        default=None, description="Clasificación sugerida para el ticket"
+    )
+    confianza_global: float = Field(
+        default=0.95, ge=0.0, le=1.0, description="Nivel de confianza del modelo de visión"
+    )
+
+
+class UIStateModel(BaseModel):
+    """Contrato estricto para el estado de la interfaz móvil (Copiloto de Pagos)."""
+    pantalla: str = Field(description="Nombre de la pantalla actual (ej. Checkout, PagoSPEI, EscaneoQR)")
+    paso_actual: str = Field(description="Subpaso o acción en curso")
+    campos_vacios: List[str] = Field(default_factory=list, description="Campos requeridos pendientes")
+    error_visible: Optional[str] = Field(default=None, description="Mensaje de error mostrado al usuario")
+    intentos: int = Field(default=1, ge=1, description="Número de intentos realizados")
+
+
+class StrategicReportModel(BaseModel):
+    """Contrato estricto para el reporte del Investigador (9 secciones obligatorias)."""
+    identificacion_sector: str = Field(description="1. Identificación y delimitación del sector")
+    mercado_tendencias: str = Field(description="2. Mercado y macrotendencias del consumo")
+    clientes: str = Field(description="3. Clientes y perfiles de compradores clave")
+    problemas: str = Field(description="4. Problemas y cuellos de botella detectados")
+    soluciones: str = Field(description="5. Soluciones estratégicas sugeridas")
+    hipotesis: str = Field(description="6. Hipótesis comerciales validadas o por validar")
+    objetivos: str = Field(description="7. Objetivos comerciales cuantitativos y cualitativos")
+    impacto: str = Field(description="8. Impacto estimado en margen, rotación y ventas")
+    hallazgos: str = Field(description="9. Hallazgos principales y recomendaciones de ejecución")
+
+
+class PromoAssetsModel(BaseModel):
+    """Contrato estricto para los activos del Agente Publicista."""
+    video_prompt: str = Field(description="Prompt cinematográfico en inglés vertical 9:16 (5s)")
+    copy_promocional: str = Field(description="Copy persuasivo en español con tono comercial")
+    call_to_action: str = Field(description="Llamado a la acción directo para la app o WhatsApp")
+    video_url: Optional[str] = Field(default=None, description="URL del video renderizado")
+
+
+class PendingApprovalModel(BaseModel):
+    """Contrato estricto para acciones que requieren Human-in-the-Loop (HITL)."""
+    action_type: Literal[
+        "inventory_mutation", "sale_transaction", "promo_campaign", "financial_entry"
+    ] = Field(description="Tipo de acción que mutaría datos")
+    summary: str = Field(description="Resumen legible para el usuario en la app móvil")
+    payload: Dict[str, Any] = Field(description="Parámetros técnicos de la mutación a ejecutar")
+    requires_confirmation: bool = Field(default=True)
 
 
 class SupervisorDecision(BaseModel):
-    """Decisión de enrutamiento tomada por el nodo Supervisor."""
-    next_step: Literal["investigador", "especialista", "reportador", "FIN"] = Field(
-        description="Siguiente agente al que se delega la tarea o FIN si el flujo está completado."
-    )
-    reasoning: str = Field(description="Explicación técnica de la decisión de enrutamiento")
-    instructions_for_agent: str = Field(
-        default="", description="Instrucciones específicas enfocadas para el siguiente agente"
-    )
+    """Decisión de enrutamiento tomada por el Supervisor."""
+    next_step: Literal[
+        "control", "vendedor", "analista", "investigador", "publicista", "tutor_ui", "aprobacion_hitl", "FIN"
+    ] = Field(description="Siguiente agente o nodo a ejecutar")
+    reasoning: str = Field(description="Justificación técnica del enrutamiento")
+    instructions_for_agent: str = Field(default="", description="Instrucciones directas para el especialista")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 2. ESTADO UNIFICADO DEL GRAFO (OrchestratorState)
+# 3. ESTADO GLOBAL MULTIMODAL (OrchestratorState)
 # ─────────────────────────────────────────────────────────────────────────────
 
 class OrchestratorState(TypedDict, total=False):
     """
-    Estado global unificado para la orquestación multiagente en LangGraph.
+    Estado global unificado de LangGraph para el Ecosistema Multiagente Comercial.
     
-    Gestiona la comunicación entre el Supervisor/Router y los tres sub-agentes:
-    - Agente Investigador (RAG & Knowledge Base)
-    - Agente Especialista (Dominio, cálculos, SymPy, patentes)
-    - Agente Reportador (Síntesis final, IEEE, notificaciones por email)
+    Gestiona el flujo continuo entre:
+    - Supervisor / Enrutador multicanal
+    - Agente de Control de Inventario y Validación OCR
+    - Agente Vendedor y Copiloto POS
+    - Agente Analista Financiero (Solo lectura)
+    - Agente Investigador de Mercado
+    - Agente Publicista Multimedia
+    - Agente Tutor de Pasarelas de Pago UI
+    - Nodo de Confirmación Human-in-the-Loop (HITL)
     """
-    # ── Conversación y Memoria ──
-    messages: Annotated[List[BaseMessage], add_messages]
-    query: str                       # Consulta u objetivo formulado por el usuario
+    # ── Conversación y Eventos ──
+    messages: Annotated[List[AnyMessage], add_messages]
+    event_source: Literal["chat", "vision_api", "ui_copilot", "cron_trigger"]
     
-    # ── Control de Enrutamiento y Supervisor ──
-    next_agent: str                  # "investigador" | "especialista" | "reportador" | "FIN"
-    sender: str                      # Nombre del último nodo/agente que ejecutó
-    supervisor_notes: str            # Justificación de la última decisión del supervisor
-    iteration_count: int             # Contador para prevenir loops infinitos (máx 5-6)
+    # ── Cargas Multimodales ──
+    vision_payload: Optional[Dict[str, Any]]
+    ui_state: Optional[Dict[str, Any]]
     
-    # ── Parámetros de Configuración del Modelo ──
-    provider: str                    # "NVIDIA", "Gemini", "Groq", "Cohere", "Ollama"
-    model_name: Optional[str]        # Nombre o tag específico del modelo LLM
-    temperature: float               # Temperatura de inferencia
-    flow_type: str                   # "Híbrido", "Solo RAG", "Solo Dominio", "Completo"
-    response_mode: str               # "Resumen", "Científico", "Dossier"
+    # ── Evidencia Real de Base de Datos para Grounding Determinista ──
+    db_evidence: Annotated[List[Dict[str, Any]], operator.add]
     
-    # ── Contexto Recuperado de PDFs y Knowledge Hub (Investigador) ──
-    evidence_packages: Annotated[List[Dict[str, Any]], operator.add]  # Paquetes JSON estructurados
-    rag_context: str                 # Texto consolidado extraído de la base documental
-    rag_sources: Annotated[List[str], operator.add]                   # Fuentes documentales [Package X], PDFs, páginas
+    # ── Inyección Dinámica de Ejemplos ──
+    few_shot_examples: Optional[List[Dict[str, Any]]]
     
-    # ── Resultados de Herramientas de Dominio (Especialista) ──
-    domain_results: Dict[str, Any]   # Cálculos matemáticos, validaciones SymPy, patentes, etc.
-    domain_context: str              # Texto explicativo o cálculos redactados por el especialista
+    # ── Salidas Especializadas ──
+    strategic_report: Optional[Dict[str, Any]]  # 9 claves fijas
+    promo_assets: Optional[Dict[str, Any]]       # video_prompt, copy, cta, video_url
     
-    # ── Fusión y Síntesis Final (Reportador) ──
-    fused_context: str               # Cruce y reconciliación entre evidencia documental y cálculos
-    final_report: str                # Reporte final redactado en Markdown o texto puro
+    # ── Gobernanza Human-in-the-Loop ──
+    pending_approval: Optional[Dict[str, Any]]   # action_type, summary, payload, requires_confirmation
     
-    # ── Acciones Externas ──
-    email_recipient: Optional[str]   # Correo destino si se solicita envío
-    email_subject: Optional[str]     # Asunto del correo electrónico
-    email_sent: bool                 # Indicador de envío exitoso
-    email_status: Optional[str]      # Registro de estado o error en el envío SMTP
+    # ── Diagnóstico y Control de Ciclo ──
+    validation_errors: Optional[List[str]]
+    next_agent: str
+    iteration_count: int
     
-    # ── Registro de Diagnósticos y Errores ──
-    errors: Annotated[List[str], operator.add]  # Errores no fatales acumulados
+    # ── Metadatos Operativos Auxiliares ──
+    query: Optional[str]
+    sender: Optional[str]
+    supervisor_notes: Optional[str]
+    provider: Optional[str]
+    model_name: Optional[str]
+    temperature: Optional[float]
+    final_response: Optional[str]
+    retry_count: Optional[int]
