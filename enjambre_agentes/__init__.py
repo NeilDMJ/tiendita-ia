@@ -26,8 +26,11 @@ from state import (
 )
 from models import (
     get_llm,
+    get_llm_auto,
     get_embeddings_model,
     get_available_models,
+    get_nemo_embeddings_client,
+    get_nemo_reranker_client,
 )
 from tools_bridge import (
     parse_vision_catalog_item,
@@ -49,6 +52,9 @@ from tools_bridge import (
     consultar_inventario,
     ajustar_stock,
     find_product_by_name_or_alias,
+    resolve_product_hybrid,
+    NimVisionClient,
+    vision_payload_from_image,
     CONTROL_TOOLS,
     VENDEDOR_TOOLS,
     ANALISTA_TOOLS,
@@ -61,9 +67,15 @@ from tools_bridge import (
 from guards import (
     enforce_db_grounding,
     validate_strategic_report,
+    check_input,
+    scan_untrusted_inputs,
+    check_tutor_output,
+    check_cost_exposure,
 )
 from few_shot_retriever import (
     FewShotRetriever,
+    record_hitl_feedback,
+    export_sft_dataset_jsonl,
 )
 from graph import (
     build_orchestrator,
@@ -72,6 +84,7 @@ from graph import (
     run_orchestration_stream,
     resume_orchestration,
 )
+from response_formatter import formatear_respuesta, formatear_para_cli, respuesta_json
 
 __all__ = [
     # State & Models
@@ -90,8 +103,11 @@ __all__ = [
     "SupervisorDecision",
     # Models Factory
     "get_llm",
+    "get_llm_auto",
     "get_embeddings_model",
     "get_available_models",
+    "get_nemo_embeddings_client",
+    "get_nemo_reranker_client",
     # Tools & Kits
     "parse_vision_catalog_item",
     "parse_receipt_ocr",
@@ -112,6 +128,9 @@ __all__ = [
     "consultar_inventario",
     "ajustar_stock",
     "find_product_by_name_or_alias",
+    "resolve_product_hybrid",
+    "NimVisionClient",
+    "vision_payload_from_image",
     "CONTROL_TOOLS",
     "VENDEDOR_TOOLS",
     "ANALISTA_TOOLS",
@@ -123,12 +142,22 @@ __all__ = [
     # Guards & Governance
     "enforce_db_grounding",
     "validate_strategic_report",
-    # Few-Shot
+    "check_input",
+    "scan_untrusted_inputs",
+    "check_tutor_output",
+    "check_cost_exposure",
+    # Few-Shot y Data Flywheel
     "FewShotRetriever",
+    "record_hitl_feedback",
+    "export_sft_dataset_jsonl",
     # Graph & Runners
     "build_orchestrator",
     "orchestrator_graph",
     "run_orchestration",
     "run_orchestration_stream",
     "resume_orchestration",
+    # Response Formatter
+    "formatear_respuesta",
+    "formatear_para_cli",
+    "respuesta_json",
 ]

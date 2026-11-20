@@ -4,6 +4,7 @@ import { useRef, useState, type ComponentRef } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { esPagoDigital } from '@/api/esquemas';
 import { buscarProductos } from '@/api/negocio';
 import { Dialogo } from '@/components/dialogo';
 import { EXISTENCIA_BAJA, SEGUNDOS_VENTA_MANUAL } from '@/constants';
@@ -86,7 +87,7 @@ export function PantallaInicio() {
     .filter((v) => v.metodo === 'efectivo')
     .reduce((s, v) => s + v.total, 0);
   const totalDigital = ventas.lista
-    .filter((v) => v.metodo === 'digital_simulado')
+    .filter((v) => esPagoDigital(v.metodo))
     .reduce((s, v) => s + v.total, 0);
 
   const segundosAhorrados = totalVentas * Math.max(0, SEGUNDOS_VENTA_MANUAL - SEGUNDOS_PROMEDIO_DIGITAL);

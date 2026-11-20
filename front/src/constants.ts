@@ -1,7 +1,7 @@
 import type { MaterialCommunityIcons } from '@expo/vector-icons';
 import type { ComponentProps } from 'react';
 
-import type { RolAsistente } from '@/api/esquemas';
+import type { MetodoPago, RolAsistente } from '@/api/esquemas';
 
 export type NombreIcono = ComponentProps<typeof MaterialCommunityIcons>['name'];
 
@@ -27,6 +27,14 @@ export const DESHACER_MS = 10_000;
 /** Compresión de fotos antes de subir. */
 export const IMAGEN_LADO_MAXIMO = 1280;
 export const IMAGEN_CALIDAD = 0.7;
+
+/** Métodos de pago: nombre visible e icono. Los digitales son SIMULACIÓN (no mueven dinero real). */
+export const METODOS_PAGO: Record<MetodoPago, { nombre: string; icono: NombreIcono }> = {
+  efectivo: { nombre: 'Efectivo', icono: 'cash' },
+  transferencia: { nombre: 'Transferencia', icono: 'bank-transfer' },
+  qr: { nombre: 'Código QR', icono: 'qrcode' },
+  tarjeta: { nombre: 'Tarjeta', icono: 'credit-card-outline' },
+};
 
 /** Nombres de oficio por rol del asistente. */
 export const ROLES: Record<RolAsistente, { nombre: string; icono: NombreIcono }> = {
