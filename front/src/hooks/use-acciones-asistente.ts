@@ -8,6 +8,7 @@ import { useRef, useState } from 'react';
 
 import { aprobarPromocion, parsearDatosAccion, RUTAS_DESTINO, solicitudDesdeChat, totalVenta } from '@/api/acciones-asistente';
 import { reportarResultadoAccion } from '@/api/asistente';
+import { reanudarAprobacion } from '@/api/enjambre';
 import { esErrorApi } from '@/api/cliente';
 import { ConflictoExistencia, type DatosConfirmarVenta, type PantallaDestino, type SolicitudVenta } from '@/api/esquemas';
 import { registrarAlta, registrarVenta } from '@/api/negocio';
@@ -107,6 +108,9 @@ export function useAccionesAsistente(chat: Pick<Chat, 'actualizarAccion'>) {
           estado: 'hecha',
           resultado: p.datos.simulacion ? 'Promoción aprobada · Simulación: no se publicó en redes' : 'Promoción aprobada',
         });
+      } else if (p.tipo === 'aprobar_enjambre') {
+        const r = await reanudarAprobacion(p.datos.thread_id, true);
+        actualizar(idMensaje, accion.id, { estado: 'hecha', resultado: r.texto });
       } else {
         return;
       }
@@ -134,6 +138,9 @@ export function useAccionesAsistente(chat: Pick<Chat, 'actualizarAccion'>) {
   function rechazar(idMensaje: string, accion: AccionChat) {
     actualizar(idMensaje, accion.id, { estado: 'rechazada' });
     reportarResultadoAccion(accion.id, 'rechazada');
+    // Aprobación del enjambre: el hilo sigue pausado hasta que se le avise (POST /orchestrate/resume, approved=false).
+    const p = parsearDatosAccion(accion);
+    if (p?.tipo === 'aprobar_enjambre') reanudarAprobacion(p.datos.thread_id, false).catch(() => undefined);
   }
 
   function pasarARevision(idMensaje: string, accion: AccionChat, datos: DatosConfirmarVenta) {

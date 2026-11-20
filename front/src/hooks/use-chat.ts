@@ -7,10 +7,12 @@ import { AccessibilityInfo } from 'react-native';
 
 import { parsearDatosAccion } from '@/api/acciones-asistente';
 import { enviarMensaje } from '@/api/asistente';
+import { reiniciarThread } from '@/api/enjambre';
 import { esErrorApi, type TipoError } from '@/api/cliente';
 import type { ContextoAsistente, MensajeAsistente } from '@/api/esquemas';
 import { ROLES } from '@/constants';
 import {
+  CLAVE_CHAT_CAJA,
   caducarVencidas,
   guardarChat,
   historialParaServidor,
@@ -276,8 +278,10 @@ export function useChat({ clave, sesion = null, contexto, conCola, activo }: Opc
     refControl.current?.abort();
     const copia = refMensajes.current;
     setMensajes([]);
+    // Conversación nueva también en el enjambre de agentes (no hace nada si EXPO_PUBLIC_ASISTENTE_ENJAMBRE está apagado).
+    void reiniciarThread(clave === CLAVE_CHAT_CAJA ? 'caja' : 'asistente');
     return copia;
-  }, []);
+  }, [clave]);
 
   const restaurar = useCallback((copia: MensajeChat[]) => setMensajes(copia), []);
 

@@ -53,6 +53,8 @@ export const TipoAccion = z.enum([
   'aprobar_promo',
   'abrir_pantalla',
   'modificar_item',
+  /** Aprobación (HITL) que pide el enjambre de agentes: se confirma con POST /orchestrate/resume. */
+  'aprobar_enjambre',
 ]);
 export type TipoAccion = z.infer<typeof TipoAccion>;
 
@@ -187,6 +189,16 @@ export const DatosAprobarPromo = z.object({
   simulacion: z.boolean(),
 });
 export type DatosAprobarPromo = z.infer<typeof DatosAprobarPromo>;
+
+/** `pending_approval` del enjambre (api/enjambre.ts). El texto es libre: el agente no manda datos estructurados. */
+export const DatosAprobarEnjambre = z.object({
+  thread_id: z.string(),
+  tipo_operacion: z.string(),
+  descripcion: z.string().nullable(),
+  motivo: z.string().nullable(),
+  detalle: z.string().nullable(),
+});
+export type DatosAprobarEnjambre = z.infer<typeof DatosAprobarEnjambre>;
 
 export const PantallaDestino = z.enum([
   'cobrar',

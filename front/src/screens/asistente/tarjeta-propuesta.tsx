@@ -181,6 +181,23 @@ export function TarjetaPropuesta({
         />
       );
     }
+    case 'aprobar_enjambre': {
+      const d = parseado.datos;
+      const filas = [d.descripcion, d.motivo, d.detalle]
+        .filter((t): t is string => !!t)
+        .map((t) => ({ izquierda: t }));
+      return (
+        <TarjetaAccion
+          {...comunes}
+          resumen={filas.length > 0 ? filas : [{ izquierda: 'Necesito tu aprobación para continuar.' }]}
+          textoConfirmar="Aprobar"
+          textoCargando="Aprobando…"
+          motivoNoDisponible={conectado ? undefined : 'Necesita internet'}
+          tituloError="No se pudo completar"
+          mensajeError={accion.error ?? 'Intenta de nuevo en un momento.'}
+        />
+      );
+    }
     case 'modificar_item': {
       const c = parseado.datos.cambios;
       const nombreAntes = antes?.nombre ?? parseado.datos.nombre_actual;

@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { pedir, USAR_MOCKS } from './cliente';
 import {
   DatosAbrirPantalla,
+  DatosAprobarEnjambre,
   DatosAprobarPromo,
   DatosConfirmarAlta,
   DatosConfirmarVenta,
@@ -23,7 +24,8 @@ export type DatosAccion =
   | { tipo: 'confirmar_alta'; datos: DatosConfirmarAlta }
   | { tipo: 'aprobar_promo'; datos: DatosAprobarPromo }
   | { tipo: 'abrir_pantalla'; datos: DatosAbrirPantalla }
-  | { tipo: 'modificar_item'; datos: DatosModificarItem };
+  | { tipo: 'modificar_item'; datos: DatosModificarItem }
+  | { tipo: 'aprobar_enjambre'; datos: DatosAprobarEnjambre };
 
 /** Valida `datos` según el tipo. `null` = la propuesta no se puede leer (tarjeta "No pudimos leer esta propuesta"). */
 export function parsearDatosAccion(accion: AccionAsistente): DatosAccion | null {
@@ -46,6 +48,10 @@ export function parsearDatosAccion(accion: AccionAsistente): DatosAccion | null 
     }
     case 'modificar_item': {
       const r = DatosModificarItem.safeParse(accion.datos);
+      return r.success ? { tipo: accion.tipo, datos: r.data } : null;
+    }
+    case 'aprobar_enjambre': {
+      const r = DatosAprobarEnjambre.safeParse(accion.datos);
       return r.success ? { tipo: accion.tipo, datos: r.data } : null;
     }
   }

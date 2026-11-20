@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { pedir, pedirJson, USAR_MOCKS, type OpcionesPedido } from './cliente';
 import { MensajeAsistente, type EstadoPantalla, type SolicitudAsistente } from './esquemas';
 import { esperar } from './mocks';
+import { ASISTENTE_ENJAMBRE, enviarMensajeEnjambre, pedirAyudaTutorEnjambre } from './enjambre';
 import { mockRespuestaAsistente } from './mocks/asistente';
 import { anonimizar } from '@/utils/anonimizar';
 
@@ -39,6 +40,11 @@ export async function enviarMensaje(
       .filter((t) => !(t.autor === 'tendero' && t.texto.bloquear))
       .map((t) => ({ ...t, texto: t.texto.texto })),
   };
+  // Enjambre de agentes (POST /orchestrate): solo el mensaje nuevo; el servidor guarda el historial por thread_id.
+  if (ASISTENTE_ENJAMBRE) {
+    const canal = solicitud.contexto?.pantalla === 'revision_cobro' ? 'caja' : 'asistente';
+    return enviarMensajeEnjambre(solicitud.texto, opciones, canal);
+  }
   if (USAR_MOCKS && !ASISTENTE_REAL) return mockRespuestaAsistente(solicitud, conLimite);
   return pedirJson('/asistente/mensaje', MensajeAsistente, solicitud, conLimite);
 }
@@ -48,7 +54,8 @@ export async function enviarMensaje(
  * Fire-and-forget: su falla nunca se muestra.
  */
 export function reportarResultadoAccion(idAccion: string, estado: 'hecha' | 'rechazada') {
-  if (USAR_MOCKS) return;
+  // Con el enjambre el resultado se reporta con POST /orchestrate/resume (use-acciones-asistente); este endpoint no existe allí.
+  if (USAR_MOCKS || ASISTENTE_ENJAMBRE) return;
   pedir(`/asistente/acciones/${encodeURIComponent(idAccion)}/resultado`, z.unknown(), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -57,6 +64,7 @@ export function reportarResultadoAccion(idAccion: string, estado: 'hecha' | 'rec
 }
 
 export async function pedirAyudaTutor(estado: EstadoPantalla) {
+  if (ASISTENTE_ENJAMBRE) return pedirAyudaTutorEnjambre(estado);
   if (USAR_MOCKS)
     return esperar(700).then(
       (): MensajeAsistente => ({ rol: 'tutor', texto: 'Escribe la CLABE de 18 números que te dio tu cliente y toca “Continuar”.' }),

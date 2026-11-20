@@ -9,6 +9,8 @@ import type { AccionAsistente, PasoGuia, RolAsistente, TurnoHistorial } from '@/
 import type { EstadoTarjeta } from '@/components/tarjeta-accion';
 import { CHAT } from '@/constants';
 
+import { reiniciarThread } from '@/api/enjambre';
+
 import { guardarJson, leerJsonConError } from './almacen';
 
 export const CLAVE_CHAT_PESTANA = 'asistente-chat-v1';
@@ -142,6 +144,8 @@ export function guardarChat(clave: string, sesion: string | null, mensajes: Mens
 
 /** Se llama al cobrar, descartar o empezar otra venta. */
 export function borrarChatCaja() {
+  // El enjambre también empieza una conversación nueva para la hoja de Caja.
+  void reiniciarThread('caja');
   return guardarJson(CLAVE_CHAT_CAJA, null);
 }
 
