@@ -9,7 +9,7 @@ import math
 import re
 import unicodedata
 from collections import Counter
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from functools import lru_cache
 from pathlib import Path
 
@@ -153,3 +153,15 @@ async def buscar_hibrido(s, consulta: str, k: int = 4) -> list[Fragmento]:
             puntaje[f.id] = puntaje.get(f.id, 0.0) + 1.0 / (60 + r)
     orden = sorted(puntaje, key=puntaje.get, reverse=True)[:k]  # type: ignore[arg-type]
     return [por_id[i] for i in orden]
+
+
+# El usuario no ve las figuras, tablas ni anexos de los documentos: se quitan las frases que los citan.
+REF_FIGURA = re.compile(r"\b(figuras?|gr[aá]ficas?|cuadros?|tablas?|anexos?|ap[eé]ndices?|im[aá]genes? ilustrativas?)\b", re.I)
+_ORACION = re.compile(r"(?<=[.;:])\s+")
+
+
+def sin_referencias(f: Fragmento) -> Fragmento | None:
+    """Fragmento sin frases que remitan a figuras o tablas; None si no queda nada útil."""
+    frases = [x for x in _ORACION.split(f.texto) if not REF_FIGURA.search(x)]
+    texto = " ".join(frases).strip()
+    return replace(f, texto=texto) if len(texto) > 60 else None

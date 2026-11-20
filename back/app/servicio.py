@@ -10,7 +10,7 @@ from collections.abc import Awaitable, Callable
 from typing import Any
 
 from .anonimizar import anonimizar
-from .conocimiento import TEMA_CONSULTA, Fragmento, indice
+from .conocimiento import TEMA_CONSULTA, Fragmento, indice, sin_referencias
 from .deteccion import (
     BANCOS,
     FRASE_OP,
@@ -184,6 +184,7 @@ async def _consultar(
     previas = " ".join(m.texto for m in turnos[-2:] if m.rol == "usuario")  # contexto de un seguimiento
     consulta = f"{previas} {t}"
     fragmentos = await buscar(consulta) if buscar else indice().buscar(consulta, k=4)
+    fragmentos = [f for f in map(sin_referencias, fragmentos) if f]
     if not fragmentos:
         return _banco(SIN_INFORMACION, operacion="consulta", respuestas_rapidas=RAPIDAS_CONSULTA)
     fuentes = SALTO.join(f"- {f.texto}" for f in fragmentos)
@@ -204,7 +205,7 @@ async def _consultar(
         texto = "Esto dice la documentación de Banco de México: " + fragmentos[0].texto[:450].rsplit(" ", 1)[0] + "…"
     origen = fragmentos[0].titulo
     if origen and "no tengo esa informaci" not in texto.lower():
-        texto += f"{SALTO}{SALTO}Fuente: {origen} (Banco de México)"
+        texto += f"{SALTO}{SALTO}Fuente: {origen}" + ("" if "banco de méxico" in origen.lower() else " (Banco de México)")
     return _banco(texto, operacion="consulta", respuestas_rapidas=RAPIDAS_CONSULTA)
 
 

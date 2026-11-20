@@ -227,7 +227,7 @@ def test_consulta_usa_el_buscador_inyectado():
 
     async def buscar(consulta):
         llamadas.append(consulta)
-        return [Fragmento("x#1", "x.md", "Doc X", "", "CoDi permite cobrar con un código QR.", "u", "alta")]
+        return [Fragmento("x#1", "x.md", "Doc X", "", "CoDi permite cobrar con un código QR desde el teléfono celular, sin terminal y sin costo.", "u", "alta")]
 
     gen = modelo("CoDi sirve para cobrar con QR.")
     r = asyncio.run(responder("qué es codi", gen, None, buscar))
@@ -241,3 +241,11 @@ def test_busqueda_hibrida_cae_a_palabras_clave_si_nvidia_falla():
     s = Settings(nvidia_api_key="invalida", llm_provider="nim", nim_base_url="http://127.0.0.1:9", embed_timeout_s=1)
     assert asyncio.run(buscar_hibrido(s, "qué es codi"))  # sin red: usa BM25
     assert asyncio.run(buscar_hibrido(Settings(nvidia_api_key="", llm_provider="ollama"), "qué es codi"))
+
+
+def test_consulta_no_remite_a_figuras_que_el_usuario_no_ve():
+    from app.conocimiento import Fragmento, sin_referencias
+
+    f = Fragmento("x#1", "x.md", "Doc", "", "Dimo permite enviar con el número de celular del receptor registrado. El emisor debe realizar los pasos descritos en la Figura 4.3. Después confirma el nombre.", "u", "alta")
+    assert "Figura" not in sin_referencias(f).texto and "celular" in sin_referencias(f).texto
+    assert not texto_valido("Sigue los pasos de la Figura 4.3.", "", None, revisar_bancos=False)

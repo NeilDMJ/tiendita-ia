@@ -15,12 +15,14 @@ _PIDE_CLAVES = re.compile(
 )
 # El modelo a veces filtra sus propias instrucciones al usuario.
 _FILTRA_REGLAS = re.compile(r"\b(referencia|instrucciones|no invento|mis reglas|prompt)\b", re.I)
+from .conocimiento import REF_FIGURA  # noqa: E402
+
 MAX_CARACTERES = 600
 
 
 def texto_valido(texto: str, permitido: str, banco: str | None, revisar_bancos: bool = True) -> bool:
     """permitido = texto de la guía (pasos + pantallas): lo único que puede aparecer entre comillas."""
-    if len(texto) > MAX_CARACTERES or _LISTA.search(texto) or _PIDE_CLAVES.search(texto) or _FILTRA_REGLAS.search(texto):
+    if len(texto) > MAX_CARACTERES or _LISTA.search(texto) or _PIDE_CLAVES.search(texto) or _FILTRA_REGLAS.search(texto) or REF_FIGURA.search(texto):
         return False
     base = f"{permitido} {banco or ''}".lower()
     for grupos in _CITADO.findall(texto):
