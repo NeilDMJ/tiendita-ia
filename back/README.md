@@ -20,6 +20,15 @@ Con Ollama el modelo se precalienta al arrancar (la primera carga tarda ~1 min);
 Los modelos pequeños (`qwen2.5:3b`) obedecen peor que NIM: el filtro descarta sus invenciones, pero
 verás más textos de respaldo.
 
+## Conocimiento: DiMo, CoDi y SPEI
+
+Preguntas como "¿qué es DiMo?" o "¿cuánto cuesta cobrar con CoDi?" se contestan **solo con documentos de
+Banco de México**: `app/datos/conocimiento.jsonl` (fragmentos de `docs_clean/` y `export/chunks.jsonl`, ~930 de
+~1750; los informes de baja relevancia solo entran si mencionan CoDi o DiMo). `app/conocimiento.py` busca con
+BM25 en memoria (sin red ni dependencias), el modelo redacta con los 4 mejores fragmentos y se cita la fuente.
+Si los documentos no cubren la pregunta, responde que no lo tiene. Para actualizar: regenerar el `.jsonl` desde
+`export/chunks.jsonl`. Pendiente: embeddings (`nvidia/nemotron-3.5-embed-1b`) para mejorar la búsqueda.
+
 ## Puesta en marcha
 
 ```bash

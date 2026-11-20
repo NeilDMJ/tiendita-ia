@@ -186,3 +186,35 @@ def test_endpoint_omite_nulos_para_zod():
     assert r.status_code == 200
     assert "pasos" not in r.json()  # null rompería z.optional() en el front
     assert cliente.post("/asistente/mensaje", json={"texto": ""}).status_code == 422
+
+
+# ---------- consulta de conocimiento (DiMo / CoDi / SPEI) ----------
+
+def test_consulta_codi_usa_documentos_y_cita_fuente():
+    gen = modelo("CoDi es una plataforma de Banco de México para cobrar y pagar con QR desde el celular.")
+    r = correr("¿qué es CoDi?", gen)
+    assert r.operacion == "consulta" and not r.pasos and "Fuente:" in r.texto
+    assert "Fragmentos" in gen.llamadas[0][0]["content"]
+
+
+def test_consulta_dimo_encuentra_fragmentos():
+    gen = modelo("Dimo permite enviar una transferencia con solo el número de celular.")
+    r = correr("¿qué es DiMo?", gen)
+    assert "celular" in gen.llamadas[0][0]["content"].lower() and "Fuente:" in r.texto
+
+
+def test_consulta_con_modelo_caido_responde_con_pasaje_de_documentos():
+    r = correr("qué es spei", modelo_cae)
+    assert "documentación de Banco de México" in r.texto
+
+
+def test_consulta_sin_informacion_no_inventa():
+    from app.servicio import _consultar
+    r = asyncio.run(_consultar("zzzxyz qwerty", [], modelo_prohibido))
+    assert "no lo encuentro" in r.texto
+
+
+def test_seguimiento_de_consulta_sigue_en_consulta():
+    historial = [MensajeAsistente(rol="usuario", texto="qué es codi"), MensajeAsistente(rol="banco", texto="x", operacion="consulta")]
+    r = correr("¿y cuánto cobra de comisión?", modelo("No tiene costo."), historial)
+    assert r.operacion == "consulta"

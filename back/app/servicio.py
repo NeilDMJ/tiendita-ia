@@ -10,6 +10,7 @@ from collections.abc import Awaitable, Callable
 from typing import Any
 
 from .anonimizar import anonimizar
+from .conocimiento import TEMA_CONSULTA, indice
 from .deteccion import (
     BANCOS,
     FRASE_OP,
@@ -22,7 +23,7 @@ from .deteccion import (
 from .esquemas import MensajeAsistente
 from .filtro import texto_valido
 from .guias import Guia, obtener_guia
-from .llm import REGLAS, SISTEMA_CLASIFICAR, SISTEMA_INTRO, ErrorLLM
+from .llm import REGLAS, SISTEMA_CLASIFICAR, SISTEMA_CONSULTA, SISTEMA_INTRO, ErrorLLM
 
 # generar(mensajes, max_tokens=..., temperature=...) -> texto del modelo (puede lanzar ErrorLLM)
 GeneradorTexto = Callable[..., Awaitable[str]]
@@ -164,6 +165,44 @@ async def _guiar(t: str, banco: str, operacion: str, generar: GeneradorTexto) ->
     )
 
 
+# ---------- consulta de conocimiento (DiMo, CoDi, SPEI) ----------
+
+SIN_INFORMACION = (
+    "Eso no lo encuentro en los documentos de Banco de México que tengo. Te recomiendo preguntarlo en tu banco "
+    "o en banxico.org.mx. ¿Te ayudo con una transferencia, un pago o un cobro?"
+)
+SALTO = chr(10)
+RAPIDAS_CONSULTA = ["¿Qué es CoDi?", "¿Qué es DiMo?", "¿Cómo cobro con CoDi?"]
+
+
+async def _consultar(t: str, turnos: list[MensajeAsistente], generar: GeneradorTexto) -> MensajeAsistente:
+    """Responde sobre DiMo/CoDi/SPEI solo con fragmentos de los documentos de Banxico."""
+    previas = " ".join(m.texto for m in turnos[-2:] if m.rol == "usuario")  # contexto de un seguimiento
+    fragmentos = indice().buscar(f"{previas} {t}", k=4)
+    if not fragmentos:
+        return _banco(SIN_INFORMACION, operacion="consulta", respuestas_rapidas=RAPIDAS_CONSULTA)
+    fuentes = SALTO.join(f"- {f.texto}" for f in fragmentos)
+    conversacion = [
+        {"role": "user" if m.rol == "usuario" else "assistant", "content": m.texto} for m in turnos[-4:] if m.texto
+    ]
+    permitido = " ".join(f.texto for f in fragmentos)
+    try:
+        texto = await generar(
+            [{"role": "system", "content": f"{SISTEMA_CONSULTA}{SALTO}{SALTO}Fragmentos:{SALTO}{fuentes}"}, *conversacion, {"role": "user", "content": t}],
+            max_tokens=300,
+        )
+        if not texto_valido(texto, permitido, None, revisar_bancos=False):
+            texto = None
+    except ErrorLLM:
+        texto = None
+    if texto is None:  # respaldo: el pasaje más relevante, tal cual
+        texto = "Esto dice la documentación de Banco de México: " + fragmentos[0].texto[:450].rsplit(" ", 1)[0] + "…"
+    origen = fragmentos[0].titulo
+    if origen and "no tengo esa informaci" not in texto.lower():
+        texto += f"{SALTO}{SALTO}Fuente: {origen} (Banco de México)"
+    return _banco(texto, operacion="consulta", respuestas_rapidas=RAPIDAS_CONSULTA)
+
+
 # ---------- punto de entrada ----------
 
 async def responder(
@@ -181,6 +220,10 @@ async def responder(
     banco_ctx, operacion_ctx = _contexto(turnos)
     banco_msg, operacion_msg = detectar_banco(t), detectar_operacion(t)
     banco, operacion = banco_msg or banco_ctx, operacion_msg or operacion_ctx
+
+    en_consulta = bool(turnos) and turnos[-1].rol == "banco" and turnos[-1].operacion == "consulta"
+    if TEMA_CONSULTA.search(t) or (en_consulta and not (banco_msg or operacion_msg)):
+        return await _consultar(t, turnos, generar)
 
     if not (banco_msg or operacion_msg):  # el mensaje no trae pistas por sí solo
         if banco and operacion:  # seguimiento dentro de una operación en curso

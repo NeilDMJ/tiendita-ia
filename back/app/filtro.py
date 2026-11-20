@@ -18,7 +18,7 @@ _FILTRA_REGLAS = re.compile(r"\b(referencia|instrucciones|no invento|mis reglas|
 MAX_CARACTERES = 600
 
 
-def texto_valido(texto: str, permitido: str, banco: str | None) -> bool:
+def texto_valido(texto: str, permitido: str, banco: str | None, revisar_bancos: bool = True) -> bool:
     """permitido = texto de la guía (pasos + pantallas): lo único que puede aparecer entre comillas."""
     if len(texto) > MAX_CARACTERES or _LISTA.search(texto) or _PIDE_CLAVES.search(texto) or _FILTRA_REGLAS.search(texto):
         return False
@@ -28,4 +28,6 @@ def texto_valido(texto: str, permitido: str, banco: str | None) -> bool:
         if fragmento and fragmento not in base:
             return False
     # Habla de otro banco distinto al del usuario → se confundió.
+    if not revisar_bancos:
+        return True
     return not any(nombre != banco and patron.search(texto) for patron, nombre in BANCOS)
