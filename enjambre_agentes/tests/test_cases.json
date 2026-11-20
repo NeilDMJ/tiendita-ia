@@ -1,0 +1,60 @@
+[
+  {
+    "id": "TC-01",
+    "nombre": "Flujo Mostrador POS Visual",
+    "event_source": "pos-checkout",
+    "input_text": "Cliente en mostrador con 2 litros de leche Lala y 1 pan Bimbo grande.",
+    "vision_payload": {
+      "endpoint": "/pos-checkout",
+      "image_b64": "MOCK_BASE64_IMAGE_POS_ITEMS",
+      "mime_type": "image/jpeg"
+    },
+    "ui_state": null,
+    "descripcion": "Verifica que el Vendedor detecte los artículos, cotice el carrito y ofrezca upselling adecuado."
+  },
+  {
+    "id": "TC-02",
+    "nombre": "OCR de Factura y Clasificación Contable",
+    "event_source": "receipt-ocr",
+    "input_text": "Procesar ticket de compra de mayoreo para reposición de abarrotes.",
+    "vision_payload": {
+      "endpoint": "/receipt-ocr",
+      "image_b64": "MOCK_BASE64_IMAGE_RECEIPT",
+      "mime_type": "image/jpeg"
+    },
+    "ui_state": null,
+    "descripcion": "Comprueba que Control lea el ticket y clasifique como 'inversion_inventario' con justificación contable."
+  },
+  {
+    "id": "TC-03",
+    "nombre": "Asistencia Tutor UI de Cobro Digital",
+    "event_source": "chat",
+    "input_text": "La terminal marca error al leer la tarjeta del cliente.",
+    "vision_payload": null,
+    "ui_state": {
+      "screen": "ingreso_nip",
+      "step": 2,
+      "payment_method": "tarjeta",
+      "error_code": "CHIP_NO_DETECTADO"
+    },
+    "descripcion": "Valida que el Tutor UI responda de forma ultra-concisa en máximo 2 oraciones accionables."
+  },
+  {
+    "id": "TC-04",
+    "nombre": "Disparador Periódico (Cron) de Caducidad y Video 9:16",
+    "event_source": "cron",
+    "input_text": "Revisión diaria matutina de existencias y caducidades próximas a vencer.",
+    "vision_payload": null,
+    "ui_state": null,
+    "descripcion": "Verifica que el Publicista detecte productos por vencer y genere copy, CTA y prompt de video 9:16 pasando por HITL."
+  },
+  {
+    "id": "TC-05",
+    "nombre": "Reporte Estratégico Comercial de 9 Secciones",
+    "event_source": "chat",
+    "input_text": "¿Cuál es la estrategia comercial recomendada para modernizar una tiendita tradicional y competir con cadenas de conveniencia?",
+    "vision_payload": null,
+    "ui_state": null,
+    "descripcion": "Verifica que el Investigador entregue estrictamente las 9 secciones obligatorias sin excepciones."
+  }
+]

@@ -42,6 +42,6 @@ Cada ítem: `sku, nombre, cantidad (1), precio_unitario, confianza, requiere_con
 - `best.onnx` con onnxruntime (CPU, ~8 ms por foto con HTTP; usa CUDA si está `onnxruntime-gpu`).
   El `.engine` de TensorRT solo corre en la T4 del DLI; su benchmark está en `vision/artefactos/v1/benchmark.json`.
 - Otro modelo: `VISION_MODELO=/ruta/best.onnx`. Las clases se leen de los metadatos del ONNX.
-- Clase → producto: `catalogo_vision.json` (los SKU existen en el inventario de `enjambre_agentes/tools_bridge.py`).
+- Clase → producto: `catalogo_vision.json`. Los mismos SKU y la columna `clase_vision` están en `back/datos/catalogo.csv` (semilla de Postgres que usan los agentes).
 - Verificado: las 801 fotos de test (sesión s2) por `/vision/pos-checkout` dan **95.26 %**, igual que
   `eval.py` en el DLI (mismo preprocesamiento que Ultralytics).
