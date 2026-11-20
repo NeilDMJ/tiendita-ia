@@ -51,7 +51,7 @@ export default function TabsLayout() {
           tabBarIcon: icono('package-variant-closed', 'package-variant'),
         }}
       />
-      <Tabs.Screen name="asistente" options={{ title: 'Asistente', tabBarIcon: icono('chat-outline', 'chat') }} />
+      <Tabs.Screen name="asistente" options={{ title: 'Asistente', headerShown: false, tabBarIcon: icono('chat-outline', 'chat') }} />
     </Tabs>
   );
 }
