@@ -52,6 +52,7 @@
 
 ## Fase 5 — modo oscuro
 
+> Corrección posterior (`cb2326f`): el selector se quedaba en "Reiniciando…" en Expo Go porque `reloadAppAsync` no recarga ahí. Ahora usa `DevSettings.reload()` en desarrollo y, si el reinicio no ocurre en 2.5 s, avisa que hay que reabrir la app. Confirmado funcionando por el usuario en el teléfono.
 | Cambio | Detalle |
 |---|---|
 | Esquema decidido al abrir la app | `theme.ts`: preferencia guardada → o la del teléfono. Sin tocar los 60+ archivos que usan `color` |
@@ -81,7 +82,7 @@ Capturas: `capturas/despues/11…16-oscuro-*.jpg`.
 | 5 | Cobrar: tarea principal sin protagonismo | ✅ Resuelto |
 | 6 | Sin ancho máximo en web/tablet | ✅ `ContenedorPantalla` (640 dp) |
 | 7 | Inventario: cifras pequeñas, búsqueda se perdía al bajar | ✅ Resuelto |
-| 8 | Sin modo oscuro | ⚠️ **Implementado y verificado en web; en el teléfono no se ve** (ver abajo) |
+| 8 | Sin modo oscuro | ✅ Implementado; verificado en web y **confirmado en el teléfono (Expo Go)** por el usuario |
 | 9 | Tema no refleja la marca | ✅ Identidad nueva en `theme.ts` |
 | 10 | Lint con errores | ✅ 0 errores, 0 avisos |
 
@@ -96,7 +97,7 @@ Capturas: `capturas/despues/11…16-oscuro-*.jpg`.
 | Contraste WCAG AA, claro y oscuro | ✅ 0 fallos (`node docs/ui-ux/contraste.mjs`) |
 | Flujo de cobro completo (web, datos simulados) | ✅ |
 | App en teléfono real (Expo Go) | ✅ según el usuario: "la app ya agarra bien el teléfono" |
-| Modo oscuro en teléfono | ❌ no aparece (causa sin diagnosticar) |
+| Modo oscuro en teléfono (Expo Go) | ✅ confirmado por el usuario tras corregir el bloqueo en "Reiniciando…" (`cb2326f`) |
 | Flujo con cámara real | ⚠️ no verificado por mí (web no puede tomar foto) |
 | Cámara, comprobante, historial y diálogos en oscuro | ⚠️ no revisados |
 | Móvil 360 px, lector de pantalla, movimiento reducido | ⚠️ no verificados |
@@ -104,7 +105,7 @@ Capturas: `capturas/despues/11…16-oscuro-*.jpg`.
 
 ## Pendiente conocido
 
-1. **Modo oscuro en teléfono.** Posibles causas: `app.json` (`userInterfaceStyle: automatic`) y caché del manifiesto de Expo Go; `Appearance` no detecta el modo en Expo Go; o `Storage.getItemSync`/`reloadAppAsync` fallan en nativo. Pasos de diagnóstico: reiniciar con `npx expo start -c`, cerrar Expo Go por completo, y elegir Oscuro en Inicio → ícono de Apariencia (ahí se ve qué esquema está activo).
+1. **Modo oscuro: lo que sigue sin confirmar.** Funciona en Expo Go. No se ha verificado (a) si el reinicio automático recarga solo o hay que reabrir la app a mano, (b) una compilación de producción (`reloadAppAsync`), ni (c) la cámara, el comprobante, el historial y los diálogos en oscuro.
 2. Cambio de modo del sistema con la app abierta no se refleja hasta reabrirla (limitación de diseño, ver `02-sistema-de-diseno.md`).
 3. Sin hacer: onboarding, microinteracciones, estados vacíos con ilustración.
 4. Observaciones sin tocar: botón "Caja" en Revisión poco claro; pista de la barra de pasos tenue.
