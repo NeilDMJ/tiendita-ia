@@ -2,7 +2,7 @@ import { Image } from 'expo-image';
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { bordes, colores, espacio, medidas, tipografia } from '@/theme';
+import { bordes, color, espacio, medidas, shape, type } from '@/theme';
 import { nivelDeItem, type ItemEditable } from '@/utils/carrito';
 
 export interface FotoDeteccionesProps {
@@ -52,7 +52,7 @@ export function FotoDetecciones({ uri, items }: FotoDeteccionesProps) {
             .map((i) => {
               const [x, y, w, h] = i.caja!;
               const nivel = nivelDeItem(i);
-              const color = nivel === 'falta' ? colores.peligro : nivel === 'baja' ? colores.texto : colores.acento;
+              const borde = nivel === 'falta' ? color.error : nivel === 'baja' ? color.tertiary : color.primary;
               return (
                 <View
                   key={i.clave}
@@ -63,7 +63,7 @@ export function FotoDetecciones({ uri, items }: FotoDeteccionesProps) {
                       top: `${y * 100}%`,
                       width: `${w * 100}%`,
                       height: `${h * 100}%`,
-                      borderColor: color,
+                      borderColor: borde,
                     },
                   ]}
                 >
@@ -81,18 +81,18 @@ const estilos = StyleSheet.create({
   contenedor: {
     height: medidas.miniaturaFoto,
     marginTop: espacio.s,
-    borderWidth: bordes.fino,
-    borderColor: colores.borde,
-    backgroundColor: colores.superficie,
+    borderRadius: shape.large,
+    backgroundColor: color.surfaceContainerHighest,
     overflow: 'hidden',
   },
   area: { position: 'absolute' },
   caja: { position: 'absolute', borderWidth: bordes.grueso },
   numero: {
-    ...tipografia.etiqueta,
+    ...type.labelLarge,
     alignSelf: 'flex-start',
     paddingHorizontal: espacio.xs,
-    backgroundColor: colores.oscuro,
-    color: colores.sobreOscuro,
+    borderBottomRightRadius: shape.small,
+    backgroundColor: color.inverseSurface,
+    color: color.inverseOnSurface,
   },
 });

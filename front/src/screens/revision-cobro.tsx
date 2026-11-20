@@ -18,15 +18,16 @@ import { registrarVenta } from '@/api/negocio';
 import { Aviso } from '@/components/aviso';
 import { BarraPasos } from '@/components/barra-pasos';
 import { Boton } from '@/components/boton';
+import { Dialogo } from '@/components/dialogo';
 import { Encabezado } from '@/components/encabezado';
 import { FilaProducto } from '@/components/fila-producto';
-import { HojaInferior } from '@/components/hoja-inferior';
+import { Snackbar } from '@/components/snackbar';
 import { DESHACER_MS } from '@/constants';
 import { useCarrito } from '@/estado/carrito';
 import { encolarVenta, PREFIJO_LOCAL } from '@/estado/cola-ventas';
 import { useAccesibilidad } from '@/hooks/use-accesibilidad';
 import { useConexion } from '@/hooks/use-conexion';
-import { bordes, colores, espacio, iconos, radios, tactil, tipografia } from '@/theme';
+import { bordes, color, espacio, iconos, tactil, type } from '@/theme';
 import {
   aItemVenta,
   calcularTotal,
@@ -83,12 +84,14 @@ export function PantallaRevisionCobro({ abrirAgregar }: { abrirAgregar?: boolean
   const [registrando, setRegistrando] = useState(false);
   const [errorCobro, setErrorCobro] = useState<ErrorCobro | null>(null);
   const [errorExistencia, setErrorExistencia] = useState(false);
+  const [desplazado, setDesplazado] = useState(false);
 
   const idLocal = useRef(crearIdLocal());
   const scroll = useRef<ComponentRef<typeof ScrollView>>(null);
   const yAyuda = useRef(0);
   const yFilas = useRef<Record<string, number>>({});
   const refsFilas = useRef<Record<string, ComponentRef<typeof View> | null>>({});
+  const refEmpezarDeNuevo = useRef<ComponentRef<typeof View>>(null);
 
   const items = carrito.items;
   const { total, sinPrecio } = calcularTotal(items);
@@ -134,8 +137,7 @@ export function PantallaRevisionCobro({ abrirAgregar }: { abrirAgregar?: boolean
   function quitar(clave: string) {
     const r = quitarItem(clave);
     if (!r) return;
-    setDeshacer(r);
-    anunciar(`Quitaste ${r.item.nombre}. Botón Deshacer disponible.`);
+    setDeshacer(r); // el Snackbar anuncia "Quitaste… Deshacer disponible" (un solo mecanismo)
   }
 
   function cambiarCantidad(item: ItemEditable, n: number) {
@@ -304,136 +306,159 @@ export function PantallaRevisionCobro({ abrirAgregar }: { abrirAgregar?: boolean
             : 'Pregúntale a Caja. Tu venta queda guardada como borrador.',
           deshabilitado: sinConexion,
         }}
+        desplazado={desplazado}
       />
       <BarraPasos pasos={PASOS} actual={1} />
 
-      <ScrollView ref={scroll} contentContainerStyle={estilos.contenido} keyboardShouldPersistTaps="handled">
-        {!cargado ? null : items.length === 0 ? (
-          <View style={estilos.vacio}>
-            <MaterialCommunityIcons name="cart-outline" size={iconos.grande} color={colores.texto} />
-            <Text style={estilos.subtitulo}>No hay productos en esta venta</Text>
-            <Boton
-              texto="Tomar otra foto"
-              icono="camera"
-              variante="secundario"
-              onPress={() => router.replace('/camara?modo=cobro')}
-            />
-          </View>
-        ) : (
-          <>
-            <View style={estilos.margen}>
-              <Text style={estilos.cuerpo}>
-                {carrito.imagenId
-                  ? `Encontramos ${plural(items.length, 'producto', 'productos')}.`
-                  : `Esta venta tiene ${plural(items.length, 'producto', 'productos')}.`}
-              </Text>
-              {carrito.imagenUri ? (
-                <Boton
-                  texto={verFoto ? 'Ocultar foto' : 'Ver foto'}
-                  icono="image"
-                  variante="texto"
-                  anchoCompleto={false}
-                  onPress={() => setVerFoto((v) => !v)}
+      <View style={estilos.zonaLista}>
+        <ScrollView
+          ref={scroll}
+          contentContainerStyle={estilos.contenido}
+          keyboardShouldPersistTaps="handled"
+          scrollEventThrottle={16}
+          onScroll={(e) => setDesplazado(e.nativeEvent.contentOffset.y > 0)}
+        >
+          {!cargado ? null : items.length === 0 ? (
+            <View style={estilos.vacio}>
+              <MaterialCommunityIcons
+                name="cart-outline"
+                size={iconos.grande}
+                color={color.onSurfaceVariant}
+                accessibilityElementsHidden
+                importantForAccessibility="no"
+              />
+              <Text style={estilos.tituloVacio}>No hay productos en esta venta</Text>
+              <Boton
+                texto="Tomar otra foto"
+                icono="camera"
+                variante="outlined"
+                onPress={() => router.replace('/camara?modo=cobro')}
+              />
+            </View>
+          ) : (
+            <>
+              <View style={estilos.margen}>
+                <Text style={estilos.cuerpo}>
+                  {carrito.imagenId
+                    ? `Encontramos ${plural(items.length, 'producto', 'productos')}.`
+                    : `Esta venta tiene ${plural(items.length, 'producto', 'productos')}.`}
+                </Text>
+                {carrito.imagenUri ? (
+                  <Boton
+                    texto={verFoto ? 'Ocultar foto' : 'Ver foto'}
+                    icono="image"
+                    variante="text"
+                    anchoCompleto={false}
+                    onPress={() => setVerFoto((v) => !v)}
+                  />
+                ) : null}
+                {verFoto && carrito.imagenUri ? (
+                  <FotoDetecciones uri={carrito.imagenUri} items={items} />
+                ) : null}
+              </View>
+
+              {errorExistencia ? (
+                <Aviso
+                  style={estilos.margen}
+                  tipo="error"
+                  titulo="No hay suficiente en existencia"
+                  mensaje="Ajusta la cantidad del producto marcado y vuelve a cobrar."
+                  accion={{ texto: 'Ir al producto', onPress: irAlPrimerProblema }}
+                  onCerrar={() => setErrorExistencia(false)}
+                  enfocar
+                />
+              ) : faltan.length > 0 ? (
+                <Aviso
+                  style={estilos.margen}
+                  tipo="error"
+                  titulo={`${plural(faltan.length, 'producto necesita', 'productos necesitan')} tu ayuda`}
+                  accion={{ texto: 'Ir al producto', icono: 'arrow-down', onPress: irAlPrimerProblema }}
+                />
+              ) : ayuda.length === 0 ? (
+                <Aviso
+                  style={estilos.margen}
+                  tipo="exito"
+                  titulo="Todo listo."
+                  mensaje="Revisa las cantidades y cobra."
                 />
               ) : null}
-              {verFoto && carrito.imagenUri ? (
-                <FotoDetecciones uri={carrito.imagenUri} items={items} />
+
+              {ayuda.length > 0 ? (
+                <View onLayout={(e) => (yAyuda.current = e.nativeEvent.layout.y)} style={estilos.seccion}>
+                  <Text style={[estilos.subtitulo, estilos.margen]} accessibilityRole="header">
+                    Necesitan tu ayuda ({ayuda.length})
+                  </Text>
+                  <View style={estilos.listaAyuda}>{ayuda.map(({ item, nivel }) => renderFila(item, nivel, true))}</View>
+                </View>
               ) : null}
-            </View>
 
-            {errorExistencia ? (
-              <Aviso
-                style={estilos.margen}
-                tipo="error"
-                titulo="No hay suficiente en existencia"
-                mensaje="Ajusta la cantidad del producto marcado y vuelve a cobrar."
-                accion={{ texto: 'Ir al producto', onPress: irAlPrimerProblema }}
-                onCerrar={() => setErrorExistencia(false)}
-                enfocar
-              />
-            ) : faltan.length > 0 ? (
-              <Aviso
-                style={estilos.margen}
-                tipo="error"
-                titulo={`${plural(faltan.length, 'producto necesita', 'productos necesitan')} tu ayuda`}
-                accion={{ texto: 'Ir al producto', icono: 'arrow-down', onPress: irAlPrimerProblema }}
-              />
-            ) : ayuda.length === 0 ? (
-              <Aviso
-                style={estilos.margen}
-                tipo="exito"
-                titulo="Todo listo."
-                mensaje="Revisa las cantidades y cobra."
+              {listos.length > 0 ? (
+                <View style={estilos.seccion}>
+                  <Text style={[estilos.subtitulo, estilos.margen]} accessibilityRole="header">
+                    Listos ({listos.length})
+                  </Text>
+                  <View>{listos.map(({ item, nivel }) => renderFila(item, nivel, false))}</View>
+                </View>
+              ) : null}
+            </>
+          )}
+
+          <View style={[estilos.margen, estilos.accionesLista]}>
+            {items.length > 0 ? (
+              <Boton
+                texto="Agregar otro producto"
+                icono="plus"
+                variante="outlined"
+                onPress={() => setEditor({ modo: 'agregar', id: crearIdLocal() })}
               />
             ) : null}
-
-            {ayuda.length > 0 ? (
-              <View onLayout={(e) => (yAyuda.current = e.nativeEvent.layout.y)} style={estilos.seccion}>
-                <Text style={[estilos.subtitulo, estilos.margen]} accessibilityRole="header">
-                  Necesitan tu ayuda ({ayuda.length})
-                </Text>
-                <View style={estilos.listaAyuda}>{ayuda.map(({ item, nivel }) => renderFila(item, nivel, true))}</View>
-              </View>
+            <Boton
+              texto="¿Dudas? Pregúntale a Caja"
+              icono="cash-register"
+              variante="text"
+              deshabilitado={sinConexion}
+              motivoDeshabilitado="Necesita internet"
+              accessibilityHint="Abre el asistente. Tu venta queda guardada como borrador."
+              onPress={() => salirA('/asistente')}
+            />
+            {items.length > 0 ? (
+              <Boton
+                texto="Empezar de nuevo"
+                icono="delete-outline"
+                variante="textError"
+                ref={refEmpezarDeNuevo}
+                onPress={() => setConfirmarBorrar(true)}
+              />
             ) : null}
-
-            {listos.length > 0 ? (
-              <View style={estilos.seccion}>
-                <Text style={[estilos.subtitulo, estilos.margen]} accessibilityRole="header">
-                  Listos ({listos.length})
-                </Text>
-                <View>{listos.map(({ item, nivel }) => renderFila(item, nivel, false))}</View>
-              </View>
-            ) : null}
-          </>
-        )}
-
-        <View style={[estilos.margen, estilos.accionesLista]}>
-          {items.length > 0 ? (
-            <Boton
-              texto="Agregar otro producto"
-              icono="plus"
-              variante="secundario"
-              onPress={() => setEditor({ modo: 'agregar', id: crearIdLocal() })}
-            />
-          ) : null}
-          <Boton
-            texto="¿Dudas? Pregúntale a Caja"
-            icono="cash-register"
-            variante="texto"
-            deshabilitado={sinConexion}
-            motivoDeshabilitado="Necesita internet"
-            accessibilityHint="Abre el asistente. Tu venta queda guardada como borrador."
-            onPress={() => salirA('/asistente')}
-          />
-          {items.length > 0 ? (
-            <Boton
-              texto="Empezar de nuevo"
-              icono="delete-outline"
-              variante="peligro"
-              onPress={() => setConfirmarBorrar(true)}
-            />
-          ) : null}
-        </View>
-      </ScrollView>
-
-      {/* ---------- Barra fija inferior ---------- */}
-      <View style={estilos.barra}>
-        {deshacer ? (
-          <View style={estilos.franjaDeshacer} accessibilityLiveRegion="polite">
-            <MaterialCommunityIcons name="undo" size={iconos.linea} color={colores.texto} />
-            <Text style={estilos.textoDeshacer}>Quitaste “{deshacer.item.nombre}”.</Text>
-            <Boton
-              texto="Deshacer"
-              variante="secundario"
-              anchoCompleto={false}
-              onPress={() => {
-                restaurarItem(deshacer.item, deshacer.indice);
-                anunciar(`${deshacer.item.nombre} regresó a la venta`);
-                setDeshacer(null);
-              }}
-            />
           </View>
-        ) : null}
+        </ScrollView>
+
+        <Snackbar
+          visible={deshacer !== null}
+          mensaje={deshacer ? `Quitaste “${deshacer.item.nombre}”.` : ''}
+          icono="undo"
+          anuncio={deshacer ? `Quitaste ${deshacer.item.nombre}. Botón Deshacer disponible.` : undefined}
+          accion={
+            deshacer
+              ? {
+                  texto: 'Deshacer',
+                  onPress: () => {
+                    restaurarItem(deshacer.item, deshacer.indice);
+                    anunciar(`${deshacer.item.nombre} regresó a la venta`);
+                    setDeshacer(null);
+                  },
+                }
+              : undefined
+          }
+          // el tiempo (10 s, sin límite con lector) lo maneja esta pantalla; el anuncio, el Snackbar
+          duracionMs={null}
+          onCerrar={() => setDeshacer(null)}
+          separacionInferior={0}
+        />
+      </View>
+
+      {/* ---------- Barra fija inferior (barra de total, tonal) ---------- */}
+      <View style={estilos.barra}>
         <View
           style={estilos.filaTotal}
           accessible
@@ -445,7 +470,13 @@ export function PantallaRevisionCobro({ abrirAgregar }: { abrirAgregar?: boolean
         </View>
         {sinPrecio > 0 ? (
           <View style={estilos.filaSinPrecio}>
-            <MaterialCommunityIcons name="alert-circle" size={iconos.linea} color={colores.peligro} />
+            <MaterialCommunityIcons
+              name="alert-circle"
+              size={iconos.linea}
+              color={color.error}
+              accessibilityElementsHidden
+              importantForAccessibility="no"
+            />
             <Text style={estilos.textoSinPrecio}>+ {plural(sinPrecio, 'producto', 'productos')} sin precio</Text>
           </View>
         ) : null}
@@ -459,8 +490,8 @@ export function PantallaRevisionCobro({ abrirAgregar }: { abrirAgregar?: boolean
         ) : faltan.length > 0 ? (
           <Boton
             texto={`Corrige ${plural(faltan.length, 'producto', 'productos')} para cobrar`}
-            icono="arrow-up"
-            variante="secundario"
+            icono="alert-circle"
+            variante="tonal"
             tamano="principal"
             accessibilityHint="Te lleva al primer producto con problema"
             onPress={irAlPrimerProblema}
@@ -511,100 +542,88 @@ export function PantallaRevisionCobro({ abrirAgregar }: { abrirAgregar?: boolean
         }}
       />
 
-      <HojaInferior
+      <Dialogo
         visible={confirmarBorrar}
+        icono="delete-outline"
         titulo={`¿Borrar los ${nombreBorrar}?`}
-        onCerrar={() => setConfirmarBorrar(false)}
-        pie={
-          <>
-            <Boton texto="No, regresar" onPress={() => setConfirmarBorrar(false)} />
-            <Boton
-              texto="Sí, borrar"
-              icono="trash-can-outline"
-              variante="peligroLleno"
-              onPress={() => {
-                vaciar();
-                setDeshacer(null);
-                setConfirmarBorrar(false);
-                anunciar('Se borraron los productos de la venta');
-              }}
-            />
-          </>
-        }
-      >
-        <Text style={estilos.cuerpo}>Se quitarán todos los productos de esta venta.</Text>
-      </HojaInferior>
+        refRetorno={refEmpezarDeNuevo}
+        mensaje="Se quitarán todos los productos de esta venta."
+        acciones={[
+          { texto: 'No, regresar', variante: 'tonal', onPress: () => setConfirmarBorrar(false) },
+          {
+            texto: 'Sí, borrar',
+            icono: 'trash-can-outline',
+            variante: 'filledError',
+            onPress: () => {
+              vaciar();
+              setDeshacer(null);
+              setConfirmarBorrar(false);
+              anunciar('Se borraron los productos de la venta');
+            },
+          },
+        ]}
+      />
 
-      <HojaInferior
+      <Dialogo
         visible={salida !== null}
+        icono="cart-outline"
         titulo="¿Salir sin cobrar?"
+        mensaje="Guardamos esta venta como borrador para que la termines después."
         onCerrar={() => setSalida(null)}
-        pie={
-          <>
-            <Boton texto="Seguir revisando" onPress={() => setSalida(null)} />
-            <Boton
-              texto="Salir y guardar borrador"
-              variante="secundario"
-              onPress={() => {
-                const s = salida;
-                setSalida(null);
-                setSaliendo(true);
-                s?.repetir();
-              }}
-            />
-            <Boton
-              texto="Descartar venta"
-              icono="trash-can-outline"
-              variante="peligro"
-              onPress={() => {
-                const s = salida;
-                setSalida(null);
-                setSaliendo(true);
-                vaciar();
-                s?.repetir();
-              }}
-            />
-          </>
-        }
-      >
-        <Text style={estilos.cuerpo}>Guardamos esta venta como borrador para que la termines después.</Text>
-      </HojaInferior>
+        acciones={[
+          { texto: 'Seguir revisando', variante: 'filled', onPress: () => setSalida(null) },
+          {
+            texto: 'Salir y guardar borrador',
+            variante: 'outlined',
+            onPress: () => {
+              const s = salida;
+              setSalida(null);
+              setSaliendo(true);
+              s?.repetir();
+            },
+          },
+          {
+            texto: 'Descartar venta',
+            icono: 'trash-can-outline',
+            variante: 'textError',
+            onPress: () => {
+              const s = salida;
+              setSalida(null);
+              setSaliendo(true);
+              vaciar();
+              s?.repetir();
+            },
+          },
+        ]}
+      />
     </SafeAreaView>
   );
 }
 
 const estilos = StyleSheet.create({
-  pantalla: { flex: 1, backgroundColor: colores.fondo },
+  pantalla: { flex: 1, backgroundColor: color.surface },
+  zonaLista: { flex: 1 },
   contenido: { paddingTop: espacio.s, paddingBottom: espacio.xl, gap: espacio.l },
   margen: { marginHorizontal: espacio.l },
   seccion: { gap: espacio.s },
   listaAyuda: { marginHorizontal: espacio.s },
   vacio: { alignItems: 'center', gap: espacio.m, padding: espacio.xl },
-  cuerpo: { ...tipografia.cuerpoGrande, color: colores.texto },
-  subtitulo: { ...tipografia.subtitulo, color: colores.texto },
-  etiqueta: { ...tipografia.etiqueta, color: colores.texto, flex: 1 },
+  tituloVacio: { ...type.headlineSmall, color: color.onSurface, textAlign: 'center' },
+  cuerpo: { ...type.bodyLargePlus, color: color.onSurface },
+  subtitulo: { ...type.titleMedium, color: color.onSurface },
+  etiqueta: { ...type.titleMedium, color: color.onSurface, flex: 1 },
   accionesLista: { gap: tactil.separacion },
+  // barra de total: surfaceContainer (nivel 2 tonal, sin sombra) + divisor superior
   barra: {
     paddingHorizontal: espacio.l,
     paddingVertical: espacio.m,
     gap: espacio.s,
-    backgroundColor: colores.superficie,
-    borderTopWidth: bordes.grueso,
-    borderTopColor: colores.texto,
+    backgroundColor: color.surfaceContainer,
+    borderTopWidth: bordes.fino,
+    borderTopColor: color.outlineVariant,
   },
-  franjaDeshacer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: espacio.s,
-    paddingBottom: espacio.s,
-    borderBottomWidth: bordes.fino,
-    borderBottomColor: colores.borde,
-    borderRadius: radios.recto,
-  },
-  textoDeshacer: { ...tipografia.cuerpo, color: colores.texto, flex: 1 },
   filaTotal: { flexDirection: 'row', alignItems: 'center', gap: espacio.m },
-  total: { ...tipografia.montoGrande, color: colores.texto, fontVariant: ['tabular-nums'] },
+  total: { ...type.headlineLarge, color: color.onSurface },
   filaSinPrecio: { flexDirection: 'row', alignItems: 'center', gap: espacio.xs },
-  textoSinPrecio: { ...tipografia.etiqueta, color: colores.peligro },
+  textoSinPrecio: { ...type.labelLarge, color: color.error },
 });

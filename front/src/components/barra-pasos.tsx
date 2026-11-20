@@ -1,7 +1,7 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { bordes, colores, espacio, iconos, medidas, tipografia } from '@/theme';
+import { color, espacio, iconos, medidas, pesoActivo, shape, type } from '@/theme';
 
 export interface BarraPasosProps {
   pasos: string[];
@@ -10,9 +10,14 @@ export interface BarraPasosProps {
   mostrarNombres?: boolean;
 }
 
-/** "Paso X de N · Nombre" + segmentos planos (Nielsen #1). */
+/**
+ * M3 Linear progress determinado + "Paso X de N · Nombre" (Nielsen #1).
+ * EXC-5: 8 dp de alto. Indicador `primary`, pista `secondaryContainer` (5.00:1), stop indicator al final.
+ */
 export function BarraPasos({ pasos, actual, mostrarNombres = true }: BarraPasosProps) {
   const total = pasos.length;
+  const progreso = Math.min(1, Math.max(0, (actual + 1) / total));
+  const completo = progreso >= 1;
   return (
     <View
       style={estilos.contenedor}
@@ -24,24 +29,25 @@ export function BarraPasos({ pasos, actual, mostrarNombres = true }: BarraPasosP
       <Text style={estilos.titulo}>
         Paso {actual + 1} de {total} · {pasos[actual]}
       </Text>
-      <View style={estilos.segmentos}>
-        {pasos.map((paso, i) => (
-          <View
-            key={paso}
-            style={[
-              estilos.segmento,
-              i < actual && estilos.completado,
-              i === actual && estilos.actual,
-              i > actual && estilos.pendiente,
-            ]}
-          />
-        ))}
+      <View style={estilos.progreso}>
+        <View style={[estilos.indicador, { flexGrow: progreso }]} />
+        {completo ? null : (
+          <View style={[estilos.pista, { flexGrow: 1 - progreso }]}>
+            <View style={estilos.parada} />
+          </View>
+        )}
       </View>
       {mostrarNombres ? (
-        <View style={estilos.segmentos}>
+        <View style={estilos.nombres}>
           {pasos.map((paso, i) => (
             <View key={paso} style={estilos.nombre}>
-              {i < actual ? <MaterialCommunityIcons name="check" size={iconos.chico} color={colores.texto} /> : null}
+              <MaterialCommunityIcons
+                name={i < actual ? 'check-circle' : i === actual ? 'circle-slice-8' : 'circle-outline'}
+                size={iconos.chico}
+                color={i <= actual ? color.primary : color.onSurfaceVariant}
+                accessibilityElementsHidden
+                importantForAccessibility="no"
+              />
               <Text style={[estilos.textoNombre, i === actual && estilos.textoActual]}>{paso}</Text>
             </View>
           ))}
@@ -52,14 +58,26 @@ export function BarraPasos({ pasos, actual, mostrarNombres = true }: BarraPasosP
 }
 
 const estilos = StyleSheet.create({
-  contenedor: { paddingHorizontal: espacio.l, paddingVertical: espacio.s, gap: espacio.xs },
-  titulo: { ...tipografia.etiqueta, color: colores.texto },
-  segmentos: { flexDirection: 'row', gap: espacio.xs },
-  segmento: { flex: 1, height: medidas.segmentoPasos },
-  completado: { backgroundColor: colores.texto },
-  actual: { backgroundColor: colores.acento },
-  pendiente: { backgroundColor: colores.fondo, borderWidth: bordes.fino, borderColor: colores.borde },
+  contenedor: { paddingHorizontal: espacio.l, paddingVertical: espacio.s, gap: espacio.s },
+  titulo: { ...type.titleSmall, color: color.onSurface },
+  progreso: { flexDirection: 'row', gap: espacio.xs, height: medidas.progresoAlto },
+  indicador: { flexBasis: 0, borderRadius: shape.full, backgroundColor: color.primary },
+  pista: {
+    flexBasis: 0,
+    borderRadius: shape.full,
+    backgroundColor: color.secondaryContainer,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    paddingRight: (medidas.progresoAlto - medidas.progresoParada) / 2,
+  },
+  parada: {
+    width: medidas.progresoParada,
+    height: medidas.progresoParada,
+    borderRadius: shape.full,
+    backgroundColor: color.primary,
+  },
+  nombres: { flexDirection: 'row', gap: espacio.xs },
   nombre: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: espacio.xs },
-  textoNombre: { ...tipografia.cuerpo, color: colores.textoSecundario, flexShrink: 1 },
-  textoActual: { color: colores.texto, fontWeight: '700' },
+  textoNombre: { ...type.labelLarge, color: color.onSurfaceVariant, flexShrink: 1 },
+  textoActual: { color: color.onSurface, fontWeight: pesoActivo },
 });

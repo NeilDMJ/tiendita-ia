@@ -1,16 +1,18 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { AccessibilityInfo, ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { AccessibilityInfo, ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import type { MetodoPago } from '@/api/esquemas';
 import { simularPagoDigital } from '@/api/pagos';
 import { Aviso } from '@/components/aviso';
 import { Boton } from '@/components/boton';
 import { Campo } from '@/components/campo';
+import { ChipFiltro } from '@/components/chip-filtro';
 import { EtiquetaSimulacion } from '@/components/etiqueta-simulacion';
 import { HojaInferior } from '@/components/hoja-inferior';
+import { Tocable } from '@/components/tocable';
 import type { NombreIcono } from '@/constants';
-import { anilloFoco, bordes, colores, espacio, iconos, radios, tactil, tipografia } from '@/theme';
+import { bordes, color, espacio, iconos, pesoActivo, shape, tactil, type } from '@/theme';
 import { formatoMoneda, leerMonto } from '@/utils/formato-moneda';
 
 export type ErrorCobro = 'datos_faltantes' | 'servidor';
@@ -30,6 +32,7 @@ const ATAJOS = [100, 200, 500];
 
 type EstadoPago = 'inactivo' | 'esperando' | 'recibido' | 'no_recibido';
 
+/** List item M3 con radio. Elegido = `secondaryContainer` + radio relleno + "Elegido" (no solo color). */
 function OpcionPago({
   elegida,
   icono,
@@ -43,34 +46,37 @@ function OpcionPago({
   simulacion?: boolean;
   onPress: () => void;
 }) {
-  const [enfocado, setEnfocado] = useState(false);
+  const contenido = elegida ? color.onSecondaryContainer : color.onSurface;
   return (
-    <Pressable
+    <Tocable
       onPress={onPress}
-      onFocus={() => setEnfocado(true)}
-      onBlur={() => setEnfocado(false)}
+      colorContenido={contenido}
+      radio={shape.medium}
       accessibilityRole="radio"
       accessibilityState={{ checked: elegida }}
       accessibilityLabel={`${texto}${simulacion ? ', simulación' : ''}`}
-      style={({ pressed }) => [
-        estilos.opcion,
-        elegida && estilos.opcionElegida,
-        pressed && estilos.presionado,
-        enfocado && anilloFoco,
-      ]}
+      style={[estilos.opcion, elegida && estilos.opcionElegida]}
     >
       <MaterialCommunityIcons
         name={elegida ? 'radiobox-marked' : 'radiobox-blank'}
         size={iconos.linea}
-        color={elegida ? colores.acento : colores.texto}
+        color={elegida ? color.primary : color.outline}
+        accessibilityElementsHidden
+        importantForAccessibility="no"
       />
-      <MaterialCommunityIcons name={icono} size={iconos.linea} color={colores.texto} />
+      <MaterialCommunityIcons
+        name={icono}
+        size={iconos.linea}
+        color={contenido}
+        accessibilityElementsHidden
+        importantForAccessibility="no"
+      />
       <View style={estilos.textoOpcion}>
-        <Text style={estilos.etiqueta}>{texto}</Text>
+        <Text style={[estilos.etiqueta, { color: contenido }]}>{texto}</Text>
         {simulacion ? <EtiquetaSimulacion /> : null}
       </View>
       {elegida ? <Text style={estilos.elegido}>Elegido</Text> : null}
-    </Pressable>
+    </Tocable>
   );
 }
 
@@ -202,21 +208,21 @@ export function HojaCobro({
             error={tocado || !vacio ? errorRecibido : null}
             onBlur={() => setTocado(true)}
           />
-          <View style={estilos.atajos}>
+          <View style={estilos.atajos} accessibilityRole="radiogroup" accessibilityLabel="¿Con cuánto te pagan?">
             {ATAJOS.map((m) => (
-              <Boton
+              <ChipFiltro
                 key={m}
+                rol="radio"
                 texto={formatoMoneda(m).replace('.00', '')}
-                variante="secundario"
-                anchoCompleto={false}
+                seleccionado={recibido === m.toFixed(2)}
                 accessibilityHint={`Te dan ${m} pesos`}
                 onPress={() => setRecibido(m.toFixed(2))}
               />
             ))}
-            <Boton
+            <ChipFiltro
+              rol="radio"
               texto="Exacto"
-              variante="secundario"
-              anchoCompleto={false}
+              seleccionado={!ATAJOS.some((m) => recibido === m.toFixed(2)) && recibido === total.toFixed(2)}
               onPress={() => setRecibido(total.toFixed(2))}
             />
           </View>
@@ -235,12 +241,18 @@ export function HojaCobro({
             </Text>
           ) : pago === 'esperando' ? (
             <View style={estilos.estadoPago} accessibilityLiveRegion="polite">
-              <ActivityIndicator color={colores.texto} />
+              <ActivityIndicator color={color.primary} />
               <Text style={estilos.cuerpo}>Esperando el pago del cliente…</Text>
             </View>
           ) : pago === 'recibido' ? (
             <View style={estilos.estadoPago} accessibilityLiveRegion="polite">
-              <MaterialCommunityIcons name="check-circle" size={iconos.linea} color={colores.exito} />
+              <MaterialCommunityIcons
+                name="check-circle"
+                size={iconos.linea}
+                color={color.success}
+                accessibilityElementsHidden
+                importantForAccessibility="no"
+              />
               <Text style={[estilos.cuerpo, estilos.textoExito]}>Pago recibido. Guardando venta…</Text>
             </View>
           ) : (
@@ -261,25 +273,24 @@ export function HojaCobro({
 
 const estilos = StyleSheet.create({
   grupo: { gap: espacio.s },
-  etiqueta: { ...tipografia.etiqueta, color: colores.texto },
-  cuerpo: { ...tipografia.cuerpoGrande, color: colores.texto },
+  etiqueta: { ...type.titleSmall, color: color.onSurface },
+  cuerpo: { ...type.bodyLargePlus, color: color.onSurface },
   opcion: {
     minHeight: tactil.principal,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: espacio.s,
-    paddingHorizontal: espacio.m,
+    gap: espacio.m,
+    paddingHorizontal: espacio.l,
     paddingVertical: espacio.s,
+    borderRadius: shape.medium,
     borderWidth: bordes.fino,
-    borderColor: colores.borde,
-    borderRadius: radios.medio,
+    borderColor: color.outlineVariant,
   },
-  opcionElegida: { borderWidth: bordes.grueso, borderColor: colores.acento },
-  presionado: { backgroundColor: colores.superficie },
+  opcionElegida: { backgroundColor: color.secondaryContainer, borderColor: color.secondaryContainer },
   textoOpcion: { flex: 1, gap: espacio.xs },
-  elegido: { ...tipografia.etiqueta, color: colores.acento },
+  elegido: { ...type.labelLarge, color: color.onSecondaryContainer, fontWeight: pesoActivo },
   atajos: { flexDirection: 'row', flexWrap: 'wrap', gap: tactil.separacion },
   estadoPago: { flexDirection: 'row', alignItems: 'center', gap: espacio.s },
-  textoExito: { color: colores.exito },
-  cambio: { ...tipografia.monto, color: colores.texto, fontVariant: ['tabular-nums'] },
+  textoExito: { color: color.onSurface },
+  cambio: { ...type.amount, color: color.onSurface },
 });

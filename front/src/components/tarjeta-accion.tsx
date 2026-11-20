@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import type { RolAsistente } from '@/api/esquemas';
 import { ROLES } from '@/constants';
-import { bordes, colores, espacio, iconos, radios, tactil, tipografia } from '@/theme';
+import { bordes, color, elevacion, espacio, iconos, shape, tactil, type } from '@/theme';
 import { formatoMoneda, montoParaLector } from '@/utils/formato-moneda';
 
 import { Aviso } from './aviso';
@@ -30,7 +30,10 @@ export interface TarjetaAccionProps {
 
 const MAX_FILAS = 4;
 
-/** Confirmación de acciones críticas propuestas por el asistente (dentro del chat). */
+/**
+ * M3 Card elevated (00-sistema §9.10): confirmación de acciones críticas propuestas por el asistente.
+ * Cuando ya no es accionable (hecha/rechazada/caducada) baja a elevación 0.
+ */
 export function TarjetaAccion({
   rol,
   titulo,
@@ -52,12 +55,18 @@ export function TarjetaAccion({
 
   return (
     <View
-      style={estilos.tarjeta}
+      style={[estilos.tarjeta, activa || estado === 'error' ? elevacion.level1 : elevacion.level0]}
       accessibilityRole="summary"
       accessibilityLabel={`${r.nombre} propone: ${titulo}${total !== undefined ? `, total ${montoParaLector(total)}` : ''}`}
     >
       <View style={estilos.cabecera}>
-        <MaterialCommunityIcons name={r.icono} size={iconos.linea} color={colores.textoSecundario} />
+        <MaterialCommunityIcons
+          name={r.icono}
+          size={iconos.linea}
+          color={color.onSurfaceVariant}
+          accessibilityElementsHidden
+          importantForAccessibility="no"
+        />
         <Text style={estilos.quien}>{r.nombre} propone:</Text>
         {simulacion ? <EtiquetaSimulacion /> : null}
       </View>
@@ -97,13 +106,13 @@ export function TarjetaAccion({
           {onEditar ? (
             <Boton
               texto="Revisar y editar"
-              variante="secundario"
+              variante="outlined"
               onPress={onEditar}
               deshabilitado={estado !== 'pendiente'}
             />
           ) : null}
           {onRechazar && estado === 'pendiente' ? (
-            <Boton texto="No, gracias" variante="texto" onPress={onRechazar} />
+            <Boton texto="No, gracias" variante="text" onPress={onRechazar} />
           ) : null}
         </View>
       ) : null}
@@ -111,16 +120,28 @@ export function TarjetaAccion({
       {estado === 'hecha' ? (
         <View style={estilos.resultado} accessibilityLiveRegion="polite">
           <View style={estilos.filaIcono}>
-            <MaterialCommunityIcons name="check-circle" size={iconos.linea} color={colores.exito} />
+            <MaterialCommunityIcons
+              name="check-circle"
+              size={iconos.linea}
+              color={color.success}
+              accessibilityElementsHidden
+              importantForAccessibility="no"
+            />
             <Text style={estilos.textoExito}>Listo{resultado ? ` · ${resultado}` : ''}</Text>
           </View>
-          {onVerResultado ? <Boton texto="Ver comprobante" variante="texto" onPress={onVerResultado} /> : null}
+          {onVerResultado ? <Boton texto="Ver comprobante" variante="text" anchoCompleto={false} onPress={onVerResultado} /> : null}
         </View>
       ) : null}
 
       {estado === 'rechazada' ? (
         <View style={estilos.filaIcono}>
-          <MaterialCommunityIcons name="close-circle" size={iconos.linea} color={colores.textoSecundario} />
+          <MaterialCommunityIcons
+            name="close-circle"
+            size={iconos.linea}
+            color={color.onSurfaceVariant}
+            accessibilityElementsHidden
+            importantForAccessibility="no"
+          />
           <Text style={estilos.textoSecundario}>Cancelaste esta acción</Text>
         </View>
       ) : null}
@@ -139,29 +160,27 @@ export function TarjetaAccion({
 
 const estilos = StyleSheet.create({
   tarjeta: {
-    borderWidth: bordes.grueso,
-    borderColor: colores.texto,
-    borderRadius: radios.medio,
+    borderRadius: shape.medium,
     padding: espacio.l,
     gap: espacio.m,
-    backgroundColor: colores.fondo,
+    backgroundColor: color.surfaceContainerLow,
   },
   cabecera: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: espacio.s },
-  quien: { ...tipografia.etiqueta, color: colores.textoSecundario, flex: 1 },
-  titulo: { ...tipografia.subtitulo, color: colores.texto },
+  quien: { ...type.labelLarge, color: color.onSurfaceVariant, flex: 1 },
+  titulo: { ...type.titleLarge, color: color.onSurface },
   resumen: {
     gap: espacio.xs,
     paddingVertical: espacio.s,
     borderTopWidth: bordes.fino,
     borderBottomWidth: bordes.fino,
-    borderColor: colores.divisor,
+    borderColor: color.outlineVariant,
   },
   filaResumen: { flexDirection: 'row', justifyContent: 'space-between', gap: espacio.m },
-  textoResumen: { ...tipografia.cuerpo, color: colores.texto, flexShrink: 1 },
-  total: { ...tipografia.monto, color: colores.texto, fontVariant: ['tabular-nums'] },
+  textoResumen: { ...type.bodyLarge, color: color.onSurface, flexShrink: 1 },
+  total: { ...type.amount, color: color.onSurface },
   botones: { gap: tactil.separacion },
   resultado: { gap: espacio.xs },
   filaIcono: { flexDirection: 'row', alignItems: 'center', gap: espacio.s },
-  textoExito: { ...tipografia.etiqueta, color: colores.exito, flex: 1 },
-  textoSecundario: { ...tipografia.cuerpo, color: colores.textoSecundario, flex: 1 },
+  textoExito: { ...type.labelLarge, color: color.onSurface, flex: 1 },
+  textoSecundario: { ...type.bodyLarge, color: color.onSurfaceVariant, flex: 1 },
 });

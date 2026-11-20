@@ -1,7 +1,7 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colores, espacio, iconos, medidas, radios, tipografia } from '@/theme';
+import { color, espacio, iconos, medidas, shape, type } from '@/theme';
 
 export interface EtiquetaSimulacionProps {
   modo?: 'chip' | 'franja';
@@ -9,7 +9,10 @@ export interface EtiquetaSimulacionProps {
   detalle?: string;
 }
 
-/** Marca visible de todo lo que no es real (pagos digitales, datos de demo). */
+/**
+ * Marca visible de todo lo que no es real (pagos digitales, datos de demo).
+ * `chip` = badge grande M3 en `inverseSurface` (EXC-1: 16 sp); `franja` = banner ancho completo.
+ */
 export function EtiquetaSimulacion({ modo = 'chip', detalle }: EtiquetaSimulacionProps) {
   const texto = modo === 'franja' ? `Simulación: ${detalle ?? 'esto no mueve dinero real'}` : 'SIMULACIÓN';
   return (
@@ -19,7 +22,13 @@ export function EtiquetaSimulacion({ modo = 'chip', detalle }: EtiquetaSimulacio
       accessibilityRole="text"
       accessibilityLabel={`Simulación. ${detalle ?? ''}`}
     >
-      <MaterialCommunityIcons name="flask-outline" size={iconos.chico} color={colores.sobreOscuro} />
+      <MaterialCommunityIcons
+        name="flask-outline"
+        size={iconos.chico}
+        color={color.inverseOnSurface}
+        accessibilityElementsHidden
+        importantForAccessibility="no"
+      />
       <Text style={estilos.texto}>{texto}</Text>
     </View>
   );
@@ -34,8 +43,8 @@ const estilos = StyleSheet.create({
     minHeight: medidas.chip,
     paddingHorizontal: espacio.s,
     paddingVertical: espacio.xs,
-    borderRadius: radios.chico,
-    backgroundColor: colores.oscuro,
+    borderRadius: shape.small,
+    backgroundColor: color.inverseSurface,
   },
   franja: {
     flexDirection: 'row',
@@ -44,7 +53,7 @@ const estilos = StyleSheet.create({
     minHeight: medidas.franjaSimulacion,
     paddingHorizontal: espacio.l,
     paddingVertical: espacio.s,
-    backgroundColor: colores.oscuro,
+    backgroundColor: color.inverseSurface,
   },
-  texto: { ...tipografia.etiqueta, color: colores.sobreOscuro, flexShrink: 1 },
+  texto: { ...type.labelSmall, color: color.inverseOnSurface, flexShrink: 1 },
 });

@@ -1,9 +1,9 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import type { NombreIcono } from '@/constants';
-import { bordes, colores, espacio, iconos, medidas, radios, tactil, tipografia } from '@/theme';
+import { color, espacio, medidas, type } from '@/theme';
 
+import { Boton } from './boton';
 import { EtiquetaSimulacion } from './etiqueta-simulacion';
 
 export interface EncabezadoProps {
@@ -18,59 +18,52 @@ export interface EncabezadoProps {
     deshabilitado?: boolean;
   };
   etiquetaSimulacion?: boolean;
+  /**
+   * La pantalla pasa `scrollY > 0`: la barra cambia a `surfaceContainer` (elevación nivel 2 SOLO tonal,
+   * sin sombra; 00-sistema §9.13 `elevadoAlDesplazar`).
+   */
+  desplazado?: boolean;
 }
 
-function BotonEncabezado({
-  texto,
-  icono,
-  onPress,
-  hint,
-  deshabilitado,
-}: {
-  texto: string;
-  icono: NombreIcono;
-  onPress: () => void;
-  hint?: string;
-  deshabilitado?: boolean;
-}) {
-  const color = deshabilitado ? colores.deshabilitadoTexto : colores.texto;
-  return (
-    <Pressable
-      onPress={deshabilitado ? undefined : onPress}
-      accessibilityRole="button"
-      accessibilityLabel={texto}
-      accessibilityHint={hint}
-      accessibilityState={{ disabled: deshabilitado }}
-      style={({ pressed }) => [estilos.boton, pressed && !deshabilitado && estilos.presionado]}
-    >
-      <MaterialCommunityIcons name={icono} size={iconos.linea} color={color} />
-      <Text style={[estilos.textoBoton, { color }]}>{texto}</Text>
-    </Pressable>
-  );
-}
-
-/** Encabezado plano de pantallas del Stack: Atrás/Cerrar + título + una acción opcional. */
-export function Encabezado({ titulo, onAtras, tipoAtras = 'atras', accionDerecha, etiquetaSimulacion }: EncabezadoProps) {
+/**
+ * M3 Top app bar small (00-sistema §9.13). Alto 64; título `titleLarge` que envuelve.
+ * EXC-8: "Atrás"/"Cerrar" con icono + texto (Boton text).
+ */
+export function Encabezado({
+  titulo,
+  onAtras,
+  tipoAtras = 'atras',
+  accionDerecha,
+  etiquetaSimulacion,
+  desplazado = false,
+}: EncabezadoProps) {
   return (
     <View>
-      <View style={estilos.barra}>
+      <View style={[estilos.barra, desplazado && estilos.desplazado]}>
         {onAtras ? (
-          <BotonEncabezado
+          <Boton
             texto={tipoAtras === 'cerrar' ? 'Cerrar' : 'Atrás'}
             icono={tipoAtras === 'cerrar' ? 'close' : 'arrow-left'}
+            variante="text"
+            anchoCompleto={false}
             onPress={onAtras}
+            style={estilos.boton}
           />
         ) : null}
-        <Text style={estilos.titulo} accessibilityRole="header">
+        <Text style={[estilos.titulo, !onAtras && estilos.tituloSolo]} accessibilityRole="header">
           {titulo}
         </Text>
         {accionDerecha ? (
-          <BotonEncabezado
+          <Boton
             texto={accionDerecha.texto}
             icono={accionDerecha.icono}
+            variante="text"
+            anchoCompleto={false}
             onPress={accionDerecha.onPress}
-            hint={accionDerecha.accessibilityHint}
+            accessibilityHint={accionDerecha.accessibilityHint}
             deshabilitado={accionDerecha.deshabilitado}
+            motivoDeshabilitado={accionDerecha.accessibilityHint}
+            style={estilos.boton}
           />
         ) : null}
       </View>
@@ -84,22 +77,13 @@ const estilos = StyleSheet.create({
     minHeight: medidas.barraSuperior,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: espacio.s,
-    paddingHorizontal: espacio.s,
-    backgroundColor: colores.fondo,
-    borderBottomWidth: bordes.fino,
-    borderBottomColor: colores.divisor,
-  },
-  titulo: { ...tipografia.subtitulo, color: colores.texto, flex: 1, paddingHorizontal: espacio.s },
-  boton: {
-    minHeight: tactil.minimo,
-    minWidth: tactil.minimo,
-    flexDirection: 'row',
-    alignItems: 'center',
     gap: espacio.xs,
-    paddingHorizontal: espacio.s,
-    borderRadius: radios.medio,
+    paddingHorizontal: espacio.xs,
+    paddingVertical: espacio.s,
+    backgroundColor: color.surface,
   },
-  presionado: { backgroundColor: colores.superficie },
-  textoBoton: { ...tipografia.etiqueta },
+  desplazado: { backgroundColor: color.surfaceContainer },
+  boton: { alignSelf: 'center' },
+  titulo: { ...type.titleLarge, color: color.onSurface, flex: 1, paddingHorizontal: espacio.xs },
+  tituloSolo: { paddingHorizontal: espacio.m },
 });

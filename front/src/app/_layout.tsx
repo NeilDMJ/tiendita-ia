@@ -8,7 +8,7 @@ import { AvisoConexion } from '@/components/aviso-conexion';
 import { ProveedorCarrito } from '@/estado/carrito';
 import { useAccesibilidad } from '@/hooks/use-accesibilidad';
 import { useSincronizarCola } from '@/hooks/use-sincronizar-cola';
-import { colores, tipografia } from '@/theme';
+import { color, type } from '@/theme';
 
 function SincronizadorCola() {
   useSincronizarCola();
@@ -26,18 +26,18 @@ export default function RootLayout() {
       <ProveedorCarrito>
         <SincronizadorCola />
         <SafeAreaProvider>
-          <SafeAreaView edges={['top']} style={{ backgroundColor: colores.fondo }}>
+          <SafeAreaView edges={['top']} style={{ backgroundColor: color.surface }}>
             <AvisoConexion />
           </SafeAreaView>
           <StatusBar style="dark" />
           <Stack
             screenOptions={{
-              headerShadowVisible: false, // flat: sin sombra en encabezados
-              headerStyle: { backgroundColor: colores.fondo },
-              headerTintColor: colores.texto,
-              headerTitleStyle: { fontSize: tipografia.etiqueta.fontSize, fontWeight: '700' },
+              headerShadowVisible: false, // M3: la top app bar se separa por tono, no por sombra
+              headerStyle: { backgroundColor: color.surface },
+              headerTintColor: color.onSurface,
+              headerTitleStyle: { fontSize: type.titleLarge.fontSize, fontWeight: type.titleLarge.fontWeight },
               headerBackButtonDisplayMode: 'minimal',
-              contentStyle: { backgroundColor: colores.fondo },
+              contentStyle: { backgroundColor: color.surface },
               animation: reducirMovimiento ? 'none' : 'default',
             }}
           >
@@ -47,7 +47,7 @@ export default function RootLayout() {
               options={{
                 headerShown: false,
                 animation: reducirMovimiento ? 'none' : 'slide_from_bottom',
-                contentStyle: { backgroundColor: colores.oscuro },
+                contentStyle: { backgroundColor: color.inverseSurface },
               }}
             />
             <Stack.Screen name="revision/[modo]" options={{ headerShown: false }} />

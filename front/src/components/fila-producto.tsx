@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import type { ComponentRef, Ref } from 'react';
 import { StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
 
-import { bordes, colores, espacio, iconos, radios, tipografia } from '@/theme';
+import { bordes, color, espacio, iconos, medidas, shape, tactil, type } from '@/theme';
 import type { NivelConfianza } from '@/utils/carrito';
 import { formatoMoneda, montoParaLector } from '@/utils/formato-moneda';
 
@@ -42,7 +42,11 @@ const ETIQUETA_NIVEL: Record<NivelConfianza, string> = {
   manual: 'tú lo pusiste',
 };
 
-/** Fila densa de carrito / revisión / comprobante. */
+/**
+ * M3 List item de 3 líneas (00-sistema §9.9). Problemas como cards:
+ * `baja` = card filled + borde izquierdo 4 dp `tertiary`; `falta` = card outlined 2 dp `error` (EXC-6).
+ * `soloLectura` = list item de 1 línea (56).
+ */
 export function FilaProducto({
   nombre,
   precioUnitario,
@@ -75,6 +79,7 @@ export function FilaProducto({
           {cantidad} × {nombre}
         </Text>
         <Text style={estilos.monto}>{subtotal === null ? '— —' : formatoMoneda(subtotal)}</Text>
+        <View style={[estilos.divisor, estilos.divisorCompleto]} />
       </View>
     );
   }
@@ -95,6 +100,7 @@ export function FilaProducto({
       onLayout={onLayout}
       style={[estilos.fila, nivel === 'baja' && estilos.filaBaja, nivel === 'falta' && estilos.filaFalta]}
     >
+      {nivel === 'baja' || nivel === 'falta' ? null : <View style={estilos.divisor} />}
       <View ref={refTexto} accessible accessibilityLabel={etiquetaLector} style={estilos.bloqueTexto}>
         <View style={estilos.lineaSuperior}>
           {numero ? (
@@ -115,7 +121,13 @@ export function FilaProducto({
         </View>
         {problema ? (
           <View style={estilos.problema}>
-            <MaterialCommunityIcons name="alert-circle" size={iconos.linea} color={colores.peligro} />
+            <MaterialCommunityIcons
+              name="alert-circle"
+              size={iconos.linea}
+              color={color.error}
+              accessibilityElementsHidden
+              importantForAccessibility="no"
+            />
             <Text style={estilos.textoProblema}>{problema}</Text>
           </View>
         ) : null}
@@ -137,7 +149,7 @@ export function FilaProducto({
             <Boton
               texto="Está bien"
               icono="check"
-              variante="secundario"
+              variante="tonal"
               anchoCompleto={false}
               onPress={onEstaBien}
               accessibilityHint={`Confirma que ${nombre} es correcto`}
@@ -147,7 +159,7 @@ export function FilaProducto({
             nivel === 'falta' ? (
               <Boton
                 texto={textoFalta === 'Elige producto' ? 'Elegir producto' : 'Poner precio'}
-                variante="peligro"
+                variante="filled"
                 anchoCompleto={false}
                 onPress={onEditar}
                 accessibilityHint={`Corrige ${nombre}`}
@@ -156,7 +168,7 @@ export function FilaProducto({
               <Boton
                 texto="Editar"
                 icono="pencil"
-                variante="texto"
+                variante="text"
                 anchoCompleto={false}
                 onPress={onEditar}
                 accessibilityHint={`Cambia producto o precio de ${nombre}`}
@@ -174,41 +186,53 @@ const estilos = StyleSheet.create({
     paddingVertical: espacio.m,
     paddingHorizontal: espacio.l,
     gap: espacio.s,
-    backgroundColor: colores.fondo,
-    borderBottomWidth: bordes.fino,
-    borderBottomColor: colores.divisor,
+    backgroundColor: color.surface,
   },
+  // divisor decorativo con inset 16 (outlineVariant)
+  divisor: {
+    position: 'absolute',
+    left: espacio.l,
+    right: 0,
+    bottom: 0,
+    height: bordes.fino,
+    backgroundColor: color.outlineVariant,
+  },
+  divisorCompleto: { left: 0 },
+  // card filled + borde izquierdo tertiary (forma además del chip "Revisa")
   filaBaja: {
-    backgroundColor: colores.superficie,
-    borderWidth: bordes.grueso,
-    borderColor: colores.texto,
-    borderBottomColor: colores.texto,
-    borderRadius: radios.medio,
+    backgroundColor: color.surfaceContainerHighest,
+    borderRadius: shape.medium,
+    borderLeftWidth: bordes.acento,
+    borderLeftColor: color.tertiary,
+    paddingLeft: espacio.l - bordes.acento,
     marginBottom: espacio.s,
   },
+  // card outlined con borde 2 dp error (EXC-6)
   filaFalta: {
+    backgroundColor: color.surface,
     borderWidth: bordes.grueso,
-    borderColor: colores.peligro,
-    borderBottomColor: colores.peligro,
-    borderRadius: radios.medio,
+    borderColor: color.error,
+    borderRadius: shape.medium,
+    paddingHorizontal: espacio.l - bordes.grueso,
     marginBottom: espacio.s,
   },
   bloqueTexto: { gap: espacio.xs },
-  lineaSuperior: { flexDirection: 'row', alignItems: 'flex-start', gap: espacio.s },
+  lineaSuperior: { flexDirection: 'row', alignItems: 'flex-start', gap: espacio.m },
   numero: {
-    minWidth: iconos.linea + espacio.xs,
-    paddingHorizontal: espacio.xs,
-    borderRadius: radios.chico,
-    backgroundColor: colores.oscuro,
+    width: medidas.numeroFoto,
+    height: medidas.numeroFoto,
+    borderRadius: shape.small,
+    backgroundColor: color.inverseSurface,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  textoNumero: { ...tipografia.etiqueta, color: colores.sobreOscuro },
-  nombre: { ...tipografia.nombreProducto, color: colores.texto, flex: 1 },
-  monto: { ...tipografia.monto, color: colores.texto, fontVariant: ['tabular-nums'] },
+  textoNumero: { ...type.labelLarge, color: color.inverseOnSurface },
+  nombre: { ...type.titleMedium, color: color.onSurface, flex: 1 },
+  monto: { ...type.amount, color: color.onSurface },
   lineaMedia: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: espacio.s },
-  precio: { ...tipografia.cuerpo, color: colores.textoSecundario },
+  precio: { ...type.bodyLarge, color: color.onSurfaceVariant },
   problema: { flexDirection: 'row', gap: espacio.xs, alignItems: 'flex-start' },
-  textoProblema: { ...tipografia.etiqueta, color: colores.peligro, flex: 1 },
+  textoProblema: { ...type.labelLarge, color: color.error, flex: 1 },
   lineaControles: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -216,15 +240,14 @@ const estilos = StyleSheet.create({
     justifyContent: 'space-between',
     gap: espacio.s,
   },
-  botones: { flexDirection: 'row', flexWrap: 'wrap', gap: espacio.s, justifyContent: 'flex-end' },
+  botones: { flexDirection: 'row', flexWrap: 'wrap', gap: tactil.separacion, justifyContent: 'flex-end' },
   lectura: {
+    minHeight: tactil.principal,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     gap: espacio.m,
-    paddingVertical: espacio.m,
-    borderBottomWidth: bordes.fino,
-    borderBottomColor: colores.divisor,
+    paddingVertical: espacio.s,
   },
-  lecturaNombre: { ...tipografia.cuerpoGrande, color: colores.texto, flex: 1 },
+  lecturaNombre: { ...type.bodyLarge, color: color.onSurface, flex: 1 },
 });

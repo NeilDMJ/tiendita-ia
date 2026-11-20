@@ -8,7 +8,6 @@ import {
   AccessibilityInfo,
   ActivityIndicator,
   Linking,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -24,10 +23,12 @@ import { BarraPasos } from '@/components/barra-pasos';
 import { Boton } from '@/components/boton';
 import { Encabezado } from '@/components/encabezado';
 import { HojaInferior } from '@/components/hoja-inferior';
+import { Tocable } from '@/components/tocable';
 import { TIEMPOS_ANALISIS, type NombreIcono } from '@/constants';
 import { useCarrito } from '@/estado/carrito';
+import { useAccesibilidad } from '@/hooks/use-accesibilidad';
 import { useConexion } from '@/hooks/use-conexion';
-import { bordes, colores, espacio, iconos, medidas, radios, tactil, tipografia } from '@/theme';
+import { bordes, camara as tonosCamara, color, espacio, iconos, medidas, shape, tactil, type } from '@/theme';
 import { comprimirImagen } from '@/utils/imagen';
 
 type Fase = 'camara' | 'analizando' | 'error';
@@ -85,31 +86,79 @@ function esModo(m: unknown): m is ModoCamara {
   return m === 'cobro' || m === 'alta' || m === 'ticket';
 }
 
-/** Botón de las barras oscuras de la cámara: icono + texto blanco sobre #111. */
-function BotonOscuro({
+/** Botón text con icono sobre las barras `inverseSurface` (Cerrar / Ayuda). */
+function BotonBarra({
   icono,
   texto,
   onPress,
   etiqueta,
-  deshabilitado,
 }: {
   icono: NombreIcono;
   texto: string;
   onPress: () => void;
   etiqueta?: string;
-  deshabilitado?: boolean;
 }) {
   return (
-    <Pressable
-      onPress={deshabilitado ? undefined : onPress}
+    <Tocable
+      onPress={onPress}
+      colorContenido={color.inverseOnSurface}
+      colorAnillo={color.inverseOnSurface}
+      radio={shape.full}
       accessibilityRole="button"
       accessibilityLabel={etiqueta ?? texto}
-      accessibilityState={{ disabled: deshabilitado }}
-      style={({ pressed }) => [estilos.botonOscuro, pressed && estilos.botonOscuroPresionado]}
+      style={estilos.botonBarra}
     >
-      <MaterialCommunityIcons name={icono} size={iconos.camara} color={colores.sobreOscuro} />
-      <Text style={estilos.textoOscuro}>{texto}</Text>
-    </Pressable>
+      <MaterialCommunityIcons
+        name={icono}
+        size={iconos.linea}
+        color={color.inverseOnSurface}
+        accessibilityElementsHidden
+        importantForAccessibility="no"
+      />
+      <Text style={estilos.textoBarra}>{texto}</Text>
+    </Tocable>
+  );
+}
+
+/** Icon button tonal 56 + etiqueta debajo (Galería / Luz). Seleccionado = `primary` + texto que cambia. */
+function BotonIconoCamara({
+  icono,
+  texto,
+  onPress,
+  etiqueta,
+  seleccionado,
+}: {
+  icono: NombreIcono;
+  texto: string;
+  onPress: () => void;
+  etiqueta?: string;
+  seleccionado?: boolean;
+}) {
+  const contenido = seleccionado ? color.onPrimary : color.onSecondaryContainer;
+  return (
+    <View style={estilos.columnaBoton}>
+      <Tocable
+        onPress={onPress}
+        colorContenido={contenido}
+        colorAnillo={color.inverseOnSurface}
+        radio={shape.full}
+        accessibilityRole="button"
+        accessibilityLabel={etiqueta ?? texto}
+        accessibilityState={seleccionado === undefined ? undefined : { selected: seleccionado }}
+        style={[estilos.botonIcono, seleccionado ? estilos.botonIconoSeleccionado : null]}
+      >
+        <MaterialCommunityIcons
+          name={icono}
+          size={iconos.linea}
+          color={contenido}
+          accessibilityElementsHidden
+          importantForAccessibility="no"
+        />
+      </Tocable>
+      <Text style={estilos.textoOscuro} importantForAccessibility="no" accessibilityElementsHidden>
+        {texto}
+      </Text>
+    </View>
   );
 }
 
@@ -118,6 +167,7 @@ export function PantallaCamara({ modo: modoParam }: { modo?: string }) {
   const [permiso, pedirPermiso] = useCameraPermissions();
   const { iniciarCronometro, cargarDeFoto } = useCarrito();
   const conectado = useConexion();
+  const { reducirMovimiento } = useAccesibilidad();
 
   const camara = useRef<CameraView>(null);
   const control = useRef<AbortController | null>(null);
@@ -300,7 +350,17 @@ export function PantallaCamara({ modo: modoParam }: { modo?: string }) {
 
           {fase === 'analizando' ? (
             <View style={estilos.bloqueAnalisis} accessibilityLiveRegion="polite">
-              <ActivityIndicator size="large" color={colores.acento} />
+              {reducirMovimiento ? (
+                <MaterialCommunityIcons
+                  name="timer-sand"
+                  size={iconos.grande}
+                  color={color.primary}
+                  accessibilityElementsHidden
+                  importantForAccessibility="no"
+                />
+              ) : (
+                <ActivityIndicator size="large" color={color.primary} />
+              )}
               <Text style={estilos.subtitulo}>
                 {etapa === 'preparando' ? 'Preparando la foto…' : 'Buscando los productos…'}
               </Text>
@@ -309,13 +369,15 @@ export function PantallaCamara({ modo: modoParam }: { modo?: string }) {
                 const actual = !hecha && i === indiceEtapa;
                 return (
                   <View key={e.clave} style={estilos.filaEtapa}>
-                    {actual ? (
-                      <ActivityIndicator size="small" color={colores.texto} />
+                    {actual && !reducirMovimiento ? (
+                      <ActivityIndicator size="small" color={color.primary} />
                     ) : (
                       <MaterialCommunityIcons
-                        name={hecha ? 'check-circle' : 'circle-outline'}
+                        name={hecha ? 'check-circle' : actual ? 'progress-clock' : 'circle-outline'}
                         size={iconos.linea}
-                        color={hecha ? colores.exito : colores.textoSecundario}
+                        color={hecha ? color.success : actual ? color.primary : color.onSurfaceVariant}
+                        accessibilityElementsHidden
+                        importantForAccessibility="no"
                       />
                     )}
                     <Text style={[estilos.cuerpo, !hecha && !actual && estilos.textoPendiente]}>
@@ -336,23 +398,23 @@ export function PantallaCamara({ modo: modoParam }: { modo?: string }) {
 
         <View style={estilos.barraAcciones}>
           {fase === 'analizando' ? (
-            <Boton texto="Tomar otra foto" icono="camera" variante="secundario" onPress={() => {
+            <Boton texto="Tomar otra foto" icono="camera" variante="outlined" onPress={() => {
               cancelarAnalisis();
               tomarOtra();
             }} />
           ) : fallo === 'ilegible' ? (
             <>
               <Boton texto="Tomar otra foto" icono="camera" tamano="principal" onPress={tomarOtra} />
-              <Boton texto="Elegir de galería" icono="image-multiple" variante="secundario" onPress={elegirDeGaleria} />
+              <Boton texto="Elegir de galería" icono="image-multiple" variante="outlined" onPress={elegirDeGaleria} />
               {modo === 'cobro' ? (
-                <Boton texto="Cobrar buscando producto" icono="magnify" variante="texto" onPress={cobrarBuscando} />
+                <Boton texto="Cobrar buscando producto" icono="magnify" variante="text" onPress={cobrarBuscando} />
               ) : null}
             </>
           ) : fallo === 'vacio' ? (
             <>
               <Boton texto="Tomar otra foto" icono="camera" tamano="principal" onPress={tomarOtra} />
               {modo === 'cobro' ? (
-                <Boton texto="Agregar productos a mano" icono="plus" variante="secundario" onPress={cobrarBuscando} />
+                <Boton texto="Agregar productos a mano" icono="plus" variante="outlined" onPress={cobrarBuscando} />
               ) : null}
             </>
           ) : fallo === 'sinConexion' ? (
@@ -363,7 +425,7 @@ export function PantallaCamara({ modo: modoParam }: { modo?: string }) {
               <Boton
                 texto="Reintentar"
                 icono="refresh"
-                variante="secundario"
+                variante="outlined"
                 onPress={() => (foto ? enviar(foto) : tomarOtra())}
               />
             </>
@@ -375,9 +437,9 @@ export function PantallaCamara({ modo: modoParam }: { modo?: string }) {
                 tamano="principal"
                 onPress={() => (foto ? enviar(foto) : tomarOtra())}
               />
-              <Boton texto="Tomar otra foto" icono="camera" variante="secundario" onPress={tomarOtra} />
+              <Boton texto="Tomar otra foto" icono="camera" variante="outlined" onPress={tomarOtra} />
               {modo === 'cobro' ? (
-                <Boton texto="Cobrar buscando producto" icono="magnify" variante="texto" onPress={cobrarBuscando} />
+                <Boton texto="Cobrar buscando producto" icono="magnify" variante="text" onPress={cobrarBuscando} />
               ) : null}
             </>
           )}
@@ -390,7 +452,7 @@ export function PantallaCamara({ modo: modoParam }: { modo?: string }) {
   if (!permiso) {
     return (
       <View style={[estilos.pantallaClara, estilos.centrado]}>
-        <ActivityIndicator size="large" color={colores.acento} accessibilityLabel="Preparando la cámara" />
+        <ActivityIndicator size="large" color={color.primary} accessibilityLabel="Preparando la cámara" />
       </View>
     );
   }
@@ -402,7 +464,13 @@ export function PantallaCamara({ modo: modoParam }: { modo?: string }) {
       <SafeAreaView edges={['bottom']} style={estilos.pantallaClara}>
         <Encabezado titulo={TITULOS[modo]} tipoAtras="cerrar" onAtras={cerrar} />
         <ScrollView contentContainerStyle={estilos.contenidoPermiso}>
-          <MaterialCommunityIcons name="camera" size={iconos.grande} color={colores.texto} />
+          <MaterialCommunityIcons
+            name="camera"
+            size={iconos.grande}
+            color={color.onSurfaceVariant}
+            accessibilityElementsHidden
+            importantForAccessibility="no"
+          />
           <Text style={estilos.titulo} accessibilityRole="header">
             {sinDecidir ? 'Necesitamos tu cámara' : 'La cámara está apagada para esta app'}
           </Text>
@@ -433,11 +501,11 @@ export function PantallaCamara({ modo: modoParam }: { modo?: string }) {
           <Boton
             texto="Usar una foto de la galería"
             icono="image-multiple"
-            variante="secundario"
+            variante="outlined"
             onPress={elegirDeGaleria}
           />
           {permanente && modo === 'cobro' ? (
-            <Boton texto="Cobrar buscando producto" icono="magnify" variante="texto" onPress={cobrarBuscando} />
+            <Boton texto="Cobrar buscando producto" icono="magnify" variante="text" onPress={cobrarBuscando} />
           ) : null}
         </View>
       </SafeAreaView>
@@ -448,11 +516,11 @@ export function PantallaCamara({ modo: modoParam }: { modo?: string }) {
   return (
     <SafeAreaView edges={['bottom']} style={estilos.pantallaOscura}>
       <View style={estilos.barraSuperior}>
-        <BotonOscuro icono="close" texto="Cerrar" onPress={cerrar} />
+        <BotonBarra icono="close" texto="Cerrar" onPress={cerrar} />
         <Text style={estilos.tituloOscuro} accessibilityRole="header">
           {TITULOS[modo]}
         </Text>
-        <BotonOscuro icono="help-circle" texto="Ayuda" onPress={() => setAyuda(true)} />
+        <BotonBarra icono="help-circle" texto="Ayuda" onPress={() => setAyuda(true)} />
       </View>
 
       <View style={estilos.vista}>
@@ -507,45 +575,62 @@ export function PantallaCamara({ modo: modoParam }: { modo?: string }) {
       ) : null}
 
       <View style={estilos.franjaConsejo}>
+        <MaterialCommunityIcons
+          name="lightbulb-outline"
+          size={iconos.linea}
+          color={color.inverseOnSurface}
+          accessibilityElementsHidden
+          importantForAccessibility="no"
+        />
         <Text style={estilos.textoConsejo}>{consejo}</Text>
       </View>
 
       <View style={estilos.barraInferior}>
-        <BotonOscuro icono="image-multiple" texto="Galería" etiqueta="Elegir foto de la galería" onPress={elegirDeGaleria} />
+        <BotonIconoCamara
+          icono="image-multiple"
+          texto="Galería"
+          etiqueta="Elegir foto de la galería"
+          onPress={elegirDeGaleria}
+        />
         <View style={estilos.columnaDisparador}>
-          <Pressable
+          <Tocable
             onPress={tomarFoto}
             disabled={!lista || tomando}
+            colorContenido={color.inverseSurface}
+            colorAnillo={color.inversePrimary}
+            radio={shape.full}
+            sinCapa={!lista || tomando}
             accessibilityRole="button"
             accessibilityLabel={tomando ? 'Tomando foto' : 'Tomar foto'}
             accessibilityState={{ disabled: !lista || tomando, busy: tomando }}
             style={[estilos.disparador, tomando && estilos.disparadorTomando]}
           >
-            {tomando ? <ActivityIndicator color={colores.texto} /> : null}
-          </Pressable>
+            {tomando ? <ActivityIndicator color={color.primary} /> : null}
+          </Tocable>
           <Text style={estilos.textoOscuro}>
             {tomando ? 'Tomando foto…' : lista ? 'Tomar foto' : 'Abriendo cámara…'}
           </Text>
         </View>
-        <BotonOscuro
+        <BotonIconoCamara
           icono={luz ? 'flashlight' : 'flashlight-off'}
           texto={luz ? 'Luz: Sí' : 'Luz: No'}
           etiqueta={luz ? 'Luz encendida. Toca para apagar' : 'Luz apagada. Toca para encender'}
+          seleccionado={luz}
           onPress={() => setLuz((l) => !l)}
         />
       </View>
 
       <HojaInferior visible={ayuda} titulo="Cómo tomar una buena foto" onCerrar={() => setAyuda(false)}>
         <View style={estilos.filaEtapa}>
-          <MaterialCommunityIcons name="check-circle" size={iconos.linea} color={colores.exito} />
+          <MaterialCommunityIcons name="check-circle" size={iconos.linea} color={color.success} />
           <Text style={estilos.cuerpo}>Bien: productos separados, de frente y con la etiqueta visible.</Text>
         </View>
         <View style={estilos.filaEtapa}>
-          <MaterialCommunityIcons name="close-circle" size={iconos.linea} color={colores.peligro} />
+          <MaterialCommunityIcons name="close-circle" size={iconos.linea} color={color.error} />
           <Text style={estilos.cuerpo}>Mal: productos amontonados o uno encima de otro.</Text>
         </View>
         <View style={estilos.filaEtapa}>
-          <MaterialCommunityIcons name="close-circle" size={iconos.linea} color={colores.peligro} />
+          <MaterialCommunityIcons name="close-circle" size={iconos.linea} color={color.error} />
           <Text style={estilos.cuerpo}>Mal: reflejos de luz sobre los empaques. Mueve un poco el teléfono.</Text>
         </View>
       </HojaInferior>
@@ -554,53 +639,71 @@ export function PantallaCamara({ modo: modoParam }: { modo?: string }) {
 }
 
 const estilos = StyleSheet.create({
-  pantallaClara: { flex: 1, backgroundColor: colores.fondo },
-  pantallaOscura: { flex: 1, backgroundColor: colores.oscuro },
+  pantallaClara: { flex: 1, backgroundColor: color.surface },
+  pantallaOscura: { flex: 1, backgroundColor: color.inverseSurface },
   centrado: { alignItems: 'center', justifyContent: 'center' },
   contenidoAnalisis: { paddingBottom: espacio.xl, gap: espacio.l },
   contenidoPermiso: { padding: espacio.l, gap: espacio.l, alignItems: 'flex-start' },
   miniatura: {
     height: medidas.miniaturaFoto,
     marginHorizontal: espacio.l,
-    borderWidth: bordes.fino,
-    borderColor: colores.borde,
-    backgroundColor: colores.superficie,
+    borderRadius: shape.large,
+    overflow: 'hidden',
+    backgroundColor: color.surfaceContainerHighest,
   },
   bloqueAnalisis: { paddingHorizontal: espacio.l, gap: espacio.m, alignItems: 'flex-start' },
   filaEtapa: { flexDirection: 'row', alignItems: 'center', gap: espacio.s },
-  titulo: { ...tipografia.titulo, color: colores.texto },
-  subtitulo: { ...tipografia.subtitulo, color: colores.texto },
-  cuerpo: { ...tipografia.cuerpoGrande, color: colores.texto, flexShrink: 1 },
-  textoPendiente: { color: colores.textoSecundario },
+  titulo: { ...type.headlineSmall, color: color.onSurface },
+  subtitulo: { ...type.titleLarge, color: color.onSurface },
+  cuerpo: { ...type.bodyLargePlus, color: color.onSurface, flexShrink: 1 },
+  textoPendiente: { color: color.onSurfaceVariant },
   barraAcciones: {
     padding: espacio.l,
     gap: tactil.separacion,
     borderTopWidth: bordes.fino,
-    borderTopColor: colores.divisor,
-    backgroundColor: colores.fondo,
+    borderTopColor: color.outlineVariant,
+    backgroundColor: color.surface,
   },
   barraSuperior: {
     minHeight: medidas.barraSuperior,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: espacio.s,
-    paddingHorizontal: espacio.s,
-    backgroundColor: colores.oscuro,
+    gap: espacio.xs,
+    paddingHorizontal: espacio.xs,
+    backgroundColor: color.inverseSurface,
   },
-  tituloOscuro: { ...tipografia.subtitulo, color: colores.sobreOscuro, flex: 1, textAlign: 'center' },
-  botonOscuro: {
+  tituloOscuro: { ...type.titleLarge, color: color.inverseOnSurface, flex: 1, textAlign: 'center' },
+  botonBarra: {
     minWidth: tactil.minimo,
     minHeight: tactil.minimo,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: espacio.s,
-    borderRadius: radios.medio,
-    gap: espacio.xs,
+    gap: espacio.s,
+    paddingHorizontal: espacio.m,
+    borderRadius: shape.full,
   },
-  botonOscuroPresionado: { backgroundColor: colores.textoSecundario },
-  textoOscuro: { ...tipografia.etiqueta, color: colores.sobreOscuro, textAlign: 'center' },
-  vista: { flex: 1, overflow: 'hidden', backgroundColor: colores.oscuro },
-  errorCamara: { flex: 1, justifyContent: 'center', padding: espacio.l, backgroundColor: colores.fondo },
+  textoBarra: { ...type.labelLarge, color: color.inverseOnSurface },
+  columnaBoton: { alignItems: 'center', gap: espacio.xs, minWidth: tactil.principal + espacio.xl },
+  botonIcono: {
+    width: tactil.principal,
+    height: tactil.principal,
+    borderRadius: shape.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: color.secondaryContainer,
+  },
+  botonIconoSeleccionado: { backgroundColor: color.primary },
+  textoOscuro: { ...type.labelLarge, color: color.inverseOnSurface, textAlign: 'center' },
+  vista: {
+    flex: 1,
+    overflow: 'hidden',
+    backgroundColor: color.inverseSurface,
+    borderRadius: shape.large,
+    marginHorizontal: espacio.s,
+  },
+  errorCamara: { flex: 1, justifyContent: 'center', padding: espacio.l, backgroundColor: color.surface },
+  // guía de encuadre: doble trazo claro + oscuro (≥ 3:1 contra cualquier imagen)
   guiaExterior: {
     position: 'absolute',
     top: espacio.xl,
@@ -608,31 +711,32 @@ const estilos = StyleSheet.create({
     left: espacio.xl,
     right: espacio.xl,
     borderWidth: bordes.grueso,
-    borderColor: colores.oscuro,
+    borderColor: tonosCamara.oscuro,
   },
   guiaInterior: {
     flex: 1,
     borderWidth: bordes.grueso,
-    borderColor: colores.sobreOscuro,
+    borderColor: tonosCamara.claro,
     alignItems: 'center',
     justifyContent: 'center',
     padding: espacio.l,
   },
   cajaInstruccion: {
-    backgroundColor: colores.oscuro,
+    backgroundColor: color.inverseSurface,
     paddingHorizontal: espacio.m,
     paddingVertical: espacio.s,
-    borderRadius: radios.chico,
+    borderRadius: shape.small,
   },
-  instruccion: { ...tipografia.nombreProducto, color: colores.sobreOscuro, textAlign: 'center' },
+  instruccion: { ...type.titleMedium, color: color.inverseOnSurface, textAlign: 'center' },
   franjaConsejo: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: espacio.s,
     paddingHorizontal: espacio.l,
     paddingVertical: espacio.s,
-    backgroundColor: colores.oscuro,
-    borderTopWidth: bordes.fino,
-    borderTopColor: colores.textoSecundario,
+    backgroundColor: color.inverseSurface,
   },
-  textoConsejo: { ...tipografia.cuerpo, color: colores.sobreOscuro },
+  textoConsejo: { ...type.bodyLarge, color: color.inverseOnSurface, flex: 1 },
   barraInferior: {
     minHeight: medidas.barraCamaraInferior,
     flexDirection: 'row',
@@ -640,22 +744,23 @@ const estilos = StyleSheet.create({
     justifyContent: 'space-around',
     paddingHorizontal: espacio.s,
     paddingVertical: espacio.m,
-    backgroundColor: colores.oscuro,
+    backgroundColor: color.inverseSurface,
   },
   columnaDisparador: { alignItems: 'center', gap: espacio.xs },
+  // disparador (excepción documentada en 01-cobrar §2.2; no es componente M3)
   disparador: {
     width: tactil.disparador,
     height: tactil.disparador,
-    borderRadius: tactil.disparador / 2,
-    backgroundColor: colores.sobreOscuro,
+    borderRadius: shape.full,
+    backgroundColor: tonosCamara.claro,
     borderWidth: medidas.bordeDisparador,
-    borderColor: colores.oscuro,
+    borderColor: tonosCamara.oscuro,
     alignItems: 'center',
     justifyContent: 'center',
-    // anillo blanco exterior para que el borde #111 se vea sobre la barra oscura
-    outlineColor: colores.sobreOscuro,
+    // anillo claro exterior para que el borde oscuro se vea sobre la barra
+    outlineColor: tonosCamara.claro,
     outlineWidth: bordes.grueso,
     outlineStyle: 'solid',
   },
-  disparadorTomando: { borderColor: colores.acento },
+  disparadorTomando: { borderColor: color.primary },
 });

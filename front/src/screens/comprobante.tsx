@@ -1,7 +1,7 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { AccessibilityInfo, ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -16,7 +16,7 @@ import { FilaProducto } from '@/components/fila-producto';
 import { SEGUNDOS_VENTA_MANUAL } from '@/constants';
 import { useCarrito } from '@/estado/carrito';
 import { idEnviado, leerCola, PREFIJO_LOCAL } from '@/estado/cola-ventas';
-import { bordes, colores, espacio, iconos, radios, tactil, tipografia } from '@/theme';
+import { bordes, color, espacio, iconos, shape, tactil, type } from '@/theme';
 import { duracionLegible, fechaCompleta } from '@/utils/fecha';
 import { formatoMoneda, montoParaLector } from '@/utils/formato-moneda';
 
@@ -137,15 +137,21 @@ export function PantallaComprobante({ id, desdeHistorial }: { id: string; desdeH
 
   const titulo = datos?.pendiente ? 'Venta guardada' : desdeHistorial ? 'Venta' : 'Venta registrada';
   const digital = datos?.metodo === 'digital_simulado';
+  const [desplazado, setDesplazado] = useState(false);
 
   return (
     <SafeAreaView edges={['bottom']} style={estilos.pantalla}>
-      <Encabezado titulo={titulo} tipoAtras={desdeHistorial ? 'atras' : 'cerrar'} onAtras={cerrar} />
+      <Encabezado
+        titulo={titulo}
+        tipoAtras={desdeHistorial ? 'atras' : 'cerrar'}
+        onAtras={cerrar}
+        desplazado={desplazado}
+      />
       {digital ? <EtiquetaSimulacion modo="franja" detalle="este cobro no movió dinero real" /> : null}
 
       {cargando ? (
         <View style={estilos.centrado} accessibilityLiveRegion="polite">
-          <ActivityIndicator size="large" color={colores.acento} />
+          <ActivityIndicator size="large" color={color.primary} />
           <Text style={estilos.cuerpo}>Cargando venta…</Text>
         </View>
       ) : error || !datos ? (
@@ -159,16 +165,26 @@ export function PantallaComprobante({ id, desdeHistorial }: { id: string; desdeH
           />
         </View>
       ) : (
-        <ScrollView contentContainerStyle={estilos.contenido}>
+        <ScrollView
+          contentContainerStyle={estilos.contenido}
+          scrollEventThrottle={16}
+          onScroll={(e) => setDesplazado(e.nativeEvent.contentOffset.y > 0)}
+        >
           {desdeHistorial ? null : <BarraPasos pasos={['Foto', 'Revisar', 'Listo']} actual={2} />}
 
-          <View style={estilos.cabecera}>
+          {/* card filled successContainer (o surfaceContainerHigh si quedó en el teléfono) */}
+          <View style={[estilos.cabecera, datos.pendiente ? estilos.cabeceraPendiente : estilos.cabeceraExito]}>
             <MaterialCommunityIcons
               name={datos.pendiente ? 'cloud-upload' : 'check-circle'}
               size={iconos.grande}
-              color={datos.pendiente ? colores.texto : colores.exito}
+              color={datos.pendiente ? color.onSurfaceVariant : color.onSuccessContainer}
+              accessibilityElementsHidden
+              importantForAccessibility="no"
             />
-            <Text style={[estilos.titulo, !datos.pendiente && estilos.tituloExito]} accessibilityRole="header">
+            <Text
+              style={[estilos.titulo, { color: datos.pendiente ? color.onSurface : color.onSuccessContainer }]}
+              accessibilityRole="header"
+            >
               {datos.pendiente ? 'Venta guardada en tu teléfono' : '¡Venta registrada!'}
             </Text>
             {datos.pendiente ? (
@@ -176,10 +192,10 @@ export function PantallaComprobante({ id, desdeHistorial }: { id: string; desdeH
                 Se enviará sola cuando vuelva el internet. El inventario se actualizará en ese momento.
               </Text>
             ) : null}
-            <Text style={estilos.secundario}>
+            <Text style={[estilos.cuerpoCabecera, datos.pendiente ? null : estilos.sobreExito]}>
               Folio {datos.folio} · {fechaCompleta(datos.creadaEn)}
             </Text>
-            <Text style={estilos.secundario}>
+            <Text style={[estilos.cuerpoCabecera, datos.pendiente ? null : estilos.sobreExito]}>
               {digital
                 ? 'Pago digital (simulación)'
                 : datos.recibido !== null
@@ -212,7 +228,13 @@ export function PantallaComprobante({ id, desdeHistorial }: { id: string; desdeH
           {datos.pendiente ? (
             <View style={estilos.bloque}>
               <View style={estilos.filaIcono}>
-                <MaterialCommunityIcons name="package-variant" size={iconos.linea} color={colores.texto} />
+                <MaterialCommunityIcons
+                  name="package-variant"
+                  size={iconos.linea}
+                  color={color.onSurfaceVariant}
+                  accessibilityElementsHidden
+                  importantForAccessibility="no"
+                />
                 <Text style={estilos.subtitulo}>Inventario: pendiente</Text>
               </View>
               <Text style={estilos.secundario}>Se descontará cuando la venta se envíe.</Text>
@@ -220,7 +242,13 @@ export function PantallaComprobante({ id, desdeHistorial }: { id: string; desdeH
           ) : datos.existencias && datos.existencias.length > 0 ? (
             <View style={estilos.bloque}>
               <View style={estilos.filaIcono}>
-                <MaterialCommunityIcons name="package-variant" size={iconos.linea} color={colores.texto} />
+                <MaterialCommunityIcons
+                  name="package-variant"
+                  size={iconos.linea}
+                  color={color.onSurfaceVariant}
+                  accessibilityElementsHidden
+                  importantForAccessibility="no"
+                />
                 <Text style={estilos.subtitulo}>Inventario actualizado · Quedan:</Text>
               </View>
               {datos.existencias.map((e) => (
@@ -234,7 +262,13 @@ export function PantallaComprobante({ id, desdeHistorial }: { id: string; desdeH
                   <Text style={estilos.etiqueta}>{e.quedan} pz</Text>
                   {e.bajo ? (
                     <View style={estilos.chipPoco}>
-                      <MaterialCommunityIcons name="alert-circle" size={iconos.chico} color={colores.peligro} />
+                      <MaterialCommunityIcons
+                        name="alert-circle"
+                        size={iconos.chico}
+                        color={color.onErrorContainer}
+                        accessibilityElementsHidden
+                        importantForAccessibility="no"
+                      />
                       <Text style={estilos.textoPoco}>Poco</Text>
                     </View>
                   ) : null}
@@ -246,7 +280,13 @@ export function PantallaComprobante({ id, desdeHistorial }: { id: string; desdeH
           {!desdeHistorial && datos.duracionSeg !== undefined ? (
             <View style={[estilos.bloque, estilos.bloqueSuperficie]}>
               <View style={estilos.filaIcono}>
-                <MaterialCommunityIcons name="timer-outline" size={iconos.linea} color={colores.texto} />
+                <MaterialCommunityIcons
+                  name="timer-outline"
+                  size={iconos.linea}
+                  color={color.onSurface}
+                  accessibilityElementsHidden
+                  importantForAccessibility="no"
+                />
                 <Text style={estilos.subtitulo}>Esta venta: {duracionLegible(datos.duracionSeg)}</Text>
               </View>
               <Text style={estilos.cuerpo}>
@@ -273,12 +313,12 @@ export function PantallaComprobante({ id, desdeHistorial }: { id: string; desdeH
             <View style={estilos.filaBotones}>
               <Boton
                 texto="Ver ventas de hoy"
-                variante="secundario"
+                variante="outlined"
                 anchoCompleto={false}
                 style={estilos.flex}
                 onPress={() => router.replace('/historial')}
               />
-              <Boton texto="Ir a Inicio" variante="texto" anchoCompleto={false} onPress={() => router.navigate('/')} />
+              <Boton texto="Ir a Inicio" variante="text" anchoCompleto={false} onPress={() => router.navigate('/')} />
             </View>
           </>
         )}
@@ -288,28 +328,33 @@ export function PantallaComprobante({ id, desdeHistorial }: { id: string; desdeH
 }
 
 const estilos = StyleSheet.create({
-  pantalla: { flex: 1, backgroundColor: colores.fondo },
+  pantalla: { flex: 1, backgroundColor: color.surface },
   flex: { flex: 1 },
   centrado: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: espacio.m },
   contenido: { padding: espacio.l, gap: espacio.xl },
-  cabecera: { gap: espacio.s, alignItems: 'flex-start' },
-  titulo: { ...tipografia.titulo, color: colores.texto },
-  tituloExito: { color: colores.exito },
-  subtitulo: { ...tipografia.subtitulo, color: colores.texto, flexShrink: 1 },
-  cuerpo: { ...tipografia.cuerpoGrande, color: colores.texto },
-  secundario: { ...tipografia.cuerpo, color: colores.textoSecundario },
-  etiqueta: { ...tipografia.etiqueta, color: colores.texto },
+  cabecera: { gap: espacio.s, alignItems: 'flex-start', borderRadius: shape.medium, padding: espacio.l },
+  cabeceraExito: { backgroundColor: color.successContainer },
+  cabeceraPendiente: { backgroundColor: color.surfaceContainerHigh },
+  titulo: { ...type.headlineSmall },
+  subtitulo: { ...type.titleSmall, color: color.onSurface, flexShrink: 1 },
+  cuerpo: { ...type.bodyLarge, color: color.onSurface },
+  cuerpoCabecera: { ...type.bodyLarge, color: color.onSurface },
+  sobreExito: { color: color.onSuccessContainer },
+  secundario: { ...type.bodyLarge, color: color.onSurfaceVariant },
+  etiqueta: { ...type.labelLarge, color: color.onSurface },
   filaTotal: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: espacio.m },
-  etiquetaTotal: { ...tipografia.subtitulo, color: colores.texto },
-  total: { ...tipografia.montoGrande, color: colores.texto, fontVariant: ['tabular-nums'] },
+  etiquetaTotal: { ...type.titleMedium, color: color.onSurface },
+  total: { ...type.headlineLarge, color: color.onSurface },
+  // card outlined (inventario)
   bloque: {
     borderWidth: bordes.fino,
-    borderColor: colores.borde,
-    borderRadius: radios.medio,
+    borderColor: color.outlineVariant,
+    borderRadius: shape.medium,
     padding: espacio.l,
     gap: espacio.s,
   },
-  bloqueSuperficie: { backgroundColor: colores.superficie, borderColor: colores.textoSecundario },
+  // card filled ("Antes vs. ahora")
+  bloqueSuperficie: { backgroundColor: color.surfaceContainerHighest, borderWidth: 0 },
   filaIcono: { flexDirection: 'row', alignItems: 'center', gap: espacio.s },
   filaExistencia: { flexDirection: 'row', alignItems: 'center', gap: espacio.s, flexWrap: 'wrap' },
   chipPoco: {
@@ -317,16 +362,17 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     gap: espacio.xs,
     paddingHorizontal: espacio.s,
-    borderWidth: bordes.grueso,
-    borderColor: colores.peligro,
-    borderRadius: radios.chico,
+    borderRadius: shape.small,
+    backgroundColor: color.errorContainer,
   },
-  textoPoco: { ...tipografia.etiqueta, color: colores.peligro },
+  textoPoco: { ...type.labelLarge, color: color.onErrorContainer },
+  // barra inferior tonal
   barra: {
     padding: espacio.l,
     gap: tactil.separacion,
+    backgroundColor: color.surfaceContainer,
     borderTopWidth: bordes.fino,
-    borderTopColor: colores.divisor,
+    borderTopColor: color.outlineVariant,
   },
   filaBotones: { flexDirection: 'row', flexWrap: 'wrap', gap: tactil.separacion, alignItems: 'center' },
 });

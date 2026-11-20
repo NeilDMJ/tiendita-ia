@@ -1,8 +1,10 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, Text, TextInput, View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { anilloFoco, bordes, colores, espacio, iconos, radios, tactil, tipografia } from '@/theme';
+import { bordes, color, espacio, iconos, shape, tactil, type } from '@/theme';
+
+import { Tocable } from './tocable';
 
 type Unidad = 'pz' | 'kg' | 'paq';
 
@@ -26,7 +28,10 @@ const NOMBRE_UNIDAD: Record<Unidad, [string, string]> = {
   paq: ['paquete', 'paquetes'],
 };
 
-/** Cantidad con − / +. Tocar el número permite escribirlo (cantidades grandes sin 12 toques). */
+/**
+ * Cantidad con − / + (00-sistema §9.3): dos icon buttons tonales 48 + valor tocable.
+ * Tocar el número permite escribirlo (cantidades grandes sin 12 toques).
+ */
 export function StepperCantidad({
   valor,
   onCambiar,
@@ -39,11 +44,6 @@ export function StepperCantidad({
   style,
 }: StepperCantidadProps) {
   const [editando, setEditando] = useState(false);
-  const [foco, setFoco] = useState<'menos' | 'valor' | 'mas' | null>(null);
-  const enfocar = (zona: 'menos' | 'valor' | 'mas') => ({
-    onFocus: () => setFoco(zona),
-    onBlur: () => setFoco((f) => (f === zona ? null : f)),
-  });
   const [borrador, setBorrador] = useState('');
   const enMinimo = valor <= minimo;
   const enMaximo = maximo !== undefined && valor >= maximo;
@@ -66,32 +66,37 @@ export function StepperCantidad({
     setEditando(false);
   }
 
+  const menosInactivo = enMinimo && !modoQuitar;
+  const colorMenos = modoQuitar ? color.error : menosInactivo ? color.onSurfaceVariant : color.onSecondaryContainer;
+  const colorMas = enMaximo ? color.onSurfaceVariant : color.onSecondaryContainer;
+
   return (
     <View style={[estilos.contenedor, style]} testID={testID}>
       <View style={estilos.grupo}>
-        <Pressable
+        <Tocable
           onPress={restar}
-          disabled={enMinimo && !modoQuitar}
+          disabled={menosInactivo}
+          colorContenido={colorMenos}
+          radio={shape.full}
+          sinCapa={menosInactivo}
           accessibilityRole="button"
           accessibilityLabel={
             modoQuitar ? `Quitar ${nombreProducto} de la venta` : `Quitar una ${singular} de ${nombreProducto}`
           }
-          accessibilityState={{ disabled: enMinimo && !modoQuitar }}
-          {...enfocar('menos')}
-          style={({ pressed }) => [
+          accessibilityState={{ disabled: menosInactivo }}
+          style={[
             estilos.boton,
-            estilos.botonIzquierdo,
-            enMinimo && !modoQuitar && estilos.botonDeshabilitado,
-            pressed && estilos.presionado,
-            foco === 'menos' && anilloFoco,
+            modoQuitar ? estilos.botonQuitar : menosInactivo ? estilos.botonDeshabilitado : estilos.botonTonal,
           ]}
         >
           <MaterialCommunityIcons
             name={modoQuitar ? 'trash-can-outline' : 'minus'}
             size={iconos.linea}
-            color={modoQuitar ? colores.peligro : enMinimo ? colores.deshabilitadoTexto : colores.texto}
+            color={colorMenos}
+            accessibilityElementsHidden
+            importantForAccessibility="no"
           />
-        </Pressable>
+        </Tocable>
 
         {editando ? (
           <TextInput
@@ -104,14 +109,16 @@ export function StepperCantidad({
             autoFocus
             selectTextOnFocus
             accessibilityLabel={`Escribe la cantidad de ${nombreProducto}`}
-            style={[estilos.valor, estilos.valorEditando]}
+            style={[estilos.valor, estilos.valorCaja, estilos.valorEditando]}
           />
         ) : (
-          <Pressable
+          <Tocable
             onPress={() => {
               setBorrador(String(valor));
               setEditando(true);
             }}
+            colorContenido={color.onSurface}
+            radio={shape.extraSmall}
             accessibilityRole="adjustable"
             accessibilityLabel={`Cantidad de ${nombreProducto}`}
             accessibilityValue={{ now: valor, min: minimo, max: maximo, text: textoValor }}
@@ -121,44 +128,41 @@ export function StepperCantidad({
               if (e.nativeEvent.actionName === 'increment') sumar();
               if (e.nativeEvent.actionName === 'decrement' && !enMinimo) onCambiar(valor - 1);
             }}
-            {...enfocar('valor')}
-            style={({ pressed }) => [estilos.valorCaja, pressed && estilos.presionado, foco === 'valor' && anilloFoco]}
+            style={estilos.valorCaja}
           >
             <Text style={estilos.valor}>
               {valor} {unidad}
             </Text>
-          </Pressable>
+          </Tocable>
         )}
 
-        <Pressable
+        <Tocable
           onPress={sumar}
           disabled={enMaximo}
+          colorContenido={colorMas}
+          radio={shape.full}
+          sinCapa={enMaximo}
           accessibilityRole="button"
           accessibilityLabel={`Agregar una ${singular} de ${nombreProducto}`}
           accessibilityState={{ disabled: enMaximo }}
           accessibilityHint={enMaximo ? `Solo hay ${maximo} en existencia` : undefined}
-          {...enfocar('mas')}
-          style={({ pressed }) => [
-            estilos.boton,
-            estilos.botonDerecho,
-            enMaximo && estilos.botonDeshabilitado,
-            pressed && estilos.presionado,
-            foco === 'mas' && anilloFoco,
-          ]}
+          style={[estilos.boton, enMaximo ? estilos.botonDeshabilitado : estilos.botonTonal]}
         >
           <MaterialCommunityIcons
             name="plus"
             size={iconos.linea}
-            color={enMaximo ? colores.deshabilitadoTexto : colores.texto}
+            color={colorMas}
+            accessibilityElementsHidden
+            importantForAccessibility="no"
           />
-        </Pressable>
+        </Tocable>
       </View>
       {enMaximo ? (
         <View style={estilos.aviso}>
           <MaterialCommunityIcons
             name="information"
             size={iconos.linea}
-            color={colores.textoSecundario}
+            color={color.onSurfaceVariant}
             accessibilityElementsHidden
             importantForAccessibility="no"
           />
@@ -171,45 +175,32 @@ export function StepperCantidad({
 
 const estilos = StyleSheet.create({
   contenedor: { gap: espacio.xs },
-  grupo: {
-    flexDirection: 'row',
-    alignSelf: 'flex-start',
-    borderWidth: bordes.fino,
-    borderColor: colores.borde,
-    borderRadius: radios.medio,
-  },
+  grupo: { flexDirection: 'row', alignSelf: 'flex-start', alignItems: 'center', gap: espacio.s },
   boton: {
     width: tactil.minimo,
-    minHeight: tactil.minimo,
+    height: tactil.minimo,
+    borderRadius: shape.full,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colores.fondo,
   },
-  // radios internos = radio exterior − borde, para no tapar las esquinas redondeadas
-  botonIzquierdo: { borderTopLeftRadius: radios.medio - bordes.fino, borderBottomLeftRadius: radios.medio - bordes.fino },
-  botonDerecho: { borderTopRightRadius: radios.medio - bordes.fino, borderBottomRightRadius: radios.medio - bordes.fino },
-  botonDeshabilitado: { backgroundColor: colores.deshabilitadoFondo },
-  presionado: { backgroundColor: colores.superficie },
+  botonTonal: { backgroundColor: color.secondaryContainer },
+  // icon button outlined error (modo "Quitar")
+  botonQuitar: { borderWidth: bordes.fino, borderColor: color.error },
+  // EXC-4
+  botonDeshabilitado: { backgroundColor: color.surfaceContainerHighest },
   valorCaja: {
     minWidth: tactil.principal,
     minHeight: tactil.minimo,
     paddingHorizontal: espacio.s,
     alignItems: 'center',
     justifyContent: 'center',
-    borderLeftWidth: bordes.fino,
-    borderRightWidth: bordes.fino,
-    borderColor: colores.borde,
-    backgroundColor: colores.fondo,
+    borderBottomWidth: bordes.fino,
+    borderBottomColor: color.outline,
+    borderTopLeftRadius: shape.extraSmall,
+    borderTopRightRadius: shape.extraSmall,
   },
-  valor: { ...tipografia.monto, color: colores.texto, fontVariant: ['tabular-nums'], textAlign: 'center' },
-  valorEditando: {
-    minWidth: tactil.principal,
-    minHeight: tactil.minimo,
-    borderLeftWidth: bordes.fino,
-    borderRightWidth: bordes.fino,
-    borderColor: colores.borde,
-    paddingHorizontal: espacio.s,
-  },
+  valor: { ...type.amount, color: color.onSurface, textAlign: 'center' },
+  valorEditando: { borderBottomWidth: bordes.grueso, borderBottomColor: color.primary },
   aviso: { flexDirection: 'row', gap: espacio.xs, alignItems: 'center' },
-  textoAviso: { ...tipografia.cuerpo, color: colores.textoSecundario, flexShrink: 1 },
+  textoAviso: { ...type.bodyLarge, color: color.onSurfaceVariant, flexShrink: 1 },
 });

@@ -1,10 +1,9 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useEffect, useRef, type ComponentRef } from 'react';
+import { useEffect, useRef, type ComponentRef, type Ref } from 'react';
 import {
   AccessibilityInfo,
   findNodeHandle,
   Platform,
-  Pressable,
   StyleSheet,
   Text,
   View,
@@ -13,19 +12,25 @@ import {
 } from 'react-native';
 
 import type { NombreIcono } from '@/constants';
-import { bordes, colores, espacio, iconos, radios, tactil, tipografia } from '@/theme';
+import { bordes, color, espacio, iconos, shape, tactil, type } from '@/theme';
 
-import { Boton } from './boton';
+import { Boton, type VarianteBoton } from './boton';
+import { Tocable } from './tocable';
 
 export type TipoAviso = 'error' | 'exito' | 'info' | 'sinConexion' | 'tiempo';
+
+type AccionAviso = { texto: string; onPress: () => void; icono?: NombreIcono };
 
 export interface AvisoProps {
   tipo: TipoAviso;
   titulo: string;
   mensaje?: string;
   /** Obligatoria en la práctica para `error` (Nielsen #9: siempre una salida). */
-  accion?: { texto: string; onPress: () => void; icono?: NombreIcono };
-  accionSecundaria?: { texto: string; onPress: () => void; icono?: NombreIcono };
+  /** `variante` por defecto: filled (tarjeta) / text (franja). */
+  accion?: AccionAviso & { variante?: VarianteBoton };
+  accionSecundaria?: AccionAviso;
+  /** Ref al botón de la acción secundaria (para devolverle el foco al cerrar un diálogo que abrió). */
+  refAccionSecundaria?: Ref<ComponentRef<typeof View>>;
   modo?: 'tarjeta' | 'franja';
   onCerrar?: () => void;
   /** Mueve el foco del lector al aviso cuando bloquea el flujo. */
@@ -34,21 +39,64 @@ export interface AvisoProps {
   style?: StyleProp<ViewStyle>;
 }
 
-const TIPOS: Record<TipoAviso, { color: string; icono: NombreIcono; fondo: string; prefijo: string }> = {
-  error: { color: colores.peligro, icono: 'alert-circle', fondo: colores.fondo, prefijo: 'Error' },
-  exito: { color: colores.exito, icono: 'check-circle', fondo: colores.fondo, prefijo: 'Listo' },
-  info: { color: colores.texto, icono: 'information', fondo: colores.superficie, prefijo: 'Aviso' },
-  sinConexion: { color: colores.texto, icono: 'wifi-off', fondo: colores.superficie, prefijo: 'Sin conexión' },
-  tiempo: { color: colores.texto, icono: 'timer-sand', fondo: colores.superficie, prefijo: 'Aviso' },
+type Apariencia = { contenedor: string; titulo: string; icono: string; texto: string; nombreIcono: NombreIcono; prefijo: string };
+
+/** 00-sistema §9.4: contenedor y contenido por rol (contrastes ≥ 7.24:1). */
+const TIPOS: Record<TipoAviso, Apariencia> = {
+  error: {
+    contenedor: color.errorContainer,
+    titulo: color.onErrorContainer,
+    icono: color.onErrorContainer,
+    texto: color.onErrorContainer,
+    nombreIcono: 'alert-circle',
+    prefijo: 'Error',
+  },
+  exito: {
+    contenedor: color.successContainer,
+    titulo: color.onSuccessContainer,
+    icono: color.onSuccessContainer,
+    texto: color.onSuccessContainer,
+    nombreIcono: 'check-circle',
+    prefijo: 'Listo',
+  },
+  info: {
+    contenedor: color.surfaceContainerHigh,
+    titulo: color.onSurface,
+    icono: color.onSurfaceVariant,
+    texto: color.onSurface,
+    nombreIcono: 'information',
+    prefijo: 'Aviso',
+  },
+  sinConexion: {
+    contenedor: color.surfaceContainerHigh,
+    titulo: color.onSurface,
+    icono: color.onSurface,
+    texto: color.onSurface,
+    nombreIcono: 'wifi-off',
+    prefijo: 'Sin conexión',
+  },
+  tiempo: {
+    contenedor: color.surfaceContainerHigh,
+    titulo: color.onSurface,
+    icono: color.onSurface,
+    texto: color.onSurface,
+    nombreIcono: 'timer-sand',
+    prefijo: 'Aviso',
+  },
 };
 
-/** Aviso con icono + título + mensaje + acción de recuperación. El color nunca es el único portador. */
+/**
+ * Banner (`franja`, bajo la top app bar) o card de mensaje (`tarjeta`) M3.
+ * Icono + título + mensaje + acción de recuperación: el color nunca es el único portador.
+ * Lo transitorio (deshacer, confirmaciones breves) va en `Snackbar`, no aquí.
+ */
 export function Aviso({
   tipo,
   titulo,
   mensaje,
   accion,
   accionSecundaria,
+  refAccionSecundaria,
   modo = 'tarjeta',
   onCerrar,
   enfocar,
@@ -58,34 +106,31 @@ export function Aviso({
   const t = TIPOS[tipo];
   const ref = useRef<ComponentRef<typeof View>>(null);
   const urgente = tipo === 'error' || tipo === 'sinConexion' || tipo === 'tiempo';
+  const franja = modo === 'franja';
+  const etiquetaLector = `${titulo.startsWith(t.prefijo) ? '' : `${t.prefijo}: `}${titulo}. ${mensaje ?? ''}`;
 
   useEffect(() => {
     if (Platform.OS === 'ios' && urgente) {
-      AccessibilityInfo.announceForAccessibility(`${t.prefijo}: ${titulo}. ${mensaje ?? ''}`);
+      AccessibilityInfo.announceForAccessibility(etiquetaLector);
     }
     if (enfocar && ref.current) {
       const nodo = findNodeHandle(ref.current);
       if (nodo) AccessibilityInfo.setAccessibilityFocus(nodo);
     }
-  }, [enfocar, mensaje, t.prefijo, titulo, urgente]);
+  }, [enfocar, etiquetaLector, urgente]);
 
   return (
     <View
       testID={testID}
-      style={[
-        estilos.base,
-        modo === 'franja' ? estilos.franja : estilos.tarjeta,
-        { borderColor: t.color, backgroundColor: t.fondo },
-        style,
-      ]}
+      style={[estilos.base, franja ? estilos.franja : estilos.tarjeta, { backgroundColor: t.contenedor }, style]}
       accessibilityRole={urgente ? 'alert' : undefined}
       accessibilityLiveRegion={urgente ? 'assertive' : 'polite'}
     >
       <View style={estilos.fila}>
         <MaterialCommunityIcons
-          name={t.icono}
+          name={t.nombreIcono}
           size={iconos.linea}
-          color={t.color}
+          color={t.icono}
           accessibilityElementsHidden
           importantForAccessibility="no"
         />
@@ -93,38 +138,49 @@ export function Aviso({
           ref={ref}
           style={estilos.textos}
           accessible
-          accessibilityLabel={`${t.prefijo}: ${titulo}. ${mensaje ?? ''}`}
+          accessibilityLabel={etiquetaLector}
         >
-          <Text style={[estilos.titulo, { color: t.color }]}>{titulo}</Text>
-          {mensaje ? <Text style={estilos.mensaje}>{mensaje}</Text> : null}
+          <Text style={[estilos.titulo, { color: t.titulo }]}>{titulo}</Text>
+          {mensaje ? <Text style={[estilos.mensaje, { color: t.texto }]}>{mensaje}</Text> : null}
         </View>
         {onCerrar ? (
-          <Pressable
+          <Tocable
             onPress={onCerrar}
+            colorContenido={t.texto}
+            radio={shape.full}
             accessibilityRole="button"
             accessibilityLabel="Cerrar aviso"
-            style={({ pressed }) => [estilos.cerrar, pressed && estilos.presionado]}
+            style={estilos.cerrar}
           >
-            <MaterialCommunityIcons name="close" size={iconos.linea} color={colores.texto} />
-          </Pressable>
+            <MaterialCommunityIcons
+              name="close"
+              size={iconos.linea}
+              color={t.texto}
+              accessibilityElementsHidden
+              importantForAccessibility="no"
+            />
+          </Tocable>
         ) : null}
       </View>
       {accion || accionSecundaria ? (
         <View style={estilos.acciones}>
-          {accion ? (
-            <Boton
-              texto={accion.texto}
-              icono={accion.icono}
-              onPress={accion.onPress}
-              variante={tipo === 'error' ? 'secundario' : 'primario'}
-            />
-          ) : null}
           {accionSecundaria ? (
             <Boton
               texto={accionSecundaria.texto}
               icono={accionSecundaria.icono}
               onPress={accionSecundaria.onPress}
-              variante="texto"
+              ref={refAccionSecundaria}
+              variante="text"
+              anchoCompleto={false}
+            />
+          ) : null}
+          {accion ? (
+            <Boton
+              texto={accion.texto}
+              icono={accion.icono}
+              onPress={accion.onPress}
+              variante={accion.variante ?? (franja ? 'text' : 'filled')}
+              anchoCompleto={false}
             />
           ) : null}
         </View>
@@ -134,20 +190,33 @@ export function Aviso({
 }
 
 const estilos = StyleSheet.create({
-  base: { padding: espacio.l, gap: espacio.m },
-  tarjeta: { borderWidth: bordes.grueso, borderRadius: radios.medio },
-  franja: { borderBottomWidth: bordes.grueso, borderRadius: radios.recto },
+  base: { gap: espacio.m },
+  tarjeta: { borderRadius: shape.medium, padding: espacio.l },
+  franja: {
+    borderRadius: shape.none,
+    paddingHorizontal: espacio.l,
+    paddingVertical: espacio.m,
+    borderBottomWidth: bordes.fino,
+    borderBottomColor: color.outlineVariant,
+  },
   fila: { flexDirection: 'row', gap: espacio.m, alignItems: 'flex-start' },
   textos: { flex: 1, gap: espacio.xs },
-  titulo: { ...tipografia.subtitulo },
-  mensaje: { ...tipografia.cuerpoGrande, color: colores.texto },
+  titulo: { ...type.titleMedium },
+  mensaje: { ...type.bodyLargePlus },
   cerrar: {
     width: tactil.minimo,
     height: tactil.minimo,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: radios.medio,
+    borderRadius: shape.full,
+    marginTop: -espacio.m,
+    marginRight: -espacio.s,
   },
-  presionado: { backgroundColor: colores.superficie },
-  acciones: { gap: tactil.separacion },
+  acciones: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    gap: tactil.separacion,
+  },
 });

@@ -1,57 +1,43 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router/tabs';
-import { StyleSheet, View, type ColorValue } from 'react-native';
+import type { ColorValue } from 'react-native';
 
+import { BarraNavegacion } from '@/components/barra-navegacion';
 import type { NombreIcono } from '@/constants';
-import { bordes, colores, espacio, iconos, medidas, tactil, tipografia } from '@/theme';
+import { color, iconos, type } from '@/theme';
 
-/**
- * Icono de pestaña: relleno cuando está activa + barra superior 2px.
- * Así la pestaña activa no se distingue solo por color.
- */
+/** Icono de destino: relleno cuando está activo (una de las 3 señales no cromáticas de M3). */
 function icono(inactivo: NombreIcono, activo: NombreIcono) {
-  function IconoPestana({ color, focused }: { color: ColorValue; focused: boolean }) {
+  function IconoDestino({ color: tinte, focused }: { color: ColorValue; focused: boolean }) {
     return (
-      <View style={estilos.contenedorIcono}>
-        <View style={[estilos.barraActiva, focused && estilos.barraActivaVisible]} />
-        <MaterialCommunityIcons
-          name={focused ? activo : inactivo}
-          size={iconos.pestana}
-          color={typeof color === 'string' ? color : undefined}
-        />
-      </View>
+      <MaterialCommunityIcons
+        name={focused ? activo : inactivo}
+        size={iconos.linea}
+        color={typeof tinte === 'string' ? tinte : undefined}
+        accessibilityElementsHidden
+        importantForAccessibility="no"
+      />
     );
   }
-  return IconoPestana;
+  return IconoDestino;
 }
 
-/** Barra inferior fija: máximo 4 destinos, icono + etiqueta siempre (Nielsen #4). */
+/** M3 Navigation bar fija: 4 destinos, icono + etiqueta siempre (00-sistema §9.14). */
 export default function TabsLayout() {
   return (
     <Tabs
+      tabBar={(props) => <BarraNavegacion {...props} />}
       screenOptions={{
-        headerShadowVisible: false,
-        headerStyle: { backgroundColor: colores.fondo, borderBottomWidth: bordes.fino, borderBottomColor: colores.divisor },
-        headerTitleStyle: { ...tipografia.subtitulo, color: colores.texto },
-        tabBarActiveTintColor: colores.acento,
-        tabBarInactiveTintColor: colores.textoSecundario,
-        tabBarLabelStyle: { fontSize: tipografia.etiqueta.fontSize, fontWeight: '700' },
+        headerShadowVisible: false, // separación tonal, no sombra (M3 top app bar)
+        headerStyle: { backgroundColor: color.surface },
+        headerTitleStyle: { ...type.titleLarge, color: color.onSurface },
+        headerTintColor: color.onSurface,
         tabBarAllowFontScaling: true,
-        tabBarIconStyle: estilos.areaIcono,
-        tabBarStyle: {
-          backgroundColor: colores.fondo,
-          borderTopWidth: bordes.grueso,
-          borderTopColor: colores.texto,
-          elevation: 0, // flat
-          shadowOpacity: 0, // flat
-          minHeight: medidas.barraPestanas,
-        },
-        tabBarItemStyle: { minHeight: tactil.principal },
-        sceneStyle: { backgroundColor: colores.fondo },
+        sceneStyle: { backgroundColor: color.surface },
       }}
     >
       <Tabs.Screen name="index" options={{ title: 'Inicio', tabBarIcon: icono('home-outline', 'home') }} />
-      <Tabs.Screen name="cobrar" options={{ title: 'Cobrar', tabBarIcon: icono('cash-register', 'cash-register') }} />
+      <Tabs.Screen name="cobrar" options={{ title: 'Cobrar', tabBarIcon: icono('point-of-sale', 'cash-register') }} />
       <Tabs.Screen
         name="inventario"
         options={{ title: 'Inventario', tabBarIcon: icono('package-variant-closed', 'package-variant') }}
@@ -60,10 +46,3 @@ export default function TabsLayout() {
     </Tabs>
   );
 }
-
-const estilos = StyleSheet.create({
-  areaIcono: { minHeight: iconos.pestana + bordes.grueso + espacio.xs, minWidth: iconos.pestana + espacio.l },
-  contenedorIcono: { alignItems: 'center', gap: espacio.xs },
-  barraActiva: { height: bordes.grueso, width: iconos.pestana + espacio.l, backgroundColor: 'transparent' },
-  barraActivaVisible: { backgroundColor: colores.acento },
-});

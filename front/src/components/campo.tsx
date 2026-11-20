@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 
 import type { NombreIcono } from '@/constants';
-import { bordes, colores, espacio, iconos, radios, tactil, tipografia } from '@/theme';
+import { bordes, color, espacio, iconos, pesoActivo, shape, tactil, type } from '@/theme';
 import { leerMonto } from '@/utils/formato-moneda';
 
 export interface CampoProps {
@@ -36,7 +36,10 @@ export interface CampoProps {
   style?: StyleProp<ViewStyle>;
 }
 
-/** Campo con etiqueta visible, ayuda y error en línea (icono + texto). */
+/**
+ * M3 Text field OUTLINED (00-sistema §9.2) con EXC-3: etiqueta fija arriba a 16 sp
+ * (no flota ni se encoge). Ayuda y error en línea con icono + texto.
+ */
 export function Campo({
   etiqueta,
   valor,
@@ -75,18 +78,21 @@ export function Campo({
   }
 
   const colorBorde = deshabilitado
-    ? colores.divisor
+    ? color.outlineVariant
     : error
-      ? colores.peligro
+      ? color.error
       : enfocado
-        ? colores.acento
-        : colores.borde;
-  const grosor = error || enfocado ? bordes.grueso : bordes.fino;
+        ? color.primary
+        : color.outline;
+  const grosor = (error || enfocado) && !deshabilitado ? bordes.grueso : bordes.fino;
+  const colorEtiqueta = deshabilitado ? color.onSurfaceVariant : error ? color.error : enfocado ? color.primary : color.onSurface;
 
   return (
     <View style={[estilos.contenedor, style]}>
       <View style={estilos.filaEtiqueta}>
-        <Text style={estilos.etiqueta}>{etiqueta}</Text>
+        <Text style={[estilos.etiqueta, { color: colorEtiqueta }, enfocado && estilos.etiquetaActiva]}>
+          {etiqueta}
+        </Text>
         {obligatorio ? <Text style={estilos.obligatorio}>* Obligatorio</Text> : null}
       </View>
       <View
@@ -96,8 +102,8 @@ export function Campo({
             borderColor: colorBorde,
             borderWidth: grosor,
             // compensa el borde para que el contenido no se mueva al enfocar
-            paddingHorizontal: espacio.m - (grosor - bordes.fino),
-            backgroundColor: deshabilitado ? colores.deshabilitadoFondo : colores.fondo,
+            paddingHorizontal: espacio.l - (grosor - bordes.fino),
+            backgroundColor: deshabilitado ? color.surfaceContainerHighest : color.surfaceContainerLowest,
           },
         ]}
       >
@@ -108,7 +114,7 @@ export function Campo({
           value={valor}
           onChangeText={onCambiar}
           placeholder={placeholder}
-          placeholderTextColor={colores.textoSecundario}
+          placeholderTextColor={color.onSurfaceVariant}
           keyboardType={teclado}
           inputMode={modoEntrada}
           editable={!deshabilitado}
@@ -126,7 +132,7 @@ export function Campo({
           <MaterialCommunityIcons
             name={icono}
             size={iconos.linea}
-            color={colores.textoSecundario}
+            color={color.onSurfaceVariant}
             accessibilityElementsHidden
             importantForAccessibility="no"
           />
@@ -137,7 +143,7 @@ export function Campo({
           <MaterialCommunityIcons
             name="alert-circle"
             size={iconos.linea}
-            color={colores.peligro}
+            color={color.error}
             accessibilityElementsHidden
             importantForAccessibility="no"
           />
@@ -148,7 +154,7 @@ export function Campo({
           <MaterialCommunityIcons
             name="information"
             size={iconos.linea}
-            color={colores.textoSecundario}
+            color={color.onSurfaceVariant}
             accessibilityElementsHidden
             importantForAccessibility="no"
           />
@@ -162,25 +168,26 @@ export function Campo({
 const estilos = StyleSheet.create({
   contenedor: { gap: espacio.xs },
   filaEtiqueta: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: espacio.s },
-  etiqueta: { ...tipografia.etiqueta, color: colores.texto },
-  obligatorio: { ...tipografia.cuerpo, color: colores.textoSecundario },
+  etiqueta: { ...type.titleSmall },
+  etiquetaActiva: { fontWeight: pesoActivo },
+  obligatorio: { ...type.bodyLarge, color: color.onSurfaceVariant },
   caja: {
-    minHeight: tactil.minimo,
-    borderRadius: radios.medio,
+    minHeight: tactil.principal,
+    borderRadius: shape.extraSmall,
     flexDirection: 'row',
     alignItems: 'center',
     gap: espacio.s,
   },
-  afijo: { ...tipografia.cuerpoGrande, color: colores.texto },
+  afijo: { ...type.bodyLargePlus, color: color.onSurfaceVariant },
   entrada: {
-    ...tipografia.cuerpoGrande,
-    color: colores.texto,
+    ...type.bodyLargePlus,
+    color: color.onSurface,
     flex: 1,
-    minHeight: tactil.minimo - bordes.grueso * 2,
+    minHeight: tactil.principal - bordes.grueso * 2,
     paddingVertical: espacio.s,
   },
-  entradaDeshabilitada: { color: colores.deshabilitadoTexto },
+  entradaDeshabilitada: { color: color.onSurfaceVariant },
   mensaje: { flexDirection: 'row', gap: espacio.xs, alignItems: 'flex-start' },
-  error: { ...tipografia.etiqueta, color: colores.peligro, flex: 1 },
-  ayuda: { ...tipografia.cuerpo, color: colores.textoSecundario, flex: 1 },
+  error: { ...type.labelLarge, color: color.error, flex: 1 },
+  ayuda: { ...type.bodySmall, color: color.onSurfaceVariant, flex: 1 },
 });

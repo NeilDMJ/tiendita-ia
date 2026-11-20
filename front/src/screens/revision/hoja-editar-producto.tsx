@@ -1,7 +1,7 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import type { Producto } from '@/api/esquemas';
 import { buscarProductos, masVendidos } from '@/api/negocio';
@@ -10,9 +10,10 @@ import { Boton } from '@/components/boton';
 import { Campo } from '@/components/campo';
 import { HojaInferior } from '@/components/hoja-inferior';
 import { StepperCantidad } from '@/components/stepper-cantidad';
+import { Tocable } from '@/components/tocable';
 import { EXISTENCIA_BAJA } from '@/constants';
 import { useConexion } from '@/hooks/use-conexion';
-import { bordes, colores, espacio, iconos, radios, tactil, tipografia } from '@/theme';
+import { bordes, color, espacio, iconos, pesoActivo, shape, tactil, type } from '@/theme';
 import type { ItemEditable } from '@/utils/carrito';
 import { formatoMoneda, leerMonto, montoParaLector } from '@/utils/formato-moneda';
 
@@ -32,16 +33,25 @@ export interface HojaEditarProductoProps {
 
 type Seleccion = { sku: string; nombre: string; existencia?: number } | null;
 
+/** List item M3 de 2 líneas con radio (opción del catálogo). */
 function FilaSugerencia({ producto, onPress }: { producto: Producto; onPress: () => void }) {
   const poco = producto.existencia <= EXISTENCIA_BAJA;
   return (
-    <Pressable
+    <Tocable
       onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={`${producto.nombre}, ${montoParaLector(producto.precio_unitario)}, ${producto.existencia} en existencia`}
-      style={({ pressed }) => [estilos.sugerencia, pressed && estilos.presionado]}
+      colorContenido={color.onSurface}
+      accessibilityRole="radio"
+      accessibilityState={{ checked: false }}
+      accessibilityLabel={`${producto.nombre}, ${montoParaLector(producto.precio_unitario)}, ${producto.existencia} en existencia${poco ? ', poco' : ''}`}
+      style={estilos.sugerencia}
     >
-      <MaterialCommunityIcons name="circle-outline" size={iconos.linea} color={colores.texto} />
+      <MaterialCommunityIcons
+        name="radiobox-blank"
+        size={iconos.linea}
+        color={color.outline}
+        accessibilityElementsHidden
+        importantForAccessibility="no"
+      />
       <View style={estilos.flex}>
         <Text style={estilos.nombreSugerencia}>{producto.nombre}</Text>
         <Text style={estilos.secundario}>
@@ -49,7 +59,8 @@ function FilaSugerencia({ producto, onPress }: { producto: Producto; onPress: ()
           {poco ? ' · Poco' : ''}
         </Text>
       </View>
-    </Pressable>
+      <View style={estilos.divisor} />
+    </Tocable>
   );
 }
 
@@ -131,7 +142,13 @@ export function HojaEditarProducto({ visible, item, onCerrar, onGuardar, onQuita
         <>
           {motivo ? (
             <View style={estilos.motivo}>
-              <MaterialCommunityIcons name="information" size={iconos.linea} color={colores.textoSecundario} />
+              <MaterialCommunityIcons
+                name="information"
+                size={iconos.linea}
+                color={color.onSurfaceVariant}
+                accessibilityElementsHidden
+                importantForAccessibility="no"
+              />
               <Text style={estilos.secundario}>{motivo}.</Text>
             </View>
           ) : null}
@@ -149,17 +166,26 @@ export function HojaEditarProducto({ visible, item, onCerrar, onGuardar, onQuita
       {seleccion && !libre ? (
         <View style={estilos.bloque}>
           <Text style={estilos.etiqueta}>Producto *</Text>
-          <View style={estilos.elegido}>
-            <MaterialCommunityIcons name="check-circle" size={iconos.linea} color={colores.exito} />
-            <Text style={[estilos.nombreSugerencia, estilos.flex]}>{seleccion.nombre}</Text>
+          <View
+            style={estilos.elegido}
+            accessible
+            accessibilityRole="radio"
+            accessibilityState={{ checked: true }}
+            accessibilityLabel={`${seleccion.nombre}, elegido${seleccion.existencia !== undefined ? `, ${seleccion.existencia} en existencia` : ''}`}
+          >
+            <MaterialCommunityIcons name="radiobox-marked" size={iconos.linea} color={color.primary} />
+            <View style={estilos.flex}>
+              <Text style={[estilos.nombreSugerencia, estilos.textoElegido]}>{seleccion.nombre}</Text>
+              {seleccion.existencia !== undefined ? (
+                <Text style={estilos.secundarioElegido}>{seleccion.existencia} en existencia</Text>
+              ) : null}
+            </View>
+            <Text style={estilos.marcaElegido}>Elegido</Text>
           </View>
-          {seleccion.existencia !== undefined ? (
-            <Text style={estilos.secundario}>{seleccion.existencia} en existencia</Text>
-          ) : null}
           <Boton
             texto="Cambiar producto"
             icono="magnify"
-            variante="texto"
+            variante="text"
             anchoCompleto={false}
             onPress={() => {
               setBusqueda(seleccion.nombre.split(' ')[0] ?? '');
@@ -183,7 +209,7 @@ export function HojaEditarProducto({ visible, item, onCerrar, onGuardar, onQuita
           <Boton
             texto="Mejor buscar en mi lista"
             icono="magnify"
-            variante="texto"
+            variante="text"
             anchoCompleto={false}
             onPress={() => setLibre(false)}
           />
@@ -204,7 +230,7 @@ export function HojaEditarProducto({ visible, item, onCerrar, onGuardar, onQuita
           {agregando && consulta.trim() === '' ? <Text style={estilos.etiqueta}>Más vendidos</Text> : null}
           {lista?.isFetching ? (
             <View style={estilos.filaIcono} accessibilityLiveRegion="polite">
-              <ActivityIndicator color={colores.texto} />
+              <ActivityIndicator color={color.primary} />
               <Text style={estilos.cuerpo}>Buscando…</Text>
             </View>
           ) : lista?.isError ? (
@@ -232,7 +258,7 @@ export function HojaEditarProducto({ visible, item, onCerrar, onGuardar, onQuita
           )}
           <Boton
             texto="No está en mi lista: cobrar como producto suelto"
-            variante="texto"
+            variante="text"
             onPress={() => {
               setLibre(true);
               setNombreLibre(busqueda);
@@ -265,7 +291,7 @@ export function HojaEditarProducto({ visible, item, onCerrar, onGuardar, onQuita
       </View>
 
       {onQuitar ? (
-        <Boton texto="Quitar de la venta" icono="trash-can-outline" variante="peligro" onPress={onQuitar} />
+        <Boton texto="Quitar de la venta" icono="trash-can-outline" variante="outlinedError" onPress={onQuitar} />
       ) : null}
     </HojaInferior>
   );
@@ -274,31 +300,40 @@ export function HojaEditarProducto({ visible, item, onCerrar, onGuardar, onQuita
 const estilos = StyleSheet.create({
   flex: { flex: 1 },
   bloque: { gap: espacio.s },
-  etiqueta: { ...tipografia.etiqueta, color: colores.texto },
-  cuerpo: { ...tipografia.cuerpoGrande, color: colores.texto },
-  secundario: { ...tipografia.cuerpo, color: colores.textoSecundario, flexShrink: 1 },
+  etiqueta: { ...type.titleSmall, color: color.onSurface },
+  cuerpo: { ...type.bodyLargePlus, color: color.onSurface },
+  secundario: { ...type.bodyLarge, color: color.onSurfaceVariant, flexShrink: 1 },
   filaIcono: { flexDirection: 'row', alignItems: 'center', gap: espacio.s },
   motivo: { flexDirection: 'row', alignItems: 'center', gap: espacio.xs },
+  // opción elegida: secondaryContainer + radio relleno + "Elegido"
   elegido: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: espacio.s,
-    minHeight: tactil.minimo,
-    paddingHorizontal: espacio.m,
-    borderWidth: bordes.grueso,
-    borderColor: colores.texto,
-    borderRadius: radios.medio,
+    gap: espacio.m,
+    minHeight: tactil.principal,
+    paddingHorizontal: espacio.l,
+    paddingVertical: espacio.s,
+    borderRadius: shape.medium,
+    backgroundColor: color.secondaryContainer,
   },
+  textoElegido: { color: color.onSecondaryContainer },
+  secundarioElegido: { ...type.bodyLarge, color: color.onSecondaryContainer },
+  marcaElegido: { ...type.labelLarge, color: color.onSecondaryContainer, fontWeight: pesoActivo },
   sugerencia: {
     minHeight: tactil.principal,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: espacio.m,
+    gap: espacio.l,
     paddingVertical: espacio.s,
     paddingHorizontal: espacio.s,
-    borderBottomWidth: bordes.fino,
-    borderBottomColor: colores.divisor,
   },
-  presionado: { backgroundColor: colores.superficie },
-  nombreSugerencia: { ...tipografia.nombreProducto, color: colores.texto },
+  divisor: {
+    position: 'absolute',
+    left: espacio.s,
+    right: 0,
+    bottom: 0,
+    height: bordes.fino,
+    backgroundColor: color.outlineVariant,
+  },
+  nombreSugerencia: { ...type.titleMedium, color: color.onSurface },
 });
