@@ -1,5 +1,6 @@
-import { PantallaPendiente } from '@/components/pantalla-pendiente';
+import { PantallaAsistente } from '@/screens/asistente/pantalla-asistente';
 
+/** Pestaña Asistente: chat unificado (02-asistente §2). */
 export default function Asistente() {
-  return <PantallaPendiente titulo="Asistente" descripcion="Pregunta por tus ventas, tu inventario o pide ayuda." />;
+  return <PantallaAsistente />;
 }

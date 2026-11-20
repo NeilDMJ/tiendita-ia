@@ -1,5 +1,5 @@
-import { PantallaPendiente } from '@/components/pantalla-pendiente';
+import { PantallaCobrar } from '@/screens/cobrar';
 
 export default function Cobrar() {
-  return <PantallaPendiente titulo="Cobrar" descripcion="Toma una foto de los productos para cobrar rápido." />;
+  return <PantallaCobrar />;
 }
