@@ -35,6 +35,7 @@ def main() -> None:
     ap.add_argument("--batch", type=int, default=64, help="64 cabe holgado en una T4 de 16 GB a 224 px")
     ap.add_argument("--patience", type=int, default=10, help="corta si val no mejora en N épocas")
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--workers", type=int, default=8, help="0 en contenedores con /dev/shm chico (DLI)")
     args = ap.parse_args()
 
     from ultralytics import YOLO
@@ -63,6 +64,7 @@ def main() -> None:
         project=str(AQUI / "runs"),
         name=args.nombre,
         plots=True,
+        workers=args.workers,
         # La luz y que la mano tape parte del producto varían mucho en la tienda; voltear de cabeza no aporta.
         **aumentos,
     )

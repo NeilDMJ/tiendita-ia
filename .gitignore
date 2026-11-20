@@ -54,3 +54,8 @@ datasets/
 __pycache__/
 .pytest_cache/
 .env
+wheels_dli/
+/raw.zip
+/vision.zip
+/wheels_dli.zip
+wheels_torch/

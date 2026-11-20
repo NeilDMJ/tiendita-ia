@@ -1,14 +1,9 @@
 # Una clase por línea. El ORDEN importa: la línea N (sin contar comentarios) es la clase N-1 en las etiquetas YOLO.
-# Mismo orden en la herramienta de etiquetado. Origen: docs/catalogo_demo.md (columna clase_vision).
+# Origen: docs/catalogo_demo.md (columna clase_vision). La clase "fondo" (sin producto) la agregan los scripts.
 # doritos = Nacho y Pizzerola juntos (mismo precio). Videos: sN_doritos.mp4, sN_doritos_2.mp4.
 agua_1l
-doritos
-emperador_vainilla
-chokis
-papas_chidas_limon
-sprite_chica
-coca_cola
-te_helado
-fritos_salados
-agua_members_mark
 agua_bonafont
+agua_members_mark
+coca_cola
+doritos
+chokis

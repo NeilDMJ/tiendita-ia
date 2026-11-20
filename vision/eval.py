@@ -45,6 +45,7 @@ def main() -> None:
     ap.add_argument("--nombre", required=True)
     ap.add_argument("--data", type=Path, default=AQUI / "dataset")
     ap.add_argument("--umbral", type=float, default=0.6, help="confianza mínima para aceptar sin pedir confirmación")
+    ap.add_argument("--workers", type=int, default=8, help="0 en contenedores con /dev/shm chico (DLI)")
     ap.add_argument("--ejemplos", type=int, default=12, help="máx. imágenes por carpeta aciertos/errores")
     args = ap.parse_args()
 
@@ -58,7 +59,14 @@ def main() -> None:
     nombres = modelo.names
 
     # 1) Métrica oficial de Ultralytics sobre test (+ imagen de la matriz de confusión)
-    r = modelo.val(data=str(args.data), split="test", project=str(salida), name="val_test", plots=True)
+    # Ultralytics 8.3 se niega si test tiene menos clases que train (p. ej. sin fotos de "fondo"):
+    # en ese caso top-1/top-5 se calculan abajo, foto por foto, con el mismo modelo.
+    try:
+        r = modelo.val(data=str(args.data), split="test", project=str(salida), name="val_test", plots=True, workers=args.workers)
+        top1, top5 = float(r.top1), float(r.top5)
+    except Exception as ex:  # noqa: BLE001
+        print(f"⚠ modelo.val(split='test') falló ({ex}); se calcula la exactitud foto por foto.")
+        top1 = top5 = None
 
     # 2) Predicción foto por foto: matriz de confusión, métricas por clase, ejemplos
     muestras = imagenes_test(args.data)
@@ -66,11 +74,12 @@ def main() -> None:
     (salida / "errores").mkdir(parents=True, exist_ok=True)
     matriz: dict[str, Counter] = defaultdict(Counter)
     confianzas = []  # (confianza, acierto)
-    n_ok = n_err = 0
+    n_ok = n_err = n_top5 = 0
     for (img, real), res in zip(muestras, predecir(modelo, muestras)):
         pred = nombres[int(res.probs.top1)]
         conf = float(res.probs.top1conf)
         matriz[real][pred] += 1
+        n_top5 += real in [nombres[int(i)] for i in res.probs.top5]
         confianzas.append((conf, pred == real))
         if pred == real:
             n_ok += 1
@@ -81,6 +90,8 @@ def main() -> None:
             if n_err <= args.ejemplos:
                 res.save(filename=str(salida / "errores" / f"{real}__como__{pred}__{conf:.2f}__{img.name}"))
 
+    if top1 is None:
+        top1, top5 = n_ok / len(muestras), n_top5 / len(muestras)
     clases = list(nombres.values())
     por_clase = {}
     for c in clases:
@@ -112,7 +123,7 @@ def main() -> None:
         "fecha": ahora(),
         "conjunto": "test (sesiones reservadas, no usadas en entrenamiento ni validación)",
         "fotos_test": len(muestras),
-        "global": {"exactitud_top1": round(float(r.top1), 4), "exactitud_top5": round(float(r.top5), 4)},
+        "global": {"exactitud_top1": round(top1, 4), "exactitud_top5": round(top5, 4)},
         "por_clase": por_clase,
         "matriz_confusion": {c: dict(matriz[c]) for c in clases},
         "confusiones_mas_frecuentes": dict(confusiones.most_common(10)),
@@ -129,7 +140,7 @@ def main() -> None:
             "prediccion_base_por_producto": {c: dict(vistas[c].most_common(3)) for c in clases},
         },
     })
-    print(f"\nExactitud top-1 = {r.top1:.3f}   top-5 = {r.top5:.3f}")
+    print(f"\nExactitud top-1 = {top1:.3f}   top-5 = {top5:.3f}")
     print(f"Con umbral {args.umbral}: {umbral['fotos_aceptadas_sin_confirmar']} aceptadas, "
           f"exactitud en ellas = {umbral['exactitud_en_aceptadas']}")
     if confusiones:

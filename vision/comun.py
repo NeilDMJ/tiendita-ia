@@ -1,5 +1,6 @@
 """Utilidades compartidas: huellas de archivos y datos del entorno para los registros (entregable C)."""
 import hashlib
+import os
 import json
 import platform
 import subprocess
@@ -7,6 +8,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 AQUI = Path(__file__).resolve().parent
+
+# Plan B para entornos con cuDNN roto (DLI con dos cuDNN instalados): SIN_CUDNN=1 python train.py ...
+# Entrena igual en GPU, solo sin cuDNN (más lento). Queda registrado en entorno()["cudnn"].
+if os.environ.get("SIN_CUDNN"):
+    import torch
+
+    torch.backends.cudnn.enabled = False
 ARTEFACTOS = AQUI / "artefactos"
 
 
@@ -28,6 +36,7 @@ def entorno() -> dict:
         import torch
 
         info["torch"] = torch.__version__
+        info["cudnn"] = torch.backends.cudnn.version() if torch.backends.cudnn.enabled else "desactivado (SIN_CUDNN)"
         info["cuda"] = torch.version.cuda
         info["gpu"] = torch.cuda.get_device_name(0) if torch.cuda.is_available() else None
     except ImportError:

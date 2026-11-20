@@ -13,7 +13,7 @@
 | 1. Videos | celulares | ver [`GUIA_VIDEOS.md`](GUIA_VIDEOS.md) | `videos/sN/sN_<clase>.mp4` |
 | 2. Extraer fotos | laptop (sin gastar GPU) | `python preparar_videos.py videos/` | `raw/<sesion>/<clase>/*.jpg` |
 | 3. Revisar | laptop | abrir carpetas, borrar fotos donde no se ve el producto | — |
-| 4. División | laptop o DLI | `python split.py --train s1 --test s2` | `dataset/estadisticas.json` |
+| 4. División | laptop o DLI | `python split.py --train s1,s3 --test s2` | `dataset/estadisticas.json` |
 | 5. Entrenamiento | DLI (T4) | `python train.py --nombre v1` | `artefactos/v1/registro.json`, `best.pt` |
 | 6. Evaluación | DLI | `python eval.py --nombre v1` | `artefactos/v1/eval/` |
 | 7. TensorRT | DLI | `python export_trt.py --nombre v1` | `best.engine`, `benchmark.json` |
@@ -26,7 +26,7 @@ Los pasos 4–7 están encadenados en **`entrenar_vision.ipynb`**: subirlo al Ju
 pip install opencv-python pillow
 cd vision
 python preparar_videos.py ~/Descargas/videos     # carpeta con s1/ s2/ s3/ s4/
-python split.py --train s1 --test s2              # prueba local: detecta errores antes de prender la GPU
+python split.py --train s1,s3 --test s2           # prueba local: detecta errores antes de prender la GPU
 zip -r ../raw.zip raw                              # sube raw.zip al DLI
 cd .. && zip -r vision.zip vision -x 'vision/.venv/*' 'vision/raw/*' 'vision/videos/*' 'vision/dataset/*' 'vision/runs/*' 'vision/artefactos/*' '*/__pycache__/*'
 ```
