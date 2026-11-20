@@ -29,7 +29,7 @@ export interface CompositorProps {
 
 /**
  * Compositor del chat (02-asistente §2.5): `Campo` outlined multilínea SIN etiqueta visible (EXC-11)
- * + `Boton` filled 56 solo icono ("Enviar" queda como etiqueta del lector). Enter = salto de línea; solo se envía con el botón.
+ * + `Boton` filled 56 solo icono de 48 ("Enviar" queda como etiqueta del lector). Enter = salto de línea; solo se envía con el botón.
  * Campo vacío: no se deshabilita el botón; muestra "Escribe tu pregunta primero" y enfoca el campo.
  */
 export function Compositor({
@@ -65,7 +65,7 @@ export function Compositor({
       texto="Detener"
       icono="stop"
       variante="tonal"
-      tamano="principal"
+      tamano="normal"
       soloIcono
       style={letraGrande ? estilos.alFinal : undefined}
       accessibilityHint="Cancela la respuesta que está en camino"
@@ -75,7 +75,7 @@ export function Compositor({
     <Boton
       texto="Enviar"
       icono="send"
-      tamano="principal"
+      tamano="normal"
       soloIcono
       style={letraGrande ? estilos.alFinal : undefined}
       onPress={enviar}

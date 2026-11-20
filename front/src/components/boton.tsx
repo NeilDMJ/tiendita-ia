@@ -144,7 +144,9 @@ const estilos = StyleSheet.create({
   },
   principal: { minHeight: tactil.principal },
   conIcono: { paddingLeft: espacio.l },
-  soloIcono: { paddingHorizontal: 0 },
+  // paddingLeft/Right explícitos: `conIcono` fija paddingLeft y, al ser más específico que paddingHorizontal,
+  // lo ganaba y empujaba el icono a la derecha del cuadrado.
+  soloIcono: { paddingHorizontal: 0, paddingLeft: 0, paddingRight: 0 },
   textoSolo: { paddingHorizontal: espacio.m },
   anchoCompleto: { alignSelf: 'stretch' },
   anchoAjustado: { alignSelf: 'flex-start' },
