@@ -1,57 +1,59 @@
 [project]
-name = "enjambre-agentes"
-version = "0.2.0"
-description = "Ecosistema Multiagente Comercial Multimodal en LangGraph (Tiendita IA)"
+name = "tiendita-ia"
+version = "0.1.0"
+description = "Tiendita IA: Ecosistema Comercial Multimodal con Visión Artificial, Orquestación Multiagente en LangGraph y Tecnología NVIDIA (NIM / NeMo)"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 dependencies = [
-    # Orquestación de Agentes y Memoria
-    "langgraph>=0.2.0",
-    "langchain-core>=0.3.0",
-    "pydantic>=2.7.0",
-    # Proveedores de LLM y Embeddings (models.py)
-    "langchain-nvidia-ai-endpoints>=0.1.0",
-    "langchain-google-genai>=2.0.0",
+    # Ecosistema LangChain, LangGraph y Proveedores LLM (NVIDIA, Gemini, OpenAI, Groq, Cohere, Ollama)
+    "langchain",
+    "langchain-core",
+    "langchain-community",
+    "langgraph",
+    "langchain-nvidia-ai-endpoints",
+    "nemoguardrails",
+    "langchain-google-genai",
+    "google-generativeai>=0.8.6",
+    "langchain-openai",
+    "openai",
     "langchain-groq>=0.1.5",
     "langchain-cohere>=0.1.7",
-    "langchain-community>=0.3.0",
-    "langchain-ollama>=0.2.0",
-    "langchain-openai>=0.2.0",
-    "langchain-huggingface>=0.1.0",
-    # Base de Datos y Vector Store (PostgreSQL / pgvector)
-    "psycopg2-binary>=2.9.9",
-    "asyncpg>=0.29.0",
-    # Herramientas Auxiliares y APIs
-    "tavily-python>=0.5.0",
-    "python-dotenv>=1.0.0",
-    "requests>=2.31.0",
-    "fastapi>=0.115.0",
-    "uvicorn[standard]>=0.30.0",
-    "rich>=13.7.0",
-    "httpx>=0.27.0",
-    "onnxruntime>=1.32.0",
-    "pillow>=13.0.0",
-    "numpy>=2.4.6",
-    "python-multipart>=0.0.34",
-]
-
-[project.optional-dependencies]
-# Capa declarativa NeMo Guardrails (opcional). Activar con NEMO_GUARDRAILS_ENABLED=true.
-# Instalar: uv sync --extra guardrails
-guardrails = [
-    "nemoguardrails>=0.25.0",
-]
-
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-[tool.hatch.build.targets.wheel]
-packages = ["."]
-
-[dependency-groups]
-dev = [
-    "pytest>=8.0.0",
+    "langchain-ollama",
+    # Búsqueda Web, Scraping y Procesamiento Documental (Agente Investigador)
+    "tavily-python",
+    "langchain-tavily",
+    "beautifulsoup4",
+    "lxml",
+    "pypdf",
+    "pandas",
+    "httpx",
+    # RAG Local, FAISS y Embeddings Abiertos
+    "faiss-cpu",
+    "langchain-huggingface",
+    "huggingface-hub",
+    "sentence-transformers",
+    # Base de Datos y RAG Vectorial Persistente
+    "psycopg[binary]",
+    "asyncpg",
+    "sqlalchemy[asyncio]>=2.0.0",
+    "pgvector",
+    # API, Servidor HTTP, CLI y Formato
+    "fastapi",
+    "uvicorn[standard]",
+    "pydantic>=2.0",
+    "pyyaml",
+    "rich",
+    "python-dotenv",
+    "aiofiles",
+    "requests",
+    # Visión: back/vision sirve best.onnx en /vision/*
+    "onnxruntime",
+    "pillow",
+    "numpy",
+    "python-multipart",
+    # Asistente bancario: back/app sirve /asistente/mensaje
+    "pydantic-settings",
+    "httpx",
 ]
 
 [tool.uv]

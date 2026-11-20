@@ -6,9 +6,14 @@ FastAPI que recibe el mensaje del chat, lo anonimiza, busca la guía verificada 
 
 > **Integración con el equipo.** Este backend implementa `POST /asistente/mensaje` con el contrato del chat unificado
 > (`SolicitudAsistente` → `MensajeAsistente`, con `sugerencias`). Responde la **guía bancaria** y las consultas de
-> DiMo/CoDi/SPEI. El orquestador de `../enjambre_agentes` (LangGraph, `/orchestrate`) y la base de datos
-> (`back/db`, `docker-compose.yml`) siguen aparte: **aún no están conectados a este endpoint** (ambos usan el puerto 8000;
-> corre uno a la vez o cambia el puerto). Conectar caja/bodega/cuentas es el siguiente paso.
+> DiMo/CoDi/SPEI. **Corre dentro del servidor de la Tiendita**: `enjambre_agentes/api.py` monta su `router` (y el de
+> `back/vision`) en el mismo puerto 8000, así la app usa una sola URL:
+>
+> ```bash
+> cd enjambre_agentes && uv run uvicorn api:app --host 0.0.0.0 --port 8000
+> ```
+>
+> También puede correr solo (`uvicorn app.main:app` desde `back/`) para desarrollarlo o probarlo aparte.
 
 ## Qué hace el modelo y qué no
 

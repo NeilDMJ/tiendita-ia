@@ -1,31 +1,47 @@
-# Orquestación de Agentes y Memoria
-langgraph>=0.2.0
-langchain-core>=0.3.0
-pydantic>=2.7.0
-
-# Proveedores de LLM y Embeddings
-langchain-nvidia-ai-endpoints>=0.1.0
-langchain-google-genai>=2.0.0
+# --- Proveedores LLM & Orquestación LangChain / LangGraph ---
+langchain
+langchain-core
+langchain-community
+langgraph
+langchain-nvidia-ai-endpoints
+nemoguardrails
+langchain-google-genai
+google-generativeai>=0.8.6
+langchain-openai
+openai
 langchain-groq>=0.1.5
 langchain-cohere>=0.1.7
-langchain-community>=0.3.0
-langchain-ollama>=0.2.0
-langchain-openai>=0.2.0
-langchain-huggingface>=0.1.0
+langchain-ollama
 
-# Base de Datos y Vector Store
-psycopg2-binary>=2.9.9
-asyncpg>=0.29.0
+# --- Búsqueda Web, Scraping y Documentos (Agente Investigador) ---
+tavily-python
+langchain-tavily
+beautifulsoup4
+lxml
+pypdf
+pandas
+httpx
 
-# Herramientas Auxiliares y APIs
-tavily-python>=0.5.0
-python-dotenv>=1.0.0
-requests>=2.31.0
+# --- RAG Local, FAISS & Embeddings Abiertos ---
+faiss-cpu
+langchain-huggingface
+huggingface-hub
+sentence-transformers
 
-# Opcional (NeMo Guardrails): uv sync --extra guardrails  |  pip install "nemoguardrails>=0.25.0"
+# --- Base de Datos & RAG Vectorial Persistente ---
+psycopg[binary]
+asyncpg
+sqlalchemy[asyncio]>=2.0.0
+pgvector
 
-# API y CLI
-fastapi>=0.115.0
-uvicorn[standard]>=0.30.0
-httpx>=0.27.0
-rich>=13.7.0
+# --- API, Servidor HTTP & CLI ---
+fastapi
+uvicorn[standard]
+pydantic>=2.0
+pyyaml
+rich
+
+# --- Utilidades ---
+python-dotenv
+aiofiles
+requests

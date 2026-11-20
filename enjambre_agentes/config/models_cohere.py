@@ -1,0 +1,86 @@
+"""
+Módulo de introspección y descubrimiento dinámico de modelos de Cohere.
+Responsabilidad única (SRP): Consultar en vivo a la API de Cohere los modelos disponibles
+para la API Key configurada y proveer la lista de modelos utilizables.
+"""
+import os
+import sys
+import urllib.request
+import json
+
+# Asegurar que la raíz del proyecto esté en sys.path para ejecución directa
+_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if _root not in sys.path:
+    sys.path.insert(0, _root)
+
+try:
+    from config.keys import COHERE_API_KEY
+except ImportError:
+    from keys import COHERE_API_KEY
+
+FALLBACK_MODELS_COHERE = [
+    "command-r7b-12-2024",
+    "command-r-08-2024",
+    "command-r-plus-08-2024",
+    "c4ai-aya-expanse-32b",
+]
+
+
+def obtener_modelos_cohere(tipo: str = "chat", timeout: float = 4.0, strict: bool = False) -> list[str]:
+    """Consulta la API de Cohere y retorna los modelos disponibles.
+    
+    Args:
+        tipo: 'chat' (modelos con endpoint chat), 'embed' (con endpoint embed) o 'todos'.
+        timeout: Tiempo máximo de espera HTTP (máx. 4s).
+        strict: Si True, retorna [] cuando no hay conexión en vivo o falta API Key.
+        
+    Returns:
+        Lista de nombres de modelos (ej. ['command-r-plus', ...]).
+    """
+    if not COHERE_API_KEY or COHERE_API_KEY.startswith("tu_"):
+        return [] if strict else list(FALLBACK_MODELS_COHERE)
+
+    url = "https://api.cohere.com/v1/models"
+    req = urllib.request.Request(url)
+    req.add_header("Authorization", f"Bearer {COHERE_API_KEY}")
+    req.add_header("Accept", "application/json")
+    req.add_header("User-Agent", "TienditaIA/1.0 (Linux; x86_64)")
+
+    try:
+        with urllib.request.urlopen(req, timeout=min(timeout, 4.0)) as response:
+            data = json.loads(response.read().decode('utf-8'))
+            modelos = []
+            for model in data.get("models", []):
+                endpoints = model.get("endpoints", [])
+                nombre = model.get("name", "")
+                if tipo == "chat" and "chat" in endpoints:
+                    modelos.append(nombre)
+                elif tipo == "embed" and "embed" in endpoints:
+                    modelos.append(nombre)
+                elif tipo == "todos":
+                    modelos.append(nombre)
+            modelos.sort()
+            if modelos:
+                return modelos
+            return [] if strict else list(FALLBACK_MODELS_COHERE)
+    except Exception as e:
+        if not strict:
+            print(f"[Aviso] No se pudo consultar la API de Cohere en vivo ({e}). Usando lista de respaldo.")
+            return list(FALLBACK_MODELS_COHERE)
+        return []
+
+
+if __name__ == "__main__":
+    print("=" * 60)
+    print("CONSULTA DIRECTA A LA API DE COHERE")
+    print("=" * 60)
+    
+    if not COHERE_API_KEY:
+        print("ERROR: COHERE_API_KEY no encontrada en el entorno.")
+        exit(1)
+
+    print("\nModelos de Cohere disponibles para Chat:")
+    modelos = obtener_modelos_cohere(tipo="chat")
+    for m in modelos:
+        print(f"  • {m}")
+    print("=" * 60)

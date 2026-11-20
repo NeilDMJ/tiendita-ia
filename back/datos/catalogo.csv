@@ -1,6 +1,6 @@
 sku,clase_vision,nombre,categoria,unidad,precio,costo,existencia,stock_minimo,caduca,alias
-COCA-600,coca_600,Coca-Cola 600 ml,Bebidas,pieza,20.00,13.50,35,10,no,la coca|la coca de 600|coca cola|coca-cola|refresco de cola
-AGUA-BON-1L,agua_1l,Agua embotellada 1 L,Bebidas,pieza,15.00,9.00,30,10,no,el agua|agua de litro|agua embotellada|bonafont
+COCA-600,coca_cola,Coca-Cola 600 ml,Bebidas,pieza,20.00,13.50,35,10,no,la coca|la coca de 600|coca cola|coca-cola|refresco de cola
+AGUA-BON-1L,agua_bonafont,Agua Bonafont 1 L,Bebidas,pieza,15.00,9.00,30,10,no,el agua|agua de litro|agua embotellada|bonafont
 BOING-500ML,jugo_boing,Jugo Boing 500 ml,Bebidas,pieza,15.00,10.00,18,6,si,el boing|los boing|jugo boing
 LALA-1L,leche_1l,Leche Lala 1 L,Lácteos,pieza,29.00,22.00,14,6,si,la leche|la lala|leche lala|leche de litro
 BIMB-BLAN,pan_caja,Pan de caja Bimbo,Panadería,pieza,45.00,33.00,7,5,si,pan de caja|el bimbo|pan bimbo|pan blanco
@@ -16,3 +16,7 @@ PAPEL-HIG-1R,papel_higienico,Papel higiénico (rollo),Limpieza,pieza,10.00,6.50,
 JAB-ZOTE-400,jabon_zote,Jabón Zote,Limpieza,pieza,20.00,15.00,16,5,no,el zote|jabon zote|jabon de barra
 HUEVO-KG,,Huevo blanco (kg),Abarrotes,kg,48.00,38.00,8,2,si,el huevo|los huevos|blanquillos|huevo blanco|kilo de huevo
 TORT-KG,,Tortilla de maíz (kg),Tortillería,kg,24.00,17.00,10,3,si,tortillas|las tortillas|tortilla|kilo de tortillas
+AGUA-CIEL-1L,agua_1l,Agua Ciel 1 L,Bebidas,pieza,15.00,9.00,24,8,no,la ciel|agua ciel|el agua ciel
+AGUA-MM-1L,agua_members_mark,Agua Member's Mark 1 L,Bebidas,pieza,10.00,5.50,24,8,no,agua members|el agua de sams|members mark
+DORITOS,doritos,Doritos (Nacho o Pizzerola),Botanas,pieza,20.00,14.00,18,6,si,los doritos|doritos nacho|doritos pizzerola|unos doritos
+CHOKIS,chokis,Galletas Chokis,Galletas,pieza,20.00,14.00,15,5,si,las chokis|unas chokis|galletas chokis
