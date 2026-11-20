@@ -13,7 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { esErrorApi } from '@/api/cliente';
-import { ConflictoExistencia, type MetodoPago, type SolicitudVenta } from '@/api/esquemas';
+import { ConflictoExistencia, type DatosModificarItem, type MetodoPago, type SolicitudVenta } from '@/api/esquemas';
 import { registrarVenta } from '@/api/negocio';
 import { Aviso } from '@/components/aviso';
 import { BarraPasos } from '@/components/barra-pasos';
@@ -38,14 +38,18 @@ import {
   type ItemEditable,
 } from '@/utils/carrito';
 import { formatoMoneda, montoParaLector } from '@/utils/formato-moneda';
+import { aplicarModificacion, copiaParaDeshacer, validarModificacion } from '@/utils/contexto-cobro';
 import { crearIdLocal } from '@/utils/id';
 
 import { FotoDetecciones } from './revision/foto-detecciones';
+import { HojaCaja } from './revision/hoja-caja';
 import { HojaCobro, type ErrorCobro } from './revision/hoja-cobro';
 import { HojaEditarProducto, type CambiosProducto } from './revision/hoja-editar-producto';
 
 type Editor = { modo: 'editar'; clave: string } | { modo: 'agregar'; id: string } | null;
 type Deshacer = { item: ItemEditable; indice: number } | null;
+/** Cambio aplicado desde "Pregúntale a Caja" (Deshacer restaura la fila). */
+type DeshacerCaja = { clave: string; copia: Partial<ItemEditable>; antes: string; ahora: string } | null;
 
 const PASOS = ['Foto', 'Revisar', 'Listo'];
 const ESPERA_ANUNCIO_TOTAL_MS = 600;
@@ -85,6 +89,10 @@ export function PantallaRevisionCobro({ abrirAgregar }: { abrirAgregar?: boolean
   const [errorCobro, setErrorCobro] = useState<ErrorCobro | null>(null);
   const [errorExistencia, setErrorExistencia] = useState(false);
   const [desplazado, setDesplazado] = useState(false);
+  const [hojaCaja, setHojaCaja] = useState(false);
+  const [deshacerCaja, setDeshacerCaja] = useState<DeshacerCaja>(null);
+  /** Fila a la que va el foco del lector al cerrar la hoja de Caja. */
+  const filaAplicada = useRef<string | null>(null);
 
   const idLocal = useRef(crearIdLocal());
   const scroll = useRef<ComponentRef<typeof ScrollView>>(null);
@@ -110,11 +118,10 @@ export function PantallaRevisionCobro({ abrirAgregar }: { abrirAgregar?: boolean
     setSalida({ repetir: repeat });
   });
 
-  function salirA(ruta: '/asistente' | `/venta/${string}`) {
+  function salirA(ruta: `/venta/${string}`) {
     setSaliendo(true);
     desactivarProteccion();
-    if (ruta === '/asistente') router.navigate(ruta);
-    else router.replace(ruta);
+    router.replace(ruta);
   }
 
   // ---------- total anunciado con espera (no en cada toque) ----------
@@ -122,6 +129,55 @@ export function PantallaRevisionCobro({ abrirAgregar }: { abrirAgregar?: boolean
     const t = setTimeout(() => setTotalAnunciado(textoTotal), ESPERA_ANUNCIO_TOTAL_MS);
     return () => clearTimeout(t);
   }, [textoTotal]);
+
+  // ---------- "Pregúntale a Caja" (02-asistente §4.3) ----------
+  function enfocarFila(clave: string) {
+    const ref = refsFilas.current[clave];
+    const nodo = ref ? findNodeHandle(ref) : null;
+    if (nodo) setTimeout(() => AccessibilityInfo.setAccessibilityFocus(nodo), 400);
+  }
+
+  function aplicarDeCaja(datos: DatosModificarItem) {
+    const r = validarModificacion(items, datos);
+    if (!r.ok) return r;
+    const cambios = aplicarModificacion(r.item, datos);
+    setDeshacer(null);
+    setDeshacerCaja({
+      clave: r.item.clave,
+      copia: copiaParaDeshacer(r.item),
+      antes: r.item.nombre,
+      ahora: cambios.nombre ?? r.item.nombre,
+    });
+    actualizarItem(r.item.clave, cambios);
+    filaAplicada.current = r.item.clave;
+    return r;
+  }
+
+  function cerrarCaja() {
+    setHojaCaja(false);
+    const clave = filaAplicada.current;
+    filaAplicada.current = null;
+    if (clave) enfocarFila(clave);
+  }
+
+  function editarDesdeCaja(clave: string) {
+    setHojaCaja(false);
+    filaAplicada.current = null;
+    setEditor({ modo: 'editar', clave });
+  }
+
+  function buscarDesdeCaja() {
+    setHojaCaja(false);
+    filaAplicada.current = null;
+    const primero = faltan[0]?.item;
+    setEditor(primero ? { modo: 'editar', clave: primero.clave } : { modo: 'agregar', id: crearIdLocal() });
+  }
+
+  useEffect(() => {
+    if (!deshacerCaja || lectorActivo) return;
+    const t = setTimeout(() => setDeshacerCaja(null), DESHACER_MS);
+    return () => clearTimeout(t);
+  }, [deshacerCaja, lectorActivo]);
 
   // ---------- deshacer: 10 s, sin límite con lector de pantalla ----------
   useEffect(() => {
@@ -137,6 +193,7 @@ export function PantallaRevisionCobro({ abrirAgregar }: { abrirAgregar?: boolean
   function quitar(clave: string) {
     const r = quitarItem(clave);
     if (!r) return;
+    setDeshacerCaja(null);
     setDeshacer(r); // el Snackbar anuncia "Quitaste… Deshacer disponible" (un solo mecanismo)
   }
 
@@ -298,12 +355,11 @@ export function PantallaRevisionCobro({ abrirAgregar }: { abrirAgregar?: boolean
         titulo="Revisa la venta"
         onAtras={() => (router.canGoBack() ? router.back() : router.replace('/cobrar'))}
         accionDerecha={{
-          texto: 'Caja',
-          icono: 'cash-register',
-          onPress: () => salirA('/asistente'),
-          accessibilityHint: sinConexion
-            ? 'Necesita internet'
-            : 'Pregúntale a Caja. Tu venta queda guardada como borrador.',
+          // EXC-4: el motivo se ve junto al control, no solo en el hint
+          texto: sinConexion ? 'Caja · Necesita internet' : 'Caja',
+          icono: sinConexion ? 'wifi-off' : 'cash-register',
+          onPress: () => setHojaCaja(true),
+          accessibilityHint: sinConexion ? 'Necesita internet' : 'Pregúntale a Caja sobre esta venta.',
           deshabilitado: sinConexion,
         }}
         desplazado={desplazado}
@@ -418,9 +474,21 @@ export function PantallaRevisionCobro({ abrirAgregar }: { abrirAgregar?: boolean
               variante="text"
               deshabilitado={sinConexion}
               motivoDeshabilitado="Necesita internet"
-              accessibilityHint="Abre el asistente. Tu venta queda guardada como borrador."
-              onPress={() => salirA('/asistente')}
+              accessibilityHint="Pregúntale a Caja sobre esta venta sin salir de la revisión."
+              onPress={() => setHojaCaja(true)}
             />
+            {sinConexion ? (
+              <View style={estilos.filaSinPrecio}>
+                <MaterialCommunityIcons
+                  name="wifi-off"
+                  size={iconos.linea}
+                  color={color.onSurfaceVariant}
+                  accessibilityElementsHidden
+                  importantForAccessibility="no"
+                />
+                <Text style={estilos.motivo}>Necesita internet</Text>
+              </View>
+            ) : null}
             {items.length > 0 ? (
               <Boton
                 texto="Empezar de nuevo"
@@ -453,6 +521,32 @@ export function PantallaRevisionCobro({ abrirAgregar }: { abrirAgregar?: boolean
           // el tiempo (10 s, sin límite con lector) lo maneja esta pantalla; el anuncio, el Snackbar
           duracionMs={null}
           onCerrar={() => setDeshacer(null)}
+          separacionInferior={0}
+        />
+
+        <Snackbar
+          visible={deshacerCaja !== null}
+          mensaje={deshacerCaja ? `Caja cambió ${deshacerCaja.antes} por ${deshacerCaja.ahora}.` : ''}
+          icono="cash-register"
+          anuncio={
+            deshacerCaja
+              ? `Caja cambió ${deshacerCaja.antes} por ${deshacerCaja.ahora}. Botón Deshacer disponible.`
+              : undefined
+          }
+          accion={
+            deshacerCaja
+              ? {
+                  texto: 'Deshacer',
+                  onPress: () => {
+                    actualizarItem(deshacerCaja.clave, deshacerCaja.copia);
+                    anunciar(`${deshacerCaja.antes} regresó como estaba`);
+                    setDeshacerCaja(null);
+                  },
+                }
+              : undefined
+          }
+          duracionMs={null}
+          onCerrar={() => setDeshacerCaja(null)}
           separacionInferior={0}
         />
       </View>
@@ -527,6 +621,14 @@ export function PantallaRevisionCobro({ abrirAgregar }: { abrirAgregar?: boolean
           }
         />
       ) : null}
+
+      <HojaCaja
+        visible={hojaCaja}
+        onCerrar={cerrarCaja}
+        onAplicar={aplicarDeCaja}
+        onEditarFila={editarDesdeCaja}
+        onBuscarProducto={buscarDesdeCaja}
+      />
 
       <HojaCobro
         visible={hojaCobro}
@@ -626,4 +728,5 @@ const estilos = StyleSheet.create({
   total: { ...type.headlineLarge, color: color.onSurface },
   filaSinPrecio: { flexDirection: 'row', alignItems: 'center', gap: espacio.xs },
   textoSinPrecio: { ...type.labelLarge, color: color.error },
+  motivo: { ...type.bodyLarge, color: color.onSurfaceVariant, flex: 1 },
 });

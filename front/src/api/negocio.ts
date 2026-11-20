@@ -1,12 +1,20 @@
 import { z } from 'zod';
 
 import { pedir, pedirJson, USAR_MOCKS } from './cliente';
-import { DetalleVenta, Producto, RespuestaVenta, type SolicitudVenta } from './esquemas';
+import {
+  DetalleVenta,
+  Producto,
+  RespuestaAlta,
+  RespuestaVenta,
+  type DatosConfirmarAlta,
+  type SolicitudVenta,
+} from './esquemas';
 import { esperar } from './mocks';
 import {
   mockBuscarProductos,
   mockDetalleVenta,
   mockMasVendidos,
+  mockRegistrarAlta,
   mockRegistrarVenta,
   mockVentasDeHoy,
 } from './mocks/negocio';
@@ -36,4 +44,13 @@ export async function ventasDeHoy(): Promise<DetalleVenta[]> {
 export async function detalleVenta(id: string): Promise<DetalleVenta> {
   if (USAR_MOCKS) return esperar(300).then(() => mockDetalleVenta(id));
   return pedir(`/ventas/${encodeURIComponent(id)}`, DetalleVenta);
+}
+
+/**
+ * POST /inventario/altas — PROPUESTA (02-asistente §3.1); la pantalla de alta es Fase 4.
+ * Mientras el back no lo tenga, con mocks se simula en memoria (MOCK).
+ */
+export async function registrarAlta(datos: DatosConfirmarAlta): Promise<RespuestaAlta> {
+  if (USAR_MOCKS) return esperar(900).then(() => mockRegistrarAlta(datos));
+  return pedirJson('/inventario/altas', RespuestaAlta, datos);
 }
