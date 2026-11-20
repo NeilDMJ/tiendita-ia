@@ -54,7 +54,7 @@ def publicista_node(state: OrchestratorState) -> Dict[str, Any]:
 
     resultado = agent.invoke({"messages": mensajes})
     mensajes_nuevos = resultado.get("messages", [])
-    ultimo_mensaje = extraer_texto_mensaje(mensajes_nuevos[-1].content) if mensajes_nuevos else "Activos promocionales generados."
+    ultimo_mensaje = extraer_texto_mensaje(mensajes_nuevos[-1].content).strip() if mensajes_nuevos else ""
 
     # Consultar productos reales próximos a caducar en PostgreSQL (sin datos simulados)
     producto_real = None
@@ -70,6 +70,13 @@ def publicista_node(state: OrchestratorState) -> Dict[str, Any]:
     sku_prod = producto_real["sku"] if producto_real else None
     precio_base = float(producto_real["precio_venta"]) if producto_real else 0.0
     precio_promo = round(precio_base * 0.80, 2) if precio_base > 0 else None
+
+    if not ultimo_mensaje:
+        precio_txt = f" a ${precio_promo:.2f} (20% de descuento)" if precio_promo else " con 20% de descuento"
+        ultimo_mensaje = (
+            f"Propuesta de promoción lista para {nombre_prod}{precio_txt}. "
+            "Revisa la tarjeta de confirmación para aprobarla o descartarla."
+        )
 
     promo_assets = {
         "sku": sku_prod,

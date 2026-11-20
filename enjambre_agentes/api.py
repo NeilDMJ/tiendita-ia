@@ -204,9 +204,26 @@ class OrchestrateRequest(BaseModel):
 
 class ResumeRequest(BaseModel):
     thread_id: str = Field(..., description="ID del hilo pausado en 'approval_gate'.")
-    approved: bool = Field(..., description="True para autorizar y confirmar COMMIT en BD; False para rechazar.")
+    approved: Optional[bool] = Field(
+        default=None,
+        description="True para autorizar y confirmar COMMIT en BD; False para rechazar.",
+    )
+    action: Optional[str] = Field(
+        default=None,
+        description="Alias opcional compatible ('approve' / 'reject') si no se envía 'approved'.",
+    )
     correction: Optional[str] = Field(default=None, description="Corrección del operador (equivalente a [e] Editar en CLI).")
     notes: Optional[str] = Field(default=None, description="Notas o motivo de auditoría humana.")
+
+    def resolved_approved(self) -> bool:
+        if self.approved is not None:
+            return bool(self.approved)
+        act = (self.action or "").strip().lower()
+        if act in ("approve", "aprobar", "s", "si", "sí", "true"):
+            return True
+        if act in ("reject", "rechazar", "n", "no", "false"):
+            return False
+        raise ValueError("Debes enviar 'approved' (true/false) o 'action' ('approve'/'reject').")
 
 
 class UpdateBrainRequest(BaseModel):
@@ -469,15 +486,19 @@ def resume_hitl(req: ResumeRequest):
     if not snap or not snap.get("values"):
         raise HTTPException(status_code=404, detail=f"No existe estado activo para thread_id='{req.thread_id}'.")
     try:
+        is_approved = req.resolved_approved()
+    except ValueError as err:
+        raise HTTPException(status_code=422, detail=str(err))
+    try:
         resultado = resume_orchestration(
             thread_id=req.thread_id,
-            approved=req.approved,
+            approved=is_approved,
             correction=req.correction,
             notes=req.notes,
         )
         respuesta = _formatear_respuesta_orquestacion(req.thread_id, resultado)
-        respuesta["status"] = "approved_and_resumed" if req.approved else "rejected_and_resumed"
-        respuesta["approved"] = req.approved
+        respuesta["status"] = "approved_and_resumed" if is_approved else "rejected_and_resumed"
+        respuesta["approved"] = is_approved
         return respuesta
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -871,6 +892,10 @@ async def websocket_orchestrate(websocket: WebSocket):
                         "event_source": event_source,
                         "vision_payload": vision_payload,
                         "ui_state": ui_state,
+                        "next_agent": None,
+                        "compound_chain": [],
+                        "pending_approval": None,
+                        "promo_assets": None,
                         "iteration_count": 0,
                         "errores": [],
                     }

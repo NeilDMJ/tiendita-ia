@@ -83,6 +83,7 @@ def approval_gate_node(state: OrchestratorState) -> Dict[str, Any]:
         detalle_commit = _commit_approved_db_action(pending)
         return {
             "pending_approval": None,
+            "promo_assets": None,
             "db_evidence": detalle_commit,
             "messages": [AIMessage(content=f"[HITL APROBADO]: {detalle_commit}")],
         }
@@ -90,6 +91,7 @@ def approval_gate_node(state: OrchestratorState) -> Dict[str, Any]:
         motivo = pending.get("human_notes") or "Rechazado por el operador."
         return {
             "pending_approval": None,
+            "promo_assets": None,
             "messages": [AIMessage(content=f"[HITL RECHAZADO]: Operación cancelada sin escribir en PostgreSQL. Motivo: {motivo}")],
         }
     return {}
@@ -118,7 +120,7 @@ def router_supervisor(state: OrchestratorState) -> str:
 def router_approval(state: OrchestratorState) -> str:
     """Evalúa si una acción de control, vendedor o publicista requiere approval_gate, sigue cadena o termina."""
     pending = state.get("pending_approval")
-    if pending and pending.get("requires_human") and pending.get("status") == "pending":
+    if pending and pending.get("requires_human") and pending.get("status") in ("pending", "approved", "rejected"):
         return "approval_gate"
     if state.get("compound_chain"):
         return "supervisor"
@@ -229,6 +231,10 @@ def run_orchestration(
         "event_source": event_source,
         "vision_payload": vision_payload,
         "ui_state": ui_state,
+        "next_agent": None,
+        "compound_chain": [],
+        "pending_approval": None,
+        "promo_assets": None,
         "iteration_count": 0,
         "errores": []
     }
@@ -260,6 +266,10 @@ async def run_orchestration_stream(
         "event_source": event_source,
         "vision_payload": vision_payload,
         "ui_state": ui_state,
+        "next_agent": None,
+        "compound_chain": [],
+        "pending_approval": None,
+        "promo_assets": None,
         "iteration_count": 0,
         "errores": []
     }
@@ -309,18 +319,19 @@ def resume_orchestration(
         pending = estado_actual.values.get("pending_approval") if estado_actual else None
         
         if pending:
-            pending["status"] = "approved" if approved else "rejected"
-            pending["human_notes"] = notes or correction
+            pending_copia = dict(pending)
+            pending_copia["status"] = "approved" if approved else "rejected"
+            pending_copia["human_notes"] = notes or correction
             # Registrar feedback para fine-tuning LoRA NeMo Customizer
             from tools.few_shot_retriever import record_hitl_feedback
             record_hitl_feedback(
                 agent_role="hitl_operator",
-                user_input=str(pending.get("description")),
-                agent_output=pending.get("proposed_data"),
+                user_input=str(pending_copia.get("description")),
+                agent_output=pending_copia.get("proposed_data"),
                 human_approved=approved,
                 correction=correction,
                 notes=notes
             )
-            tiendita_graph.update_state(config, {"pending_approval": pending})
+            tiendita_graph.update_state(config, {"pending_approval": pending_copia})
             
         return tiendita_graph.invoke(None, config=config)

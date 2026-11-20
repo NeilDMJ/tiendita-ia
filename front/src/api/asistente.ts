@@ -208,6 +208,14 @@ function construirAccionesEnjambre(
   resp: z.infer<typeof RespuestaOrquestador>,
 ): AccionAsistente[] | undefined {
   if (!resp.requires_approval || !resp.thread_id) return undefined;
+  const actionType =
+    typeof resp.pending_approval?.action_type === 'string'
+      ? resp.pending_approval.action_type
+      : '';
+  const esPromoDeEsteTurno =
+    (resp.next_agent ?? '').toLowerCase() === 'publicista' || actionType === 'publicar_campana';
+  if (!esPromoDeEsteTurno) return undefined;
+
   const promo = resp.promo_assets;
   if (promo && typeof promo.producto_promocionado === 'string') {
     const manana = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
@@ -306,7 +314,11 @@ export function reportarResultadoAccion(idAccion: string, estado: 'hecha' | 'rec
   if (ASISTENTE_ENJAMBRE && idAccion.startsWith('swarm:')) {
     const threadId = idAccion.slice('swarm:'.length);
     if (estado === 'rechazada') {
-      pedirJson('/orchestrate/resume', z.unknown(), { thread_id: threadId, action: 'reject' }).catch(() => undefined);
+      pedirJson('/orchestrate/resume', z.unknown(), {
+        thread_id: threadId,
+        approved: false,
+        notes: 'Rechazado por el usuario desde la app móvil',
+      }).catch(() => undefined);
     }
     return;
   }

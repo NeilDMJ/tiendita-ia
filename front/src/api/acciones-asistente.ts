@@ -84,7 +84,11 @@ export async function aprobarPromocion(promoId: string): Promise<void> {
     await pedir('/orchestrate/resume', z.unknown(), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ thread_id: threadId, action: 'approve' }),
+      body: JSON.stringify({
+        thread_id: threadId,
+        approved: true,
+        notes: 'Aprobado por el usuario desde la app móvil',
+      }),
     });
     return;
   }
