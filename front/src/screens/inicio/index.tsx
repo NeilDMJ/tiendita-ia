@@ -9,6 +9,7 @@ import { buscarProductos } from '@/api/negocio';
 import { Boton } from '@/components/boton';
 import { Dialogo } from '@/components/dialogo';
 import { Marca } from '@/components/marca';
+import { SelectorApariencia } from '@/components/selector-apariencia';
 import { Tocable } from '@/components/tocable';
 import { EXISTENCIA_BAJA, SEGUNDOS_VENTA_MANUAL } from '@/constants';
 import { useCarrito } from '@/estado/carrito';
@@ -171,6 +172,7 @@ export function PantallaInicio() {
             </Text>
             <Text style={estilos.subtituloBienvenida}>{fecha}</Text>
           </View>
+          <SelectorApariencia />
         </View>
 
         {/* 2. Acción principal del día: cobrar. Único botón relleno de la pantalla */}

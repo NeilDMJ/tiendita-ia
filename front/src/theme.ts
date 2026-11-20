@@ -1,4 +1,5 @@
-import { Platform, type TextStyle, type ViewStyle } from 'react-native';
+import Storage from 'expo-sqlite/kv-store';
+import { Appearance, Platform, type TextStyle, type ViewStyle } from 'react-native';
 
 /**
  * Tokens de diseño — identidad "BookEase" aplicada a Tendero IA (docs/ui-ux/02-sistema-de-diseno.md).
@@ -8,7 +9,7 @@ import { Platform, type TextStyle, type ViewStyle } from 'react-native';
  * Prohibido en toda la app: blur, textShadow y sombras fuera de `elevacion`.
  * Gradiente: SOLO `gradienteMarca`, y solo en el logotipo y en 1–2 palabras clave del titular.
  */
-export const color = {
+export const colorClaro = {
   primary: '#1A56DB',
   onPrimary: '#FFFFFF',
   primaryContainer: '#E8F0FE',
@@ -56,9 +57,9 @@ export const color = {
   onWarningContainer: '#78350F',
 } as const;
 
-export type RolColor = keyof typeof color;
+export type RolColor = keyof typeof colorClaro;
 
-/** Mismos roles, valores para modo oscuro (aún no conectado a la app: Fase 5). */
+/** Mismos roles, valores para modo oscuro. Todos los pares pasan WCAG AA (docs/ui-ux/contraste.mjs). */
 export const colorOscuro: Record<RolColor, string> = {
   primary: '#7BA3F5',
   onPrimary: '#0B1F55',
@@ -79,14 +80,14 @@ export const colorOscuro: Record<RolColor, string> = {
   onErrorContainer: '#FEE2E2',
   surface: '#0B1220',
   surfaceDim: '#070C17',
-  surfaceBright: '#222F4A',
-  surfaceContainerLowest: '#070C17',
+  surfaceBright: '#243251',
+  surfaceContainerLowest: '#111A2C',
   surfaceContainerLow: '#111A2C',
-  surfaceContainer: '#152036',
-  surfaceContainerHigh: '#1B2740',
-  surfaceContainerHighest: '#222F4A',
+  surfaceContainer: '#17233A',
+  surfaceContainerHigh: '#1D2A45',
+  surfaceContainerHighest: '#243251',
   onSurface: '#E5E9F2',
-  surfaceVariant: '#222F4A',
+  surfaceVariant: '#243251',
   onSurfaceVariant: '#A7B0C0',
   outline: '#7C879B',
   outlineVariant: '#2A3650',
@@ -103,6 +104,45 @@ export const colorOscuro: Record<RolColor, string> = {
   warningContainer: '#78350F',
   onWarningContainer: '#FEF3C7',
 };
+
+// ---------------------------------------------------------------------------------------------
+// Esquema activo (claro / oscuro)
+// ---------------------------------------------------------------------------------------------
+// `StyleSheet.create` congela los colores cuando se carga cada archivo, así que el esquema se decide UNA vez,
+// aquí, al abrir la app: la preferencia guardada por la persona o, si eligió "sistema", la del teléfono.
+// Cambiarla desde la app guarda la preferencia y reinicia la app (ver `utils/apariencia.ts`).
+
+export type PreferenciaApariencia = 'sistema' | 'claro' | 'oscuro';
+export const CLAVE_APARIENCIA = 'tendero-apariencia';
+
+function leerPreferencia(): PreferenciaApariencia {
+  try {
+    const valor =
+      Platform.OS === 'web'
+        ? globalThis.localStorage?.getItem(CLAVE_APARIENCIA)
+        : Storage.getItemSync(CLAVE_APARIENCIA);
+    return valor === 'claro' || valor === 'oscuro' ? valor : 'sistema';
+  } catch {
+    return 'sistema';
+  }
+}
+
+/** Lo que la persona eligió (para mostrarlo seleccionado en la hoja "Apariencia"). */
+export const preferenciaApariencia: PreferenciaApariencia = leerPreferencia();
+
+/** Lo que realmente se está usando ahora. */
+export const esquemaActivo: 'claro' | 'oscuro' =
+  preferenciaApariencia === 'sistema'
+    ? Appearance.getColorScheme() === 'dark'
+      ? 'oscuro'
+      : 'claro'
+    : preferenciaApariencia;
+
+/** Roles de color vigentes. Los componentes siempre piden roles (`color.primary`), nunca valores. */
+export const color: Record<RolColor, string> = esquemaActivo === 'oscuro' ? colorOscuro : colorClaro;
+
+/** Color fijo de lo que va sobre el degradado de marca (blanco en ambos esquemas: 6:1 sobre #1D4ED8 y #5B3FD6). */
+export const sobreMarca = '#FFFFFF';
 
 /** Degradado de marca (azul → violeta, 90°). Uso restringido: logotipo y 1–2 palabras clave del titular. */
 export const gradienteMarca = {
@@ -123,10 +163,15 @@ export function conAlfa(hex: string, alfa: number): string {
 /** Velo de bottom sheet modal y diálogo (scrim al 32 %). */
 export const scrim = conAlfa(color.scrim, 0.32);
 
-/** Colores fijos de la cámara (excepción documentada en 01-cobrar §2.2: disparador y guía de encuadre). */
+/**
+ * Colores FIJOS de la cámara (excepción documentada en 01-cobrar §2.2). La cámara es oscura en ambos esquemas,
+ * por eso no usa los roles `inverse*` (que en modo oscuro se vuelven claros).
+ */
 export const camara = {
-  claro: color.surfaceContainerLowest,
-  oscuro: color.inverseSurface,
+  claro: '#FFFFFF',
+  oscuro: '#0F172A',
+  /** Acento claro para anillos y enlaces sobre fondo oscuro. */
+  acento: '#A9C4F9',
 } as const;
 
 /** Familias Inter (una por peso: en RN el peso va en el nombre de la fuente, no en `fontWeight`). */

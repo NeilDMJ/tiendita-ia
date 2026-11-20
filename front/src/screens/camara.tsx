@@ -86,7 +86,7 @@ function esModo(m: unknown): m is ModoCamara {
   return m === 'cobro' || m === 'alta' || m === 'ticket';
 }
 
-/** Botón text con icono sobre las barras `inverseSurface` (Cerrar / Ayuda). */
+/** Botón text con icono sobre las barras oscuras de la cámara (Cerrar / Ayuda). */
 function BotonBarra({
   icono,
   texto,
@@ -101,8 +101,8 @@ function BotonBarra({
   return (
     <Tocable
       onPress={onPress}
-      colorContenido={color.inverseOnSurface}
-      colorAnillo={color.inverseOnSurface}
+      colorContenido={tonosCamara.claro}
+      colorAnillo={tonosCamara.claro}
       radio={shape.full}
       accessibilityRole="button"
       accessibilityLabel={etiqueta ?? texto}
@@ -111,7 +111,7 @@ function BotonBarra({
       <MaterialCommunityIcons
         name={icono}
         size={iconos.linea}
-        color={color.inverseOnSurface}
+        color={tonosCamara.claro}
         accessibilityElementsHidden
         importantForAccessibility="no"
       />
@@ -140,7 +140,7 @@ function BotonIconoCamara({
       <Tocable
         onPress={onPress}
         colorContenido={contenido}
-        colorAnillo={color.inverseOnSurface}
+        colorAnillo={tonosCamara.claro}
         radio={shape.full}
         accessibilityRole="button"
         accessibilityLabel={etiqueta ?? texto}
@@ -578,7 +578,7 @@ export function PantallaCamara({ modo: modoParam }: { modo?: string }) {
         <MaterialCommunityIcons
           name="lightbulb-outline"
           size={iconos.linea}
-          color={color.inverseOnSurface}
+          color={tonosCamara.claro}
           accessibilityElementsHidden
           importantForAccessibility="no"
         />
@@ -596,8 +596,8 @@ export function PantallaCamara({ modo: modoParam }: { modo?: string }) {
           <Tocable
             onPress={tomarFoto}
             disabled={!lista || tomando}
-            colorContenido={color.inverseSurface}
-            colorAnillo={color.inversePrimary}
+            colorContenido={tonosCamara.oscuro}
+            colorAnillo={tonosCamara.acento}
             radio={shape.full}
             sinCapa={!lista || tomando}
             accessibilityRole="button"
@@ -640,7 +640,7 @@ export function PantallaCamara({ modo: modoParam }: { modo?: string }) {
 
 const estilos = StyleSheet.create({
   pantallaClara: { flex: 1, backgroundColor: color.surface },
-  pantallaOscura: { flex: 1, backgroundColor: color.inverseSurface },
+  pantallaOscura: { flex: 1, backgroundColor: tonosCamara.oscuro },
   centrado: { alignItems: 'center', justifyContent: 'center' },
   contenidoAnalisis: { paddingBottom: espacio.xl, gap: espacio.l },
   contenidoPermiso: { padding: espacio.l, gap: espacio.l, alignItems: 'flex-start' },
@@ -670,9 +670,9 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     gap: espacio.xs,
     paddingHorizontal: espacio.xs,
-    backgroundColor: color.inverseSurface,
+    backgroundColor: tonosCamara.oscuro,
   },
-  tituloOscuro: { ...type.titleLarge, color: color.inverseOnSurface, flex: 1, textAlign: 'center' },
+  tituloOscuro: { ...type.titleLarge, color: tonosCamara.claro, flex: 1, textAlign: 'center' },
   botonBarra: {
     minWidth: tactil.minimo,
     minHeight: tactil.minimo,
@@ -683,7 +683,7 @@ const estilos = StyleSheet.create({
     paddingHorizontal: espacio.m,
     borderRadius: shape.full,
   },
-  textoBarra: { ...type.labelLarge, color: color.inverseOnSurface },
+  textoBarra: { ...type.labelLarge, color: tonosCamara.claro },
   columnaBoton: { alignItems: 'center', gap: espacio.xs, minWidth: tactil.principal + espacio.xl },
   botonIcono: {
     width: tactil.principal,
@@ -694,11 +694,11 @@ const estilos = StyleSheet.create({
     backgroundColor: color.primaryContainer,
   },
   botonIconoSeleccionado: { backgroundColor: color.primary },
-  textoOscuro: { ...type.labelLarge, color: color.inverseOnSurface, textAlign: 'center' },
+  textoOscuro: { ...type.labelLarge, color: tonosCamara.claro, textAlign: 'center' },
   vista: {
     flex: 1,
     overflow: 'hidden',
-    backgroundColor: color.inverseSurface,
+    backgroundColor: tonosCamara.oscuro,
     borderRadius: shape.large,
     marginHorizontal: espacio.s,
   },
@@ -722,21 +722,21 @@ const estilos = StyleSheet.create({
     padding: espacio.l,
   },
   cajaInstruccion: {
-    backgroundColor: color.inverseSurface,
+    backgroundColor: tonosCamara.oscuro,
     paddingHorizontal: espacio.m,
     paddingVertical: espacio.s,
     borderRadius: shape.small,
   },
-  instruccion: { ...type.titleMedium, color: color.inverseOnSurface, textAlign: 'center' },
+  instruccion: { ...type.titleMedium, color: tonosCamara.claro, textAlign: 'center' },
   franjaConsejo: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: espacio.s,
     paddingHorizontal: espacio.l,
     paddingVertical: espacio.s,
-    backgroundColor: color.inverseSurface,
+    backgroundColor: tonosCamara.oscuro,
   },
-  textoConsejo: { ...type.bodyLarge, color: color.inverseOnSurface, flex: 1 },
+  textoConsejo: { ...type.bodyLarge, color: tonosCamara.claro, flex: 1 },
   barraInferior: {
     minHeight: medidas.barraCamaraInferior,
     flexDirection: 'row',
@@ -744,7 +744,7 @@ const estilos = StyleSheet.create({
     justifyContent: 'space-around',
     paddingHorizontal: espacio.s,
     paddingVertical: espacio.m,
-    backgroundColor: color.inverseSurface,
+    backgroundColor: tonosCamara.oscuro,
   },
   columnaDisparador: { alignItems: 'center', gap: espacio.xs },
   // disparador (excepción documentada en 01-cobrar §2.2; no es componente M3)

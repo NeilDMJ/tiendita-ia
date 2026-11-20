@@ -27,8 +27,8 @@ const oscuro = {
   error: '#F87171', onError: '#450A0A', errorContainer: '#7F1D1D', onErrorContainer: '#FEE2E2',
   success: '#4ADE80', onSuccess: '#052E16', successContainer: '#14532D', onSuccessContainer: '#DCFCE7',
   warning: '#FBBF24', onWarning: '#451A03', warningContainer: '#78350F', onWarningContainer: '#FEF3C7',
-  surface: '#0B1220', surfaceContainerLowest: '#070C17', surfaceContainerLow: '#111A2C', surfaceContainer: '#152036',
-  surfaceContainerHigh: '#1B2740', surfaceContainerHighest: '#222F4A',
+  surface: '#0B1220', surfaceContainerLowest: '#111A2C', surfaceContainerLow: '#111A2C', surfaceContainer: '#17233A',
+  surfaceContainerHigh: '#1D2A45', surfaceContainerHighest: '#243251',
   onSurface: '#E5E9F2', onSurfaceVariant: '#A7B0C0', outline: '#7C879B', outlineVariant: '#2A3650',
   inverseSurface: '#E5E9F2', inverseOnSurface: '#0F172A', inversePrimary: '#1A56DB',
 };

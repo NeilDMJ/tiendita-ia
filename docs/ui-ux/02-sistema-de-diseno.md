@@ -77,7 +77,7 @@
 | `primary` / `surface` (foco, iconos) | 5.76 | 3 |
 | `inverseOnSurface` / `inverseSurface` | 16.65 | 4.5 |
 
-El modo oscuro (`colorOscuro`) también pasa todos los pares (ver el script). **Aún no está conectado a la app**: los componentes importan `color` como constante; activarlo exige un proveedor de tema (Fase 5).
+El modo oscuro (`colorOscuro`) también pasa todos los pares (ver el script). Está conectado desde la Fase 5 (sección siguiente).
 
 ## Tipografía (Inter)
 
@@ -122,8 +122,7 @@ En React Native el peso va en el nombre de la fuente: `fuente.regular|medium|sem
 ## Pendiente para fases siguientes
 
 - Ancho máximo del contenido (usa `medidas.contenidoAnchoMaximo`).
-- Logotipo con gradiente de marca (componente `Marca`) y titular con palabra destacada.
-- Modo oscuro (proveedor de tema).
+- Titular con palabra destacada en degradado (el logotipo ya usa `Marca`).
 - Revisar visualmente cada pantalla: los cambios de radio y color afectan a los 21 componentes y no se auditó cada estado.
 
 ---
@@ -171,3 +170,39 @@ No se auditó el aspecto de **cada** estado en pantalla (solo se revisó Inicio,
 - En Inventario el botón flotante "Agregar mercancía" tapa los chips de filtro y las filas (también "Cobrar con foto" en Cobrar).
 - Título duplicado en Asistente (cabecera de pestaña + cabecera propia).
 - La pista de `BarraPasos` usa `secondaryContainer` (#E3E8F4) sobre `surface`: bajo contraste (~1.1:1). Es decorativa (el indicador `primary` y el texto "Paso X de 3" llevan la información), pero se revisará.
+
+---
+
+# Fase 5 — Modo oscuro
+
+## Cómo funciona
+
+`StyleSheet.create` congela los colores cuando se carga cada archivo, y `color` se importa en más de 60 archivos. En vez de reescribirlos, **el esquema se decide una sola vez, al abrir la app** (`theme.ts`):
+
+1. Lee la preferencia guardada: `tendero-apariencia` = `sistema` | `claro` | `oscuro` (`expo-sqlite/kv-store` en móvil, `localStorage` en web; lectura síncrona).
+2. Si es `sistema` (por defecto), usa `Appearance.getColorScheme()`.
+3. `color` apunta a `colorClaro` o `colorOscuro`. Los componentes siguen pidiendo roles; no cambió ninguno.
+
+**Cambiar desde la app:** botón de icono "Apariencia" en la cabecera de Inicio → hoja con *Igual que el teléfono / Claro / Oscuro* → "Aplicar y reiniciar" (`utils/apariencia.ts`: guarda y reinicia con `reloadAppAsync`; en web recarga la página). El reinicio no borra ventas en borrador, cola sin conexión ni chat (están en SQLite).
+
+**Limitación conocida:** si el teléfono cambia de claro a oscuro **con la app abierta**, la app no se entera hasta que se vuelva a abrir. Resolverlo sin reinicio exige pasar todos los estilos a una fábrica dependiente de un contexto de tema (refactor de ~60 archivos); se descartó por riesgo.
+
+## Paleta oscura
+
+| Rol | Valor | | Rol | Valor |
+|---|---|---|---|---|
+| `surface` (fondo) | `#0B1220` | | `primary` | `#7BA3F5` |
+| tarjetas (`surfaceContainerLowest/Low`) | `#111A2C` | | `onPrimary` | `#0B1F55` |
+| `surfaceContainer / High / Highest` | `#17233A · #1D2A45 · #243251` | | `primaryContainer` | `#16328A` |
+| `onSurface` | `#E5E9F2` | | `error` | `#F87171` |
+| `onSurfaceVariant` | `#A7B0C0` | | `success` | `#4ADE80` |
+| `outline` / `outlineVariant` | `#7C879B` / `#2A3650` | | `warning` | `#FBBF24` |
+
+En oscuro las tarjetas quedan **por encima** del fondo (más claras), igual que en claro. Los 28 pares de texto/fondo pasan AA (`node docs/ui-ux/contraste.mjs`: 0 fallos en ambos esquemas).
+
+## Excepciones deliberadas
+
+- **Cámara:** siempre oscura. Usa `camara.claro/oscuro/acento` (colores fijos) en vez de `inverseSurface/inverseOnSurface`, que en modo oscuro se vuelven claros.
+- **Marca:** el icono sobre el degradado usa `sobreMarca` (`#FFFFFF`) en ambos esquemas.
+- **Barra de estado:** `light` en oscuro, `dark` en claro.
+- `app.json`: `userInterfaceStyle` pasó de `light` a `automatic` (**las compilaciones nativas necesitan reconstruirse**; en Expo Go ya aplica).

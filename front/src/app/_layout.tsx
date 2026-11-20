@@ -16,7 +16,7 @@ import { AvisoConexion } from '@/components/aviso-conexion';
 import { ProveedorCarrito } from '@/estado/carrito';
 import { useAccesibilidad } from '@/hooks/use-accesibilidad';
 import { useSincronizarCola } from '@/hooks/use-sincronizar-cola';
-import { color, fuente, type } from '@/theme';
+import { camara, color, esquemaActivo, fuente, type } from '@/theme';
 
 function SincronizadorCola() {
   useSincronizarCola();
@@ -47,7 +47,7 @@ export default function RootLayout() {
           <SafeAreaView edges={['top']} style={{ backgroundColor: color.surface }}>
             <AvisoConexion />
           </SafeAreaView>
-          <StatusBar style="dark" />
+          <StatusBar style={esquemaActivo === 'oscuro' ? 'light' : 'dark'} />
           <Stack
             screenOptions={{
               headerShadowVisible: false, // M3: la top app bar se separa por tono, no por sombra
@@ -65,7 +65,7 @@ export default function RootLayout() {
               options={{
                 headerShown: false,
                 animation: reducirMovimiento ? 'none' : 'slide_from_bottom',
-                contentStyle: { backgroundColor: color.inverseSurface },
+                contentStyle: { backgroundColor: camara.oscuro },
               }}
             />
             <Stack.Screen name="revision/[modo]" options={{ headerShown: false }} />

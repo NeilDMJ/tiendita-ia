@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { color, espacio, gradienteMarca, iconos, shape, type } from '@/theme';
+import { color, espacio, gradienteMarca, iconos, shape, sobreMarca, type } from '@/theme';
 
 export interface MarcaProps {
   /** Solo el icono con degradado (cabeceras compactas). Por defecto lleva el nombre al lado. */
@@ -33,7 +33,7 @@ export function Marca({ soloIcono = false }: MarcaProps) {
         <MaterialCommunityIcons
           name="storefront-outline"
           size={iconos.linea}
-          color={color.onPrimary}
+          color={sobreMarca}
           accessibilityElementsHidden
           importantForAccessibility="no"
         />

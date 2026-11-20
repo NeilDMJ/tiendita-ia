@@ -40,7 +40,7 @@
 | Flujo por **cámara** (foto → detección IA) | ⚠️ no ejecutado: la web no puede tomar la foto ni elegir un archivo desde aquí |
 | Móvil 360 px, Android/iOS reales | ⚠️ **no probados** |
 | Teclado/foco, lector de pantalla, modo reducir movimiento | ⚠️ no verificados |
-| Modo oscuro | ❌ tokens listos, no conectado |
+| Modo oscuro | ✅ web: Inicio, Cobrar, Inventario, Asistente, hoja de agregar, selector. ⚠️ Cámara, comprobante, historial y diálogos en oscuro **no revisados**; móvil real no probado |
 
 ## Pendiente
 
@@ -49,3 +49,15 @@
 - Estados vacío/carga/error de Inventario e Inicio con datos reales.
 - Onboarding, microinteracciones, modo oscuro (Fase 5).
 - Probar en teléfono con Expo Go.
+
+## Fase 5 — modo oscuro
+
+| Cambio | Detalle |
+|---|---|
+| Esquema decidido al abrir la app | `theme.ts`: preferencia guardada → o la del teléfono. Sin tocar los 60+ archivos que usan `color` |
+| Selector "Apariencia" | Botón de icono en Inicio → hoja *Igual que el teléfono / Claro / Oscuro* → reinicia la app |
+| Cámara y fotos | Colores fijos oscuros (no invierten) |
+| Contraste | Paleta oscura verificada: 0 fallos AA; tarjetas ajustadas para quedar sobre el fondo |
+| `app.json` | `userInterfaceStyle: automatic` |
+
+Capturas: `capturas/despues/11…16-oscuro-*.jpg`.
