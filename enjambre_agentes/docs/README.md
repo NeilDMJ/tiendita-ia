@@ -16,6 +16,8 @@
 | [06_OPERACION_CLI_API_Y_EXTENSION.md](./06_OPERACION_CLI_API_Y_EXTENSION.md) | Ejecutar el sistema o añadir nuevos agentes/tools | Comandos CLI (`main.py`, `scripts/cli_tester.py`), endpoints FastAPI (`api.py`), variables `.env` y guías paso a paso para extender el enjambre. |
 | [07_CONSUMO_API_LAN_Y_REMOTO.md](./07_CONSUMO_API_LAN_Y_REMOTO.md) | Consumir la API desde otra PC en Wi-Fi, app móvil o Internet | Guía paso a paso de `main.py --serve`, firewall LAN, túneles `ssh`, ejemplos `curl`/Python/JS para todos los endpoints REST y WebSocket bidireccional con HITL. |
 | [08_DIAGRAMA_INTERACCION_AGENTES.md](./08_DIAGRAMA_INTERACCION_AGENTES.md) | Visualizar cómo interactúan los agentes y sus flujos paso a paso | Diagrama general de agentes/aristas/subsistemas y diagramas de secuencia para HITL (`/cron`) y Tutor UI (`/pago`). |
+| [09_REPORTE_TECNICO_LORA.md](./09_REPORTE_TECNICO_LORA.md) | Consultar métricas reales del entrenamiento LoRA en GPU local | Reporte técnico completo (RTX 5060, curva de loss/perplexity, VRAM, comparativa antes vs. después y registro en Ollama `tiendita-lora-v1`). |
+| [10_GUIA_EXPLICACION_SIMPLE.md](./10_GUIA_EXPLICACION_SIMPLE.md) | Explicar el proyecto a cualquier persona sin tecnicismos | Resumen cotidiano de los 7 ayudantes, qué es LoRA explicado fácil, cómo se usó la tecnología de NVIDIA y discurso de 30 segundos. |
 
 Documentos complementarios en la raíz del repositorio:
 - [AGENTS.md](../AGENTS.md) — Resumen ejecutivo de roles y reglas para agentes de IA.
@@ -104,13 +106,18 @@ enjambre_agentes/
 │   ├── run_server.py            # Lanzador nativo LAN + túneles SSH (localhost.run / pinggy / vps)
 │   ├── test_client.py           # Cliente de prueba remoto REST + WebSocket + HITL
 │   ├── export_nemo_sft.py       # Exportador HITL -> JSONL SFT para NeMo Customizer (LoRA)
+│   ├── build_lora_dataset.py    # Construye dataset SFT local (train/eval + formato NeMo)
+│   ├── train_lora_local.py      # Entrena adaptador LoRA real en GPU NVIDIA (PEFT + bf16)
+│   ├── export_lora_ollama.py    # Fusiona LoRA -> GGUF Q8_0 y lo registra en Ollama local
 │   ├── generar_diagrama.py      # Regenera ARCHITECTURE_GRAPH.md desde tiendita_graph
+│   ├── generar_imagen_grafo.py  # Genera docs/diagrama_agentes_tiendita_ia.{png,svg}
 │   └── test_tools.py            # Pruebas de integración contra tiendita-db
 ├── data/                        # Persistencia local y conocimiento precalculado
 │   ├── Embeddings/datos/        # conocimiento.jsonl (934), embeddings.npz (4096-d), guias.json
 │   ├── vectorstores/faiss/      # Índice FAISS persistente + respaldo 4096-d + manifiesto
 │   ├── reportes/                # Reportes estratégicos históricos (.json y .md)
-│   └── hitl_feedback/           # Feedback HITL y dataset SFT para NeMo Customizer
+│   ├── loras/                   # Adaptador LoRA entrenado, GGUF Q8_0, Modelfile y métricas
+│   └── hitl_feedback/           # Feedback HITL y dataset SFT para NeMo Customizer / LoRA
 ├── docs/                        # Esta suite de documentación modular
 ├── tests/                       # Banco de pruebas JSON (test_cases.json)
 └── Referencias/                 # [INTOCABLE] Proyectos de referencia originales
