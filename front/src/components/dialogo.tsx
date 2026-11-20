@@ -1,8 +1,6 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useEffect, useRef, type ComponentRef, type RefObject } from 'react';
 import {
-  AccessibilityInfo,
-  findNodeHandle,
   Modal,
   Pressable,
   ScrollView,
@@ -15,6 +13,7 @@ import Animated, { Easing, FadeIn, useReducedMotion } from 'react-native-reanima
 
 import type { NombreIcono } from '@/constants';
 import { color, elevacion, espacio, iconos, medidas, motion, scrim, shape, tactil, type } from '@/theme';
+import { enfocarParaLector } from '@/utils/foco-lector';
 
 import { Boton, type VarianteBoton } from './boton';
 
@@ -53,8 +52,7 @@ export function Dialogo({ visible, titulo, mensaje, icono, acciones, onCerrar, r
     estabaVisible.current = visible;
     if (!cerrado || !refRetorno) return;
     const t = setTimeout(() => {
-      const nodo = refRetorno.current ? findNodeHandle(refRetorno.current) : null;
-      if (nodo) AccessibilityInfo.setAccessibilityFocus(nodo);
+      enfocarParaLector(refRetorno.current);
     }, motion.duration.medium2);
     return () => clearTimeout(t);
   }, [visible, refRetorno]);
@@ -62,8 +60,7 @@ export function Dialogo({ visible, titulo, mensaje, icono, acciones, onCerrar, r
   useEffect(() => {
     if (!visible) return;
     const t = setTimeout(() => {
-      const nodo = refTitulo.current ? findNodeHandle(refTitulo.current) : null;
-      if (nodo) AccessibilityInfo.setAccessibilityFocus(nodo);
+      enfocarParaLector(refTitulo.current);
     }, motion.duration.medium2);
     return () => clearTimeout(t);
   }, [visible]);

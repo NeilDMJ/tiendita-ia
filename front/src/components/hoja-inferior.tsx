@@ -1,8 +1,6 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useEffect, useRef, type ComponentRef, type ReactNode } from 'react';
 import {
-  AccessibilityInfo,
-  findNodeHandle,
   KeyboardAvoidingView,
   Modal,
   Pressable,
@@ -17,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { NombreIcono } from '@/constants';
 import { bordes, color, elevacion, espacio, iconos, medidas, motion, scrim, shape, tactil, type } from '@/theme';
+import { enfocarParaLector } from '@/utils/foco-lector';
 
 import { Boton } from './boton';
 
@@ -73,8 +72,7 @@ export function HojaInferior({
   useEffect(() => {
     if (!visible || tipo !== 'modal') return;
     const t = setTimeout(() => {
-      const nodo = refTitulo.current ? findNodeHandle(refTitulo.current) : null;
-      if (nodo) AccessibilityInfo.setAccessibilityFocus(nodo);
+      enfocarParaLector(refTitulo.current);
     }, motion.duration.medium4);
     return () => clearTimeout(t);
   }, [visible, tipo]);

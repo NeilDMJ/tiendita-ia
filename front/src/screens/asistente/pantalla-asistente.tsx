@@ -1,6 +1,6 @@
 import { useIsFocused } from 'expo-router';
 import { useEffect, useRef, useState, type ComponentRef } from 'react';
-import { AccessibilityInfo, ActivityIndicator, findNodeHandle, KeyboardAvoidingView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { parsearDatosAccion } from '@/api/acciones-asistente';
 import { USAR_MOCKS } from '@/api/cliente';
@@ -19,6 +19,7 @@ import { useConexion } from '@/hooks/use-conexion';
 import { useLetraGrande } from '@/hooks/use-letra-grande';
 import { useTecladoVisible } from '@/hooks/use-teclado';
 import { color, espacio, tactil, type } from '@/theme';
+import { enfocarParaLector } from '@/utils/foco-lector';
 
 import { AlternativasNoResuelto } from './alternativas-no-resuelto';
 import { Compositor } from './compositor';
@@ -64,8 +65,7 @@ export function PantallaAsistente() {
   /** Tras enviar, el foco (teclado y lector) regresa al campo: no salta a la respuesta. */
   function enfocarCampo() {
     refCampo.current?.focus();
-    const nodo = refCampo.current ? findNodeHandle(refCampo.current) : null;
-    if (nodo) AccessibilityInfo.setAccessibilityFocus(nodo);
+    enfocarParaLector(refCampo.current);
   }
 
   function enviar(t: string) {

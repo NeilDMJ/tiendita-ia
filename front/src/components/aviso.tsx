@@ -2,7 +2,6 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useEffect, useRef, type ComponentRef, type Ref } from 'react';
 import {
   AccessibilityInfo,
-  findNodeHandle,
   Platform,
   StyleSheet,
   Text,
@@ -13,6 +12,7 @@ import {
 
 import type { NombreIcono } from '@/constants';
 import { bordes, color, espacio, iconos, shape, tactil, type } from '@/theme';
+import { enfocarParaLector } from '@/utils/foco-lector';
 
 import { Boton, type VarianteBoton } from './boton';
 import { Tocable } from './tocable';
@@ -114,8 +114,7 @@ export function Aviso({
       AccessibilityInfo.announceForAccessibility(etiquetaLector);
     }
     if (enfocar && ref.current) {
-      const nodo = findNodeHandle(ref.current);
-      if (nodo) AccessibilityInfo.setAccessibilityFocus(nodo);
+      enfocarParaLector(ref.current);
     }
   }, [enfocar, etiquetaLector, urgente]);
 

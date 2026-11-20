@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRef, useState, type ComponentRef } from 'react';
-import { AccessibilityInfo, findNodeHandle, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { parsearDatosAccion } from '@/api/acciones-asistente';
 import type { DatosModificarItem } from '@/api/esquemas';
@@ -18,6 +18,7 @@ import { bordes, color, espacio, iconos, tactil, type } from '@/theme';
 import { calcularTotal, plural } from '@/utils/carrito';
 import { aContextoCobro, type ResultadoValidacion } from '@/utils/contexto-cobro';
 import { formatoMoneda } from '@/utils/formato-moneda';
+import { enfocarParaLector } from '@/utils/foco-lector';
 
 import { Compositor } from '../asistente/compositor';
 import { ListaMensajes } from '../asistente/lista-mensajes';
@@ -66,8 +67,7 @@ export function HojaCaja({ visible, onCerrar, onAplicar, onEditarFila, onBuscarP
     setTexto('');
     // El foco (teclado y lector) regresa al campo; no salta a la respuesta.
     refCampo.current?.focus();
-    const nodo = refCampo.current ? findNodeHandle(refCampo.current) : null;
-    if (nodo) AccessibilityInfo.setAccessibilityFocus(nodo);
+    enfocarParaLector(refCampo.current);
   }
 
   function aplicar(m: MensajeDelAsistente, a: AccionChat) {

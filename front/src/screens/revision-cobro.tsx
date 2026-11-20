@@ -4,7 +4,6 @@ import { router, usePreventRemove } from 'expo-router';
 import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import {
   AccessibilityInfo,
-  findNodeHandle,
   ScrollView,
   StyleSheet,
   Text,
@@ -40,6 +39,7 @@ import {
 import { formatoMoneda, montoParaLector } from '@/utils/formato-moneda';
 import { aplicarModificacion, copiaParaDeshacer, validarModificacion } from '@/utils/contexto-cobro';
 import { crearIdLocal } from '@/utils/id';
+import { enfocarParaLector } from '@/utils/foco-lector';
 
 import { FotoDetecciones } from './revision/foto-detecciones';
 import { HojaCaja } from './revision/hoja-caja';
@@ -133,8 +133,7 @@ export function PantallaRevisionCobro({ abrirAgregar }: { abrirAgregar?: boolean
   // ---------- "Pregúntale a Caja" (02-asistente §4.3) ----------
   function enfocarFila(clave: string) {
     const ref = refsFilas.current[clave];
-    const nodo = ref ? findNodeHandle(ref) : null;
-    if (nodo) setTimeout(() => AccessibilityInfo.setAccessibilityFocus(nodo), 400);
+    setTimeout(() => enfocarParaLector(ref), 400);
   }
 
   function aplicarDeCaja(datos: DatosModificarItem) {
@@ -242,8 +241,7 @@ export function PantallaRevisionCobro({ abrirAgregar }: { abrirAgregar?: boolean
     const y = yAyuda.current + (yFilas.current[primero.clave] ?? 0);
     scroll.current?.scrollTo({ y: Math.max(0, y - espacio.l), animated: !reducirMovimiento });
     const ref = refsFilas.current[primero.clave];
-    const nodo = ref ? findNodeHandle(ref) : null;
-    if (nodo) setTimeout(() => AccessibilityInfo.setAccessibilityFocus(nodo), 300);
+    setTimeout(() => enfocarParaLector(ref), 300);
   }
 
   // ---------- registrar venta ----------
