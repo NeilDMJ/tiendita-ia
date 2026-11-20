@@ -1,0 +1,56 @@
+{
+  "tarea": "clasificación de imágenes",
+  "modelo_base": {
+    "nombre": "YOLO11n-cls (clasificación)",
+    "archivo": "yolo11n-cls.pt",
+    "procedencia": "Ultralytics, preentrenado en ImageNet-1k (1000 clases) — https://docs.ultralytics.com/tasks/classify/",
+    "licencia": "AGPL-3.0"
+  },
+  "datos": "/dli/task/vision/dataset",
+  "clases": [
+    "agua_1l",
+    "agua_bonafont",
+    "agua_members_mark",
+    "chokis",
+    "coca_cola",
+    "doritos",
+    "fondo"
+  ],
+  "parametros": {
+    "data": "/dli/task/vision/dataset",
+    "modelo": "yolo11n-cls.pt",
+    "nombre": "v1",
+    "epochs": 30,
+    "imgsz": 224,
+    "batch": 64,
+    "patience": 10,
+    "seed": 0,
+    "fliplr": 0.5,
+    "flipud": 0.0,
+    "hsv_h": 0.04,
+    "hsv_s": 0.7,
+    "hsv_v": 0.5,
+    "erasing": 0.3,
+    "auto_augment": null
+  },
+  "inicio": "2026-11-20T11:11:01+00:00",
+  "fin": "2026-11-20T11:15:32+00:00",
+  "duracion_min": 4.5,
+  "epocas_ejecutadas": 13,
+  "mejor_fitness_val": 1.0,
+  "entorno": {
+    "python": "3.10.12",
+    "so": "Linux-6.5.0-1014-aws-x86_64-with-glibc2.35",
+    "torch": "2.5.1+cu121",
+    "cudnn": "desactivado (SIN_CUDNN)",
+    "cuda": "12.1",
+    "gpu": "Tesla T4",
+    "ultralytics": "8.3.253",
+    "tensorrt": "10.7.0.post1",
+    "nvidia_smi": "Tesla T4, 545.23.08, 15360 MiB"
+  },
+  "artefacto": {
+    "ruta": "artefactos/v1/best.pt",
+    "sha256": "9ce20a977c1bb6d98e53c5d54927a8c5219844d359a19ca14909a8115112987e"
+  }
+}
