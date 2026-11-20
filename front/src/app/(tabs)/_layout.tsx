@@ -45,7 +45,11 @@ export default function TabsLayout() {
       <Tabs.Screen name="cobrar" options={{ title: 'Cobrar', tabBarIcon: icono('point-of-sale', 'cash-register') }} />
       <Tabs.Screen
         name="inventario"
-        options={{ title: 'Inventario', tabBarIcon: icono('package-variant-closed', 'package-variant') }}
+        options={{
+          title: 'Inventario',
+          headerShown: false,
+          tabBarIcon: icono('package-variant-closed', 'package-variant'),
+        }}
       />
       <Tabs.Screen name="asistente" options={{ title: 'Asistente', tabBarIcon: icono('chat-outline', 'chat') }} />
     </Tabs>

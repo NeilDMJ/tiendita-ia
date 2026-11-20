@@ -148,6 +148,8 @@ export function PantallaInventario() {
       <ScrollView
         style={estilos.scroll}
         contentContainerStyle={estilos.contenido}
+        // el bloque de búsqueda + filtros (hijo 2) se queda arriba al bajar por la lista
+        stickyHeaderIndices={[2]}
         refreshControl={
           <RefreshControl
             refreshing={refrescando}
@@ -157,23 +159,23 @@ export function PantallaInventario() {
           />
         }
       >
-        {/* Encabezado */}
+        {/* Título de la pantalla (la cabecera nativa se oculta: antes decía "Inventario" dos veces) */}
         <Text style={estilos.tituloSeccion} accessibilityRole="header">
-          Inventario de tu tienda
+          Inventario
         </Text>
 
         {/* 1. Tarjeta resumen */}
         <ResumenInventarioCard resumen={resumen} />
 
-        {/* 2. Barra de búsqueda */}
-        <BarraBusqueda valor={textoBusqueda} onCambiar={setTextoBusqueda} />
-
-        {/* 3. Chips de filtro */}
-        <FiltrosInventario
-          filtroActivo={filtroActivo}
-          onCambiarFiltro={setFiltroActivo}
-          conteos={conteos}
-        />
+        {/* 2. Búsqueda + filtros: bloque fijo con fondo opaco para que la lista no se mezcle al pasar por detrás */}
+        <View style={estilos.bloqueFijo}>
+          <BarraBusqueda valor={textoBusqueda} onCambiar={setTextoBusqueda} />
+          <FiltrosInventario
+            filtroActivo={filtroActivo}
+            onCambiarFiltro={setFiltroActivo}
+            conteos={conteos}
+          />
+        </View>
 
         {/* 4. Lista de productos */}
         <ListaProductos
@@ -213,7 +215,12 @@ const estilos = StyleSheet.create({
     gap: espacio.l,
   },
   tituloSeccion: {
-    ...type.headlineSmall,
+    ...type.headlineLarge,
     color: color.onSurface,
+  },
+  bloqueFijo: {
+    backgroundColor: color.surface,
+    gap: espacio.m,
+    paddingVertical: espacio.s,
   },
 });

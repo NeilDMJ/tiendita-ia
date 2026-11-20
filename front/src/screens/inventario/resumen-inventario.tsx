@@ -137,7 +137,7 @@ export function ResumenInventarioCard({ resumen }: ResumenInventarioCardProps) {
 const estilos = StyleSheet.create({
   card: {
     backgroundColor: color.surfaceContainerLow,
-    borderRadius: shape.medium,
+    borderRadius: shape.large,
     padding: espacio.l,
     gap: espacio.m,
   },
@@ -175,8 +175,9 @@ const estilos = StyleSheet.create({
     color: color.onSurfaceVariant,
   },
   valorMetrica: {
-    ...type.amount,
+    ...type.headlineSmall,
     color: color.onSurface,
+    fontVariant: ['tabular-nums'],
   },
   divisor: {
     height: bordes.fino,
