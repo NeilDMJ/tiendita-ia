@@ -14,6 +14,7 @@
 | [04_MEMORIA_Y_RAG_PAGOS.md](./04_MEMORIA_Y_RAG_PAGOS.md) | Trabajar con memoria, FAISS, `pgvector` o CoDi/SPEI/DiMo | Las 5 capas de memoria, indexación de `data/Embeddings/datos/`, sincronización `pgvector`, `buscar_guia_pago()`, `buscar_rag_pagos()` y reportes históricos. |
 | [05_STACK_NVIDIA_Y_RESILIENCIA.md](./05_STACK_NVIDIA_Y_RESILIENCIA.md) | Configurar modelos, NVIDIA NIM/NeMo, fallbacks o seguridad | NIM LLMs, NIM Vision, NeMo Retriever, NeMo Guardrails (Colang), NeMo Customizer (LoRA/SFT), `ACTIVE_AGENT_BRAINS`, `ResilientChatModel` y Circuit Breaker. |
 | [06_OPERACION_CLI_API_Y_EXTENSION.md](./06_OPERACION_CLI_API_Y_EXTENSION.md) | Ejecutar el sistema o añadir nuevos agentes/tools | Comandos CLI (`main.py`, `scripts/cli_tester.py`), endpoints FastAPI (`api.py`), variables `.env` y guías paso a paso para extender el enjambre. |
+| [07_CONSUMO_API_LAN_Y_REMOTO.md](./07_CONSUMO_API_LAN_Y_REMOTO.md) | Consumir la API desde otra PC en Wi-Fi, app móvil o Internet | Guía paso a paso de `main.py --serve`, firewall LAN, túneles `ssh`, ejemplos `curl`/Python/JS para todos los endpoints REST y WebSocket bidireccional con HITL. |
 
 Documentos complementarios en la raíz del repositorio:
 - [AGENTS.md](../AGENTS.md) — Resumen ejecutivo de roles y reglas para agentes de IA.
@@ -99,6 +100,8 @@ enjambre_agentes/
 │   └── mcp_exporter.py          # Manifiesto MCP de todas las herramientas comerciales
 ├── scripts/                     # Herramientas ejecutables
 │   ├── cli_tester.py            # CLI interactivo real conectado a PostgreSQL y LangGraph
+│   ├── run_server.py            # Lanzador nativo LAN + túneles SSH (localhost.run / pinggy / vps)
+│   ├── test_client.py           # Cliente de prueba remoto REST + WebSocket + HITL
 │   ├── export_nemo_sft.py       # Exportador HITL -> JSONL SFT para NeMo Customizer (LoRA)
 │   ├── generar_diagrama.py      # Regenera ARCHITECTURE_GRAPH.md desde tiendita_graph
 │   └── test_tools.py            # Pruebas de integración contra tiendita-db

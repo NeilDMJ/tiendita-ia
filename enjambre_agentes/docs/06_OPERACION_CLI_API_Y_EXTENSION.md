@@ -76,24 +76,42 @@ Cuando un agente detona `approval_gate`, el CLI pausa el flujo, imprime el `Appr
 
 ---
 
-## 3. API REST y Streaming SSE ([api.py](../api.py))
+## 3. API REST JSON, Streaming SSE y WebSocket ([api.py](../api.py)) — Paridad 100% con el CLI
 
-Arranque del servidor:
+Arranque recomendado con detección automática de IP Wi-Fi/LAN y túneles SSH nativos (Swagger en `/docs`):
 ```bash
-uv run uvicorn api:app --host 0.0.0.0 --port 8000 --reload
-```
+# Red local (Wi-Fi / LAN):
+uv run python main.py --serve
 
-| Método y Ruta | Contrato / Función |
-|---|---|
-| `GET /health` | Estado del servicio, capacidades multimodales, Dual RAG y proveedores soportados. |
-| `GET /models?provider=...` | Lista de modelos por proveedor, estado en vivo (`obtener_estado_proveedores`) y asignación de los 7 cerebros. |
-| `POST /orchestrate` | Ejecución síncrona (`input_text`, `thread_id`, `event_source`, `vision_payload`, `ui_state`, `provider`, `model_name`). |
-| `POST /orchestrate/stream` | Streaming `text/event-stream` (SSE) nodo por nodo. |
-| `POST /orchestrate/resume` | Reanuda un `thread_id` pausado en `approval_gate` (`approved`, `correction`, `notes`). |
-| `POST /catalog-scan` | Atajo especializado para fotos de catálogo/anaquel (`CatalogScanRequest`). |
-| `POST /pos-checkout` | Atajo especializado para visión en barra POS (`POSCheckoutRequest`). |
-| `POST /receipt-ocr` | Atajo especializado para OCR y clasificación contable (`ReceiptOCRRequest`). |
-| `GET /reports/history` | Lista hasta los 20 reportes estratégicos más recientes guardados en `data/reportes/`. |
+# Exposición externa con ssh nativo (localhost.run, pinggy o vps):
+uv run python main.py --serve --tunnel
+uv run python main.py --serve --tunnel pinggy
+uv run python main.py --serve --tunnel vps
+```
+> Consulta ejemplos completos de `curl`, Python y JavaScript desde otra PC o app móvil en [07_CONSUMO_API_LAN_Y_REMOTO.md](./07_CONSUMO_API_LAN_Y_REMOTO.md).
+
+| Método y Ruta | Equivalente CLI | Contrato JSON / Función |
+|---|---|---|
+| `GET /health` | Panel de arranque BD | Salud del microservicio + métricas reales en vivo de `tiendita-db` (`verify_db_connection`). Público. |
+| `GET /models?provider=...` | `/cerebros` (catálogo) | Lista de modelos por proveedor, estado en vivo (`obtener_estado_proveedores`) y cerebros activos. |
+| `GET /tools/mcp` | — | Manifiesto MCP JSON de las 24 herramientas comerciales. |
+| `GET /brains` | `/cerebros` | Estado de los 7 cerebros activos y su cadena silenciosa de rescate. |
+| `PUT /brains/{role}` | `/cerebro <rol> <prov> <mod>` | Cambia el proveedor/modelo de un subagente en vivo (`{"provider", "model_name"}`). |
+| `POST /brains/reset` | `/reset-cerebros` | Restaura los 7 agentes al perfil 100% NVIDIA NIM. |
+| `POST /orchestrate` | `<texto libre>` | Ejecución síncrona; devuelve siempre `thread_id`, `reply`, `messages`, `requires_approval`, `pending_approval`, `db_evidence`, `strategic_report`, `promo_assets`. |
+| `POST /orchestrate/stream` | — | Streaming `text/event-stream` (SSE) JSON limpio nodo por nodo. |
+| `WS /ws/orchestrate` | Chat + Streaming + HITL | WebSocket bidireccional: transmite nodos en vivo, envía `hitl_required` y recibe `{"action": "approve"\|"reject"}` en el mismo socket. |
+| `POST /orchestrate/resume` | HITL `[s/n/e]` | Reanuda un `thread_id` pausado en `approval_gate` (`approved`, `correction`, `notes`) confirmando el `COMMIT` en PostgreSQL. |
+| `GET /state/{thread_id}` | `/estado` | Inspecciona el `OrchestratorState` real en el checkpointer + estadísticas vivas de BD. |
+| `POST /pago` (alias `/ui-copilot`) | `/pago <metodo> <pant> <paso> [err]` | Copiloto Tutor UI para CoDi/SPEI/DiMo (máx. 2 oraciones respaldadas por el RAG de Banxico). |
+| `POST /rag/search` y `GET /rag/search` | `/rag <consulta>` | Búsqueda semántica en `FAISS` / `pgvector` devolviendo fragmentos de CoDi/SPEI/DiMo con `score`. |
+| `POST /imagen` | `/imagen <ruta> <catalog\|pos\|ticket>` | Endpoint multimodal unificado Base64 desde cámara móvil (`image_b64`, `mode`, `mime_type`). |
+| `POST /catalog-scan` | `/imagen ... catalog` | Escaneo visual de catálogo/anaquel (`CatalogScanRequest`). |
+| `POST /pos-checkout` | `/imagen ... pos` | Identificación visual en mostrador POS (`POSCheckoutRequest`). |
+| `POST /receipt-ocr` | `/imagen ... ticket` | OCR y clasificación contable de comprobantes (`ReceiptOCRRequest`). |
+| `POST /cron` | `/cron` | Barrido real de caducidades y stock crítico (`control` → `publicista` con pausa HITL). |
+| `GET /reports/history` | — | Lista hasta los 20 reportes estratégicos más recientes en `data/reportes/`. |
+| `GET /reports/{report_id}` | — | Descarga el JSON completo (9 secciones) de un reporte estratégico por ID. |
 
 ---
 

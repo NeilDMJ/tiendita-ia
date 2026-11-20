@@ -3,10 +3,16 @@
 Tiendita IA — Ecosistema Comercial Multimodal con Visión Artificial y Orquestación Multiagente.
 Tecnología NVIDIA (NIM / NeMo) + LangGraph + PostgreSQL Real (`DATABASE_URL`).
 
-Punto de entrada principal:
-  uv run python main.py
-  uv run python main.py --agent-brain vendedor=Gemini:gemini-flash-lite-latest
-  uv run python main.py --agent-brain investigador=Groq:openai/gpt-oss-120b --agent-brain tutor_ui=Ollama:llama3.2
+Puntos de entrada principales:
+  CLI interactivo:
+    uv run python main.py
+    uv run python main.py --agent-brain vendedor=Gemini:gemini-flash-lite-latest
+
+  Servidor API REST + WebSockets (LAN / Internet vía SSH nativo):
+    uv run python main.py --serve
+    uv run python main.py --serve --tunnel
+    uv run python main.py --serve --tunnel pinggy --port 8000
+    uv run python main.py --serve --tunnel vps
 """
 from __future__ import annotations
 
@@ -42,7 +48,7 @@ def _parse_agent_brain_spec(spec: str) -> Tuple[str, str, str]:
 
 
 def aplicar_cerebros_cli(specs: List[str]) -> None:
-    """Aplica todos los overrides `--agent-brain` antes de lanzar el CLI o la consulta."""
+    """Aplica todos los overrides `--agent-brain` antes de lanzar el CLI o el servidor."""
     for spec in specs:
         role, provider, model_name = _parse_agent_brain_spec(spec)
         set_agent_brain(role, provider, model_name)
@@ -50,18 +56,50 @@ def aplicar_cerebros_cli(specs: List[str]) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Tiendita IA — Interfaz CLI Interactiva Conectada a PostgreSQL Real",
+        description="Tiendita IA — CLI Interactivo y Servidor API/WebSocket Conectado a PostgreSQL Real",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Ejemplos:
   uv run python main.py
   uv run python main.py --agent-brain vendedor=Gemini:gemini-flash-lite-latest
-  uv run python main.py --agent-brain investigador=Groq:openai/gpt-oss-120b --agent-brain tutor_ui=Ollama:llama3.2
+  uv run python main.py --serve
+  uv run python main.py --serve --tunnel
+  uv run python main.py --serve --tunnel pinggy --port 8000
+  uv run python main.py --serve --tunnel vps
   uv run python main.py --query "¿Qué productos están próximos a caducar?"
-  uv run python main.py --list-models
         """,
     )
 
+    parser.add_argument(
+        "--serve",
+        action="store_true",
+        help="Lanza el servidor API REST + WebSockets en LAN (y opcionalmente túnel SSH con --tunnel).",
+    )
+    parser.add_argument(
+        "--host",
+        type=str,
+        default=None,
+        help="Host de enlace para --serve (default: API_HOST o 0.0.0.0).",
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=None,
+        help="Puerto HTTP/WS para --serve (default: API_PORT o 8000).",
+    )
+    parser.add_argument(
+        "--tunnel",
+        nargs="?",
+        const="localhost.run",
+        default=None,
+        choices=["localhost.run", "pinggy", "vps"],
+        help="Expone el servidor a Internet con ssh nativo (solo con --serve): localhost.run, pinggy o vps.",
+    )
+    parser.add_argument(
+        "--reload",
+        action="store_true",
+        help="Activa recarga automática de uvicorn (solo con --serve).",
+    )
     parser.add_argument(
         "--agent-brain",
         action="append",
@@ -107,7 +145,13 @@ Ejemplos:
             print(f"[ERROR] {err}", file=sys.stderr)
             sys.exit(2)
 
-    # 2. Comandos informativos puntuales
+    # 2. Modo servidor LAN / Túnel SSH nativo (--serve)
+    if args.serve:
+        from scripts.run_server import start_server
+        start_server(host=args.host, port=args.port, tunnel=args.tunnel, reload=args.reload)
+        sys.exit(0)
+
+    # 3. Comandos informativos puntuales
     if args.list_models:
         modelos = listar_modelos_disponibles()
         for prov, mods in modelos.items():
@@ -120,7 +164,7 @@ Ejemplos:
         print(json.dumps(get_active_brains(), indent=2, ensure_ascii=False))
         sys.exit(0)
 
-    # 3. Modo one-shot opcional (--query)
+    # 4. Modo one-shot opcional (--query)
     if args.query:
         try:
             res = run_orchestration(
@@ -135,7 +179,7 @@ Ejemplos:
             close_db_pool()
         sys.exit(0)
 
-    # 4. Por defecto: lanzar directamente el CLI interactivo completo
+    # 5. Por defecto: lanzar directamente el CLI interactivo completo
     from scripts.cli_tester import main as cli_main
     cli_main()
 

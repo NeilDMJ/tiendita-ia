@@ -44,6 +44,17 @@ LANGSMITH_ENDPOINT: str = os.getenv("LANGSMITH_ENDPOINT", "https://api.smith.lan
 LANGSMITH_API_KEY: str | None = os.getenv("LANGSMITH_API_KEY")
 LANGSMITH_PROJECT: str = os.getenv("LANGSMITH_PROJECT", "tiendita-ia")
 
+# --- Servidor API, Autenticación Opcional y Túnel SSH Nativo ---
+API_HOST: str = os.getenv("API_HOST", "0.0.0.0")
+API_PORT: int = int(os.getenv("API_PORT", "8000"))
+TIENDITA_API_KEY: str = os.getenv("TIENDITA_API_KEY", "").strip()
+SSH_VPS_TARGET: str = os.getenv("SSH_VPS_TARGET", "").strip()
+
+
+def get_tiendita_api_key() -> str:
+    """Lee dinámicamente TIENDITA_API_KEY desde el entorno (vacía = acceso abierto LAN)."""
+    return os.getenv("TIENDITA_API_KEY", "").strip()
+
 
 def validate_keys(*required_keys: str) -> None:
     """Valida que las credenciales obligatorias para una operación específica estén presentes."""

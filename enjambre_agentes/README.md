@@ -9,32 +9,75 @@ Ecosistema comercial con visión artificial, orquestación multiagente en **Lang
 - **Orquestación Multiagente Optimizada (LangGraph):** 1 Supervisor Maestro + 6 Especialistas (`control`, `vendedor`, `analista`, `investigador`, `publicista`, `tutor_ui`) con razonamiento puro, encadenamiento compuesto sanitizado y salida directa a `END` para baja latencia.
 - **Stack NVIDIA NIM / NeMo (100% NVIDIA por defecto):**
   - **LLMs NIM:** `nvidia/nemotron-3-super-120b-a12b` (`supervisor`, `analista`, `investigador`) y `nvidia/llama-3.1-nemotron-nano-8b-v1` (`control`, `vendedor`, `publicista`, `tutor_ui`), con cambio individual en vivo (`set_agent_brain`) y rescate silencioso `.with_fallbacks()` + Circuit Breaker (`Gemini → Groq → Cohere → Ollama`).
-  - **NIM Vision (VL):** procesamiento real de imágenes desde disco o API (`/imagen`, `/catalog-scan`, `/pos-checkout`, `/receipt-ocr`).
+  - **NIM Vision (VL):** procesamiento real de imágenes desde disco o cámara móvil (`/imagen`, `/catalog-scan`, `/pos-checkout`, `/receipt-ocr`).
   - **NeMo Retriever + RAG Dual:** 969 fragmentos oficiales de **CoDi, SPEI y DiMo** (`data/Embeddings/datos/`) indexados en `FAISS` (`data/vectorstores/faiss/`) y sincronizados en PostgreSQL `pgvector`.
   - **NeMo Guardrails:** reglas Colang en `config/guardrails/rails.co` + guardias en `tools/guards.py`.
   - **NeMo Customizer (SFT / LoRA):** recolección de feedback HITL y exportación JSONL (`scripts/export_nemo_sft.py`).
 - **Base de Datos Real (`tiendita-db`):** pool thread-safe sobre PostgreSQL 16 consultando vistas oficiales (`v_inventario`, `v_por_caducar`, `v_stock_bajo`, `v_margen_producto`, `v_flujo_caja`, `v_ventas_dia`, `v_coocurrencia`) y `registrar_venta(jsonb)`.
-- **Human-in-the-Loop (HITL) Real:** pausa en `approval_gate` (`[s] Aprobar / [n] Rechazar / [e] Editar`) antes de confirmar `COMMIT` sensibles en PostgreSQL.
+- **Human-in-the-Loop (HITL) Real:** pausa en `approval_gate` antes de confirmar `COMMIT` sensibles en PostgreSQL (disponible en CLI, REST y WebSocket bidireccional).
 
 ---
 
 ## Arranque Rápido (`uv`)
 
 ```bash
-# 1. Configurar entorno
+# 1. Configurar variables de entorno
 cp .env.example .env
 uv sync
 
 # 2. Lanzar CLI interactivo conectado en vivo a PostgreSQL
 uv run python main.py
 
-# O iniciar con cerebros personalizados por subagente:
+# O iniciar el CLI con cerebros personalizados por subagente:
 uv run python main.py \
   --agent-brain vendedor=Gemini:gemini-flash-lite-latest \
   --agent-brain investigador=Groq:openai/gpt-oss-120b
+```
 
-# 3. Levantar API REST + Streaming SSE
-uv run uvicorn api:app --host 0.0.0.0 --port 8000 --reload
+---
+
+## Cómo Correr la API para Consumirla desde Otra PC (Wi-Fi/LAN), App Móvil o Internet
+
+### 1. En la PC servidor (donde corre `enjambre_agentes` y `tiendita-db`)
+```bash
+# Exponer en red local Wi-Fi / LAN (detecta automáticamente la IP local, ej. 192.168.1.64)
+uv run python main.py --serve
+
+# Exponer también a Internet usando ssh nativo de Linux (sin instalar ngrok):
+uv run python main.py --serve --tunnel               # localhost.run (default)
+uv run python main.py --serve --tunnel pinggy        # puerto 443 si el 22 está bloqueado
+uv run python main.py --serve --tunnel vps           # usa SSH_VPS_TARGET definido en .env
+```
+
+Si otras PCs o celulares en el mismo Wi-Fi no pueden conectarse, abre el puerto `8000` en el firewall Linux de la PC servidor:
+```bash
+# Fedora / RHEL (firewalld):
+sudo firewall-cmd --add-port=8000/tcp --permanent && sudo firewall-cmd --reload
+
+# Ubuntu / Debian (ufw):
+sudo ufw allow 8000/tcp
+```
+
+> **Seguridad opcional:** define `TIENDITA_API_KEY=<tu_clave>` en `.env` para exigir el header `X-API-Key` en REST (excepto `/health` y `/docs`) y `?api_key=<tu_clave>` en WebSockets. Si se deja vacía, la API queda abierta para pruebas rápidas en LAN.
+
+### 2. Desde otra PC o app móvil en la misma red Wi-Fi
+Usa la IP que mostró el panel al arrancar (ejemplo `192.168.1.64`):
+- **Swagger interactivo (navegador):** `http://192.168.1.64:8000/docs`
+- **REST base:** `http://192.168.1.64:8000`
+- **WebSocket bidireccional (con HITL):** `ws://192.168.1.64:8000/ws/orchestrate`
+
+Ejemplos rápidos desde otra PC:
+```bash
+# Verificar salud y conexión a PostgreSQL
+curl http://192.168.1.64:8000/health
+
+# Consultar al enjambre (formato JSON)
+curl -X POST http://192.168.1.64:8000/orchestrate \
+  -H "Content-Type: application/json" \
+  -d '{"input_text": "¿Cuáles son los 3 productos más vendidos?", "event_source": "chat"}'
+
+# Probar REST + WebSocket automáticamente con el cliente incluido
+uv run python -m scripts.test_client --url http://192.168.1.64:8000 --mode all
 ```
 
 ### Comandos del CLI Interactivo
@@ -57,4 +100,5 @@ Para documentación profunda orientada a desarrolladores y **agentes de IA**, co
 4. [`docs/04_MEMORIA_Y_RAG_PAGOS.md`](./docs/04_MEMORIA_Y_RAG_PAGOS.md) — Las 5 capas de memoria y RAG Dual de CoDi, SPEI y DiMo.
 5. [`docs/05_STACK_NVIDIA_Y_RESILIENCIA.md`](./docs/05_STACK_NVIDIA_Y_RESILIENCIA.md) — Tecnología NVIDIA (NIM/NeMo), `ResilientChatModel` y Circuit Breaker.
 6. [`docs/06_OPERACION_CLI_API_Y_EXTENSION.md`](./docs/06_OPERACION_CLI_API_Y_EXTENSION.md) — Operación CLI/API y manual para extender el enjambre.
-7. [`AGENTS.md`](./AGENTS.md) y [`ARCHITECTURE_GRAPH.md`](./ARCHITECTURE_GRAPH.md) — Resumen de roles y diagrama autogenerado.
+7. [`docs/07_CONSUMO_API_LAN_Y_REMOTO.md`](./docs/07_CONSUMO_API_LAN_Y_REMOTO.md) — **Guía completa de consumo LAN / Wi-Fi / App Móvil / Túnel SSH (REST, SSE y WebSocket con ejemplos `curl`, Python y JS).**
+8. [`AGENTS.md`](./AGENTS.md) y [`ARCHITECTURE_GRAPH.md`](./ARCHITECTURE_GRAPH.md) — Resumen de roles y diagrama autogenerado.
