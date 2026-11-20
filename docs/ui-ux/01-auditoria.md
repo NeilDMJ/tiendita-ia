@@ -8,9 +8,9 @@
 | Chequeo | Resultado |
 |---|---|
 | `tsc --noEmit` | ✅ sin errores |
-| `expo lint` | ⚠️ 2 errores + 1 aviso (comillas sin escapar en `inventario/lista-productos.tsx:46`; import sin usar en `inicio/tipos.ts`) |
+| `expo lint` | ✅ limpio (se corrigieron 2 errores y 1 aviso heredados) |
 | Arranca en web | ✅ |
-| Pestaña Asistente | ❌ **se cae** al abrir (ver P1-1) |
+| Pestaña Asistente | ✅ corregida (P1-1) |
 
 ## Identidad nueva: qué se aplica y qué no
 
@@ -27,7 +27,7 @@ Conflictos que necesito que decidas (ver final):
 
 | # | Pantalla | Problema | Por qué afecta | Gravedad | Esfuerzo | Propuesta |
 |---|---|---|---|---|---|---|
-| 1 | Asistente | Se cae con `Cannot read properties of undefined (reading 'nombre')` en `BurbujaMensaje` (`burbuja-mensaje.tsx:52`, `ROLES[mensaje.rol]`). Un mensaje guardado llega sin `rol`. Los mocks y los tipos están bien: sospecho de un chat persistido en SQLite del navegador, sin comprobar. | Pestaña principal inutilizable; una pantalla en blanco sin forma de recuperarse | **Alta** | Bajo | Tolerar `rol` ausente (fallback a `general`) y validar con zod al leer el chat guardado. **Toca lógica de lectura → necesito tu OK.** |
+| 1 | Asistente | ✅ **Resuelto.** Se caía con `reading 'nombre'`. Causa confirmada: el navegador tenía un chat guardado con `rol: "banco"` (rol de la rama del agente bancario, ejecutada antes en `localhost:8081`) que esta versión no conoce. Con almacenamiento limpio (`127.0.0.1`) funcionaba. | Pestaña principal inutilizable al abrir | **Alta** | Bajo | Hecho: `datosRol()` con respaldo a `general` y saneo del chat al cargarlo |
 | 2 | Inventario / Inicio | Carpetas `app/inventario/` y `app/inicio/` crean **rutas duplicadas**. `/inventario` abre otra pantalla, sin barra de pestañas y con título crudo "inventario/index" | Navegación inconsistente, texto técnico visible, usuario sin salida | **Alta** | Bajo | Mover esos archivos a `src/screens/` (como el resto). Solo reubicación |
 | 3 | Todas | Jerarquía tipográfica débil: 6 estilos distintos miden 16/24 (`bodyMedium`, `bodySmall`, `labelLarge/Medium/Small`…), todo se distingue solo por peso | Todo "pesa" parecido; cuesta ver lo importante en 3 segundos | Alta | Medio | Nueva escala con saltos reales (16/20/24/32, caption 14 con excepción documentada si el diseño la necesita) |
 | 4 | Inicio | Encabezado "Inicio" duplica el saludo "¡Buenos días!"; tarjeta "Reporte de ventas de hoy" con tarjetas dentro de tarjetas; el CTA azul oscuro "Pregúntale al Asistente IA" compite con el resto | Densidad y ruido; no hay una acción principal obvia (cobrar) | Alta | Medio | Quitar el título duplicado, aplanar el reporte y hacer de "Cobrar" la acción principal del día |
@@ -44,6 +44,13 @@ Conflictos que necesito que decidas (ver final):
 - **P2 — Planificar (alto impacto, esfuerzo alto):** #3, #4, #5, #9 (se resuelven con las Fases 2–4).
 - **P3 — Si hay tiempo:** #8 (modo oscuro).
 - **Descartar:** dividir `camara.tsx` por completo, a menos que haga falta.
+
+## Hallazgos extra al verificar el Asistente
+
+- Título duplicado: cabecera de pestaña "Asistente" + otro "Asistente" dentro de la pantalla.
+- Banner negro "Simulación: respuestas de ejemplo" muy pesado visualmente; "Borrar chat" sin confirmación visible (revisar).
+- Chips de sugerencia cortados por el compositor en pantalla baja.
+- **Dev:** `pkill` no detiene Expo en Windows y `CI=1` desactiva la recarga; usar `taskkill` y no usar `CI=1`.
 
 ## Pendiente de auditar (no inventar resultados)
 

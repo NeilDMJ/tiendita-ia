@@ -7,7 +7,7 @@
 import type { TipoError } from '@/api/cliente';
 import type { AccionAsistente, RolAsistente, TurnoHistorial } from '@/api/esquemas';
 import type { EstadoTarjeta } from '@/components/tarjeta-accion';
-import { CHAT } from '@/constants';
+import { CHAT, ROLES } from '@/constants';
 
 import { guardarJson, leerJsonConError } from './almacen';
 
@@ -97,6 +97,24 @@ export function caducarVencidas(mensajes: MensajeChat[], ahora = Date.now()): Me
   return cambio ? nuevos : mensajes;
 }
 
+/**
+ * Un chat guardado por una versión anterior puede traer mensajes mal formados: se descartan los que no son
+ * ni del tendero ni del asistente, y un rol desconocido pasa a `general` (así la pantalla nunca se cae).
+ */
+function sanearGuardados(mensajes: unknown[]): MensajeChat[] {
+  const limpios: MensajeChat[] = [];
+  for (const m of mensajes) {
+    if (typeof m !== 'object' || m === null) continue;
+    const x = m as Partial<MensajeChat> & { rol?: string };
+    if (typeof x.texto !== 'string' || typeof x.id !== 'string') continue;
+    if (x.autor === 'tendero') limpios.push(x as MensajeTendero);
+    else if (x.autor === 'asistente') {
+      limpios.push({ ...(x as MensajeDelAsistente), rol: x.rol && x.rol in ROLES ? (x.rol as RolAsistente) : 'general' });
+    }
+  }
+  return limpios;
+}
+
 /** Al abrir: caducidad + lo que quedó a medias cuando se cerró la app. */
 function prepararAlCargar(mensajes: MensajeChat[]): MensajeChat[] {
   return caducarVencidas(
@@ -126,7 +144,7 @@ export async function leerChat(clave: string, sesion: string | null): Promise<{ 
   if (!valor) return { mensajes: [], error: false };
   if (!Array.isArray(valor.mensajes)) return { mensajes: [], error: true };
   if ((valor.sesion ?? null) !== sesion) return { mensajes: [], error: false };
-  return { mensajes: prepararAlCargar(recortar(valor.mensajes)), error: false };
+  return { mensajes: prepararAlCargar(recortar(sanearGuardados(valor.mensajes))), error: false };
 }
 
 export function guardarChat(clave: string, sesion: string | null, mensajes: MensajeChat[]) {

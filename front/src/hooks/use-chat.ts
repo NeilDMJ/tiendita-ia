@@ -9,7 +9,7 @@ import { parsearDatosAccion } from '@/api/acciones-asistente';
 import { enviarMensaje } from '@/api/asistente';
 import { esErrorApi, type TipoError } from '@/api/cliente';
 import type { ContextoAsistente, MensajeAsistente } from '@/api/esquemas';
-import { ROLES } from '@/constants';
+import { datosRol } from '@/constants';
 import {
   caducarVencidas,
   guardarChat,
@@ -181,7 +181,7 @@ export function useChat({ clave, sesion = null, contexto, conCola, activo }: Opc
         );
         if (refActivo.current) {
           const propuesta = nuevo.acciones?.some((a) => a.tipo !== 'abrir_pantalla' && a.estado === 'pendiente');
-          anunciar(`${ROLES[nuevo.rol].nombre} dice: ${nuevo.texto}${propuesta ? '. Tiene una propuesta para confirmar.' : ''}`);
+          anunciar(`${datosRol(nuevo.rol).nombre} dice: ${nuevo.texto}${propuesta ? '. Tiene una propuesta para confirmar.' : ''}`);
         }
       } catch (e) {
         const tipo: TipoError = esErrorApi(e) ? e.tipo : 'servidor';

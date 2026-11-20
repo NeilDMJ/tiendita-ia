@@ -3,7 +3,7 @@ import { FlatList, StyleSheet, Text, View, type NativeScrollEvent, type NativeSy
 import { useReducedMotion } from 'react-native-reanimated';
 
 import { Boton } from '@/components/boton';
-import { ROLES } from '@/constants';
+import { datosRol } from '@/constants';
 import type { MensajeChat, MensajeDelAsistente } from '@/estado/chat';
 import { color, espacio, type } from '@/theme';
 import { claveDia, separadorDeDia } from '@/utils/texto-chat';
@@ -94,7 +94,7 @@ export function ListaMensajes({
     if (ultimo.autor === 'tendero' || cercaDelFinal.current) {
       setTimeout(() => bajar(true), 50);
     } else {
-      setNuevoDe(ROLES[ultimo.rol].nombre);
+      setNuevoDe(datosRol(ultimo.rol).nombre);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- solo al cambiar el número de mensajes
   }, [mensajes.length]);

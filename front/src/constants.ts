@@ -38,6 +38,11 @@ export const ROLES: Record<RolAsistente, { nombre: string; icono: NombreIcono }>
   general: { nombre: 'Tu asistente', icono: 'chat-outline' },
 };
 
+/** Datos de un oficio; un rol que esta versión no conoce (chat guardado por otra versión) cae a `general`. */
+export function datosRol(rol: string | undefined) {
+  return (rol && rol in ROLES ? ROLES[rol as RolAsistente] : ROLES.general);
+}
+
 /** "Te contestan" del estado vacío del chat (02-asistente §2.4). `general` no aparece. */
 export const TE_CONTESTAN: { rol: RolAsistente; texto: string }[] = [
   { rol: 'caja', texto: 'ventas y precios' },
