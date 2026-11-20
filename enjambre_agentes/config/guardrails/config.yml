@@ -1,10 +1,8 @@
-# NeMo Guardrails — capa declarativa (opcional) del enjambre de agentes.
-# Se activa con NEMO_GUARDRAILS_ENABLED=true y `uv sync --extra guardrails`.
-#
-# No hay `models:` a propósito: los rails de entrada/salida son acciones deterministas de
-# Python (guards.py, registradas con LLMRails.register_action) y no consumen un LLM.
-# Para añadir rails basados en LLM (p. ej. `self check input`) agrega un modelo aquí.
-colang_version: "1.0"
+# Configuración de NeMo Guardrails para Tiendita IA
+models:
+  - type: main
+    engine: nvidia-ai-endpoints
+    model: nvidia/nemotron-3-super-120b-a12b
 
 rails:
   input:
@@ -12,5 +10,5 @@ rails:
       - check prompt injection
   output:
     flows:
-      - check tutor output
-      - check cost exposure
+      - prevent cost leakage
+      - enforce concise ui sentences
