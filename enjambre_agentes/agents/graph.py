@@ -5,12 +5,16 @@ Exporta exactamente: run_orchestration, run_orchestration_stream y resume_orches
 """
 from __future__ import annotations
 
+import json
 import uuid
 from typing import Any, AsyncGenerator, Dict, Optional
+from langchain_core.messages import AIMessage
 from langgraph.graph import StateGraph, START, END
 from langgraph.checkpoint.memory import MemorySaver
 
+from config.models import override_model_context
 from schemas.state import OrchestratorState
+from tools.db_client import _get_connection
 from agents.supervisor import supervisor_node
 from agents.control import control_node
 from agents.vendedor import vendedor_node
@@ -20,20 +24,84 @@ from agents.publicista import publicista_node
 from agents.tutor_ui import tutor_ui_node
 
 
+def _commit_approved_db_action(pending: Dict[str, Any]) -> str:
+    """Ejecuta el COMMIT real en PostgreSQL para acciones diferidas tras aprobación HITL."""
+    proposed = pending.get("proposed_data") or {}
+    op = proposed.get("op") or pending.get("action_type")
+    correccion = pending.get("human_notes")
+
+    try:
+        if op == "publicar_campana" and proposed.get("sku"):
+            with _get_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("SELECT id FROM producto WHERE sku = %s", (proposed["sku"],))
+                    row = cur.fetchone()
+                    if row:
+                        prod_id = row[0]
+                        copy_final = correccion if correccion and "Aprobado por operador" not in correccion else proposed.get("copy", "")
+                        video_txt = json.dumps(proposed.get("video_prompt", {}), ensure_ascii=False)
+                        cur.execute(
+                            """
+                            INSERT INTO promocion
+                                (producto_id, motivo, descuento, precio_promo, copy, video_prompt, estado, simulada)
+                            VALUES (%s, %s, %s, %s, %s, %s, 'publicada', false)
+                            RETURNING id
+                            """,
+                            (
+                                prod_id,
+                                proposed.get("motivo", "promocion"),
+                                proposed.get("descuento", "20%"),
+                                proposed.get("precio_promo"),
+                                copy_final,
+                                video_txt,
+                            ),
+                        )
+                        promo_id = cur.fetchone()[0]
+                conn.commit()
+            return f"COMMIT confirmado en PostgreSQL: tabla promocion (id={promo_id}, sku={proposed['sku']})."
+    except Exception as exc:
+        return f"Acción aprobada, pero ocurrió un error al escribir en PostgreSQL: {exc}"
+
+    return f"Acción '{pending.get('action_type')}' autorizada y confirmada por el operador."
+
+
 def approval_gate_node(state: OrchestratorState) -> Dict[str, Any]:
     """
-    Nodo de verificación para Human-in-the-Loop.
-    Si hay una propuesta que requiere intervención humana y aún no ha sido aprobada,
-    se mantiene en pending para ser resuelta antes de volver al supervisor.
+    Nodo de verificación Human-in-the-Loop (HITL).
+    Cuando el operador aprueba, confirma el COMMIT real en PostgreSQL;
+    si rechaza, cancela la operación sin escribir en la base de datos.
     """
     pending = state.get("pending_approval")
-    if pending and pending.get("status") == "approved":
-        # Limpiar aprobación una vez consumida
+    if not pending:
+        return {}
+
+    status = pending.get("status")
+    if status == "approved":
+        detalle_commit = _commit_approved_db_action(pending)
         return {
             "pending_approval": None,
-            "messages": [state.get("messages", [])[-1]] if state.get("messages") else []
+            "db_evidence": detalle_commit,
+            "messages": [AIMessage(content=f"[HITL APROBADO]: {detalle_commit}")],
+        }
+    if status == "rejected":
+        motivo = pending.get("human_notes") or "Rechazado por el operador."
+        return {
+            "pending_approval": None,
+            "messages": [AIMessage(content=f"[HITL RECHAZADO]: Operación cancelada sin escribir en PostgreSQL. Motivo: {motivo}")],
         }
     return {}
+
+
+def get_graph_state(thread_id: str) -> Dict[str, Any]:
+    """Inspecciona el OrchestratorState real almacenado en el checkpointer para un thread_id."""
+    config = {"configurable": {"thread_id": thread_id}}
+    snapshot = tiendita_graph.get_state(config)
+    if not snapshot:
+        return {}
+    return {
+        "values": dict(snapshot.values or {}),
+        "next": list(snapshot.next or []),
+    }
 
 
 def router_supervisor(state: OrchestratorState) -> str:
@@ -45,11 +113,20 @@ def router_supervisor(state: OrchestratorState) -> str:
 
 
 def router_approval(state: OrchestratorState) -> str:
-    """Evalúa si una acción de control, vendedor o publicista debe pasar por el gate de aprobación."""
+    """Evalúa si una acción de control, vendedor o publicista requiere approval_gate, sigue cadena o termina."""
     pending = state.get("pending_approval")
     if pending and pending.get("requires_human") and pending.get("status") == "pending":
         return "approval_gate"
-    return "supervisor"
+    if state.get("compound_chain"):
+        return "supervisor"
+    return END
+
+
+def router_post_specialist(state: OrchestratorState) -> str:
+    """Tras un especialista sin HITL: si queda cadena compuesta vuelve al supervisor; si no, termina directo."""
+    if state.get("compound_chain"):
+        return "supervisor"
+    return END
 
 
 def build_graph():
@@ -85,15 +162,15 @@ def build_graph():
     )
 
     # 4. Conexiones hacia approval_gate para los agentes con acciones sensibles (control, vendedor, publicista)
-    builder.add_conditional_edges("control", router_approval, {"approval_gate": "approval_gate", "supervisor": "supervisor"})
-    builder.add_conditional_edges("vendedor", router_approval, {"approval_gate": "approval_gate", "supervisor": "supervisor"})
-    builder.add_conditional_edges("publicista", router_approval, {"approval_gate": "approval_gate", "supervisor": "supervisor"})
+    builder.add_conditional_edges("control", router_approval, {"approval_gate": "approval_gate", "supervisor": "supervisor", END: END})
+    builder.add_conditional_edges("vendedor", router_approval, {"approval_gate": "approval_gate", "supervisor": "supervisor", END: END})
+    builder.add_conditional_edges("publicista", router_approval, {"approval_gate": "approval_gate", "supervisor": "supervisor", END: END})
 
-    # 5. Agentes analíticos o de pantalla regresan directo al supervisor
-    builder.add_edge("analista", "supervisor")
-    builder.add_edge("investigador", "supervisor")
-    builder.add_edge("tutor_ui", "supervisor")
-    builder.add_edge("approval_gate", "supervisor")
+    # 5. Especialistas de solo lectura o UI: terminan directo salvo que haya cadena compuesta pendiente
+    builder.add_conditional_edges("analista", router_post_specialist, {"supervisor": "supervisor", END: END})
+    builder.add_conditional_edges("investigador", router_post_specialist, {"supervisor": "supervisor", END: END})
+    builder.add_conditional_edges("tutor_ui", router_post_specialist, {"supervisor": "supervisor", END: END})
+    builder.add_conditional_edges("approval_gate", router_post_specialist, {"supervisor": "supervisor", END: END})
 
     # Checkpointer en memoria para persistencia de sesiones e interrupciones HITL
     memory = MemorySaver()
@@ -112,11 +189,14 @@ def run_orchestration(
     event_source: str = "chat",
     vision_payload: Optional[dict] = None,
     ui_state: Optional[dict] = None,
-    provider: str = "NVIDIA"
+    provider: Optional[str] = None,
+    model_name: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Ejecuta el ciclo de orquestación de Tiendita IA de forma síncrona.
     Nombre exacto estipulado para compatibilidad con api.py y cli_tester.py.
+    Si provider/model_name son None, cada agente usa su cerebro distribuido automáticamente.
+    Si el usuario especifica provider/model_name, se respeta como modelo primario con rescate automático.
     """
     tid = thread_id or str(uuid.uuid4())
     config = {"configurable": {"thread_id": tid}}
@@ -130,7 +210,8 @@ def run_orchestration(
         "errores": []
     }
     
-    return tiendita_graph.invoke(initial_state, config=config)
+    with override_model_context(provider=provider, model_name=model_name):
+        return tiendita_graph.invoke(initial_state, config=config)
 
 
 async def run_orchestration_stream(
@@ -139,7 +220,8 @@ async def run_orchestration_stream(
     event_source: str = "chat",
     vision_payload: Optional[dict] = None,
     ui_state: Optional[dict] = None,
-    provider: str = "NVIDIA"
+    provider: Optional[str] = None,
+    model_name: Optional[str] = None,
 ) -> AsyncGenerator[Dict[str, Any], None]:
     """
     Transmite en tiempo real (SSE / streaming) los eventos de cada nodo en el grafo.
@@ -157,8 +239,9 @@ async def run_orchestration_stream(
         "errores": []
     }
     
-    for event in tiendita_graph.stream(initial_state, config=config):
-        yield event
+    with override_model_context(provider=provider, model_name=model_name):
+        for event in tiendita_graph.stream(initial_state, config=config):
+            yield event
 
 
 def resume_orchestration(

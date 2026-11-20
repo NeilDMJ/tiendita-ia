@@ -38,29 +38,31 @@ MODELOS_DEPRECADOS = {
 }
 
 
-def obtener_modelos_gemini(tipo: str = "chat") -> list[str]:
+def obtener_modelos_gemini(tipo: str = "chat", timeout: float = 4.0, strict: bool = False) -> list[str]:
     """Consulta la API de Google Generative Language y retorna los modelos disponibles.
     
     Args:
         tipo: 'chat' (modelos con generateContent), 'embedding' (embedContent) o 'todos'.
+        timeout: Tiempo máximo de espera HTTP (máx. 4s).
+        strict: Si True, retorna [] cuando no hay conexión en vivo o falta API Key.
         
     Returns:
         Lista de nombres de modelos utilizables y verificados.
     """
-    if not GEMINI_API_KEY:
-        return FALLBACK_MODELS_GEMINI
+    if not GEMINI_API_KEY or GEMINI_API_KEY.startswith("tu_"):
+        return [] if strict else list(FALLBACK_MODELS_GEMINI)
 
     url = f"https://generativelanguage.googleapis.com/v1beta/models?key={GEMINI_API_KEY}"
     req = urllib.request.Request(
         url,
         headers={
-            "User-Agent": "AgriPoli/1.0 (Linux; x86_64)",
+            "User-Agent": "TienditaIA/1.0 (Linux; x86_64)",
             "Accept": "application/json",
         }
     )
 
     try:
-        with urllib.request.urlopen(req, timeout=10) as response:
+        with urllib.request.urlopen(req, timeout=min(timeout, 4.0)) as response:
             data = json.loads(response.read().decode('utf-8'))
             modelos = []
             for model in data.get("models", []):
@@ -81,12 +83,16 @@ def obtener_modelos_gemini(tipo: str = "chat") -> list[str]:
                     modelos.append(nombre)
             
             # Asegurar que los modelos estables y con buena cuota encabecen la lista
-            prioritarios = ["gemini-flash-lite-latest", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-3.6-flash"]
+            prioritarios = ["gemini-3.6-flash", "gemini-flash-latest", "gemini-flash-lite-latest", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite"]
             ordenados = [m for m in prioritarios if m in modelos] + [m for m in modelos if m not in prioritarios]
-            return ordenados if ordenados else FALLBACK_MODELS_GEMINI
+            if ordenados:
+                return ordenados
+            return [] if strict else list(FALLBACK_MODELS_GEMINI)
     except Exception as e:
-        print(f"[Aviso] No se pudo consultar la API de Google en vivo ({e}). Usando lista de respaldo.")
-        return FALLBACK_MODELS_GEMINI
+        if not strict:
+            print(f"[Aviso] No se pudo consultar la API de Google en vivo ({e}). Usando lista de respaldo.")
+            return list(FALLBACK_MODELS_GEMINI)
+        return []
 
 
 if __name__ == "__main__":

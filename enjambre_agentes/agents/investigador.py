@@ -10,7 +10,7 @@ from typing import Any, Dict
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langgraph.prebuilt import create_react_agent
 
-from config.models import get_llm_para_agente, extraer_texto_mensaje
+from config.models import get_llm, extraer_texto_mensaje
 from schemas.state import OrchestratorState
 from schemas.reports import StrategicReport
 from tools.analytics_tools import (
@@ -48,7 +48,7 @@ REGLA DE RAZONAMIENTO PURO:
 
 def get_investigador_agent():
     """Instancia el agente ReAct de Investigación Comercial con su suite de herramientas."""
-    llm = get_llm_para_agente("investigador")
+    llm = get_llm(role="investigador")
     tools = [
         search_past_reports,
         search_web_tavily,
@@ -75,7 +75,7 @@ def investigador_node(state: OrchestratorState) -> Dict[str, Any]:
     evidencia_recopilada = extraer_texto_mensaje(historial_tools[-1].content) if historial_tools else ""
 
     # 2. Sintetizar en el esquema estricto de 9 secciones con with_structured_output
-    llm = get_llm_para_agente("investigador")
+    llm = get_llm(role="investigador")
     prompt_sintesis = (
         f"A partir de la siguiente investigación y evidencia recopilada en herramientas:\n\n"
         f"{evidencia_recopilada}\n\n"

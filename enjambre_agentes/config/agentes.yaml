@@ -28,8 +28,9 @@ modelos:
     temperatura: 0.2
   publicista:
     proveedor: NVIDIA
-    modelo: nvidia/nemotron-3-super-120b-a12b
+    modelo: nvidia/llama-3.1-nemotron-nano-8b-v1
     temperatura: 0.4
+    adaptador_lora: promo_copy_v1
   tutor_ui:
     proveedor: NVIDIA
     modelo: nvidia/llama-3.1-nemotron-nano-8b-v1

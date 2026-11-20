@@ -79,10 +79,10 @@ def register_product(
                         VALUES (%s, %s, %s, %s, %s)
                     """, (prod_id, stock_inicial, stock_inicial, fecha_caducidad, costo_unitario))
 
-                    # Registrar movimiento de entrada
+                    # Registrar movimiento de entrada (enum Postgres: 'entrada')
                     cur.execute("""
                         INSERT INTO movimiento_inventario (producto_id, tipo, cantidad)
-                        VALUES (%s, 'entrada_compra', %s)
+                        VALUES (%s, 'entrada', %s)
                     """, (prod_id, stock_inicial))
 
             conn.commit()
@@ -166,10 +166,17 @@ def update_stock(
                     """, (prod_id, abs(cantidad), abs(cantidad), fecha_caducidad, costo_unitario))
                     lote_id = cur.fetchone()[0]
 
+                tipo_db_map = {
+                    "entrada_compra": "entrada",
+                    "merma": "merma",
+                    "ajuste_inventario": "salida",
+                }
+                tipo_db = tipo_db_map.get(tipo_movimiento, "entrada" if delta >= 0 else "salida")
+
                 cur.execute("""
                     INSERT INTO movimiento_inventario (producto_id, lote_id, tipo, cantidad)
                     VALUES (%s, %s, %s, %s)
-                """, (prod_id, lote_id, tipo_movimiento, delta))
+                """, (prod_id, lote_id, tipo_db, delta))
 
             conn.commit()
 

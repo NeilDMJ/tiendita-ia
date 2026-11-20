@@ -23,7 +23,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
-from config.models import listar_modelos_disponibles
+from config.models import (
+    listar_modelos_disponibles,
+    asignar_cerebros_por_agente,
+    obtener_estado_proveedores,
+)
 from agents.graph import run_orchestration, run_orchestration_stream, resume_orchestration
 from schemas.vision import CatalogScanRequest, POSCheckoutRequest, ReceiptOCRRequest
 
@@ -51,7 +55,8 @@ class OrchestrateRequest(BaseModel):
     event_source: str = Field(default="chat", description="Fuente del evento: 'chat', 'catalog-scan', 'pos-checkout', 'receipt-ocr', 'cron'.")
     vision_payload: Optional[Dict[str, Any]] = Field(default=None, description="Carga de imagen en base64 si aplica.")
     ui_state: Optional[Dict[str, Any]] = Field(default=None, description="Estado de pantalla de la terminal de pago si aplica.")
-    provider: str = Field(default="NVIDIA", description="Proveedor LLM preferido (NVIDIA, Gemini, Groq, Cohere, Ollama, HuggingFace).")
+    provider: Optional[str] = Field(default=None, description="Proveedor LLM manual opcional (NVIDIA, Gemini, Groq, Cohere, Ollama, HuggingFace). Si se omite, usa cerebros distribuidos.")
+    model_name: Optional[str] = Field(default=None, description="Modelo específico opcional para el proveedor elegido manualmente.")
 
 
 class ResumeRequest(BaseModel):
@@ -77,10 +82,12 @@ def health_check():
 
 @app.get("/models")
 def get_models(provider: Optional[str] = None):
-    """Consulta en vivo los modelos soportados por proveedor."""
+    """Consulta en vivo los modelos soportados por proveedor y la distribución de cerebros."""
     return {
         "status": "success",
-        "modelos": listar_modelos_disponibles(provider)
+        "modelos": listar_modelos_disponibles(provider),
+        "estado_proveedores": obtener_estado_proveedores(),
+        "cerebros_por_agente": asignar_cerebros_por_agente(),
     }
 
 
@@ -94,7 +101,8 @@ def orchestrate_sync(req: OrchestrateRequest):
             event_source=req.event_source,
             vision_payload=req.vision_payload,
             ui_state=req.ui_state,
-            provider=req.provider
+            provider=req.provider,
+            model_name=req.model_name,
         )
         mensajes_serializables = []
         for m in resultado.get("messages", []):
@@ -127,7 +135,8 @@ async def orchestrate_streaming(req: OrchestrateRequest):
                 event_source=req.event_source,
                 vision_payload=req.vision_payload,
                 ui_state=req.ui_state,
-                provider=req.provider
+                provider=req.provider,
+                model_name=req.model_name,
             ):
                 payload_json = json.dumps(evento, default=str, ensure_ascii=False)
                 yield f"data: {payload_json}\n\n"

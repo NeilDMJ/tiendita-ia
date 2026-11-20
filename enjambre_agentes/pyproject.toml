@@ -5,7 +5,7 @@ description = "Tiendita IA: Ecosistema Comercial Multimodal con Visión Artifici
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    # Ecosistema LangChain & LangGraph
+    # Ecosistema LangChain, LangGraph y Proveedores LLM (NVIDIA, Gemini, OpenAI, Groq, Cohere, Ollama)
     "langchain",
     "langchain-core",
     "langchain-community",
@@ -13,14 +13,19 @@ dependencies = [
     "langchain-nvidia-ai-endpoints",
     "nemoguardrails",
     "langchain-google-genai",
+    "google-generativeai>=0.8.6",
+    "langchain-openai",
+    "openai",
     "langchain-groq>=0.1.5",
     "langchain-cohere>=0.1.7",
     "langchain-ollama",
-    # Búsqueda Web y Scraping (Agente Investigador)
+    # Búsqueda Web, Scraping y Procesamiento Documental (Agente Investigador)
     "tavily-python",
     "langchain-tavily",
     "beautifulsoup4",
     "lxml",
+    "pypdf",
+    "pandas",
     "httpx",
     # RAG Local, FAISS y Embeddings Abiertos
     "faiss-cpu",
@@ -41,11 +46,6 @@ dependencies = [
     "python-dotenv",
     "aiofiles",
     "requests",
-    "google-generativeai>=0.8.6",
-    "langchain-openai>=1.6.2",
-    "openai>=3.57.0",
-    "pypdf>=7.1.1",
-    "pandas>=2.3.3",
 ]
 
 [tool.uv]

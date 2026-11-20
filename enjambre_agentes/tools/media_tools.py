@@ -1,12 +1,59 @@
 """
-Herramientas de Medios y Publicidad para el Agente Publicista:
-Generación de copys comerciales, llamados a la acción (CTAs) y prompts de video vertical 9:16 de 5s.
+Herramientas de Medios, Publicidad y Guías de Pagos Digitales (CoDi, SPEI, DiMo):
+- Generación de copys comerciales, llamados a la acción (CTAs) y prompts de video vertical 9:16 de 5s.
+- Consulta especializada al RAG de pagos digitales (`consultar_guia_pago_digital`) para Tutor UI y Vendedor.
 """
 from __future__ import annotations
 
 import json
 from typing import Literal, Optional
 from langchain_core.tools import tool
+
+from tools.rag_nemo import buscar_guia_pago, obtener_advertencias_pago
+
+
+@tool
+def consultar_guia_pago_digital(
+    metodo_pago: str,
+    pantalla: str,
+    error_code: Optional[str] = None,
+    duda: str = "",
+) -> str:
+    """
+    Consulta en el índice RAG oficial (guias.json + conocimiento.jsonl de Banxico) los pasos exactos,
+    límites y solución de errores para pagos digitales en México: CoDi, SPEI y DiMo.
+
+    Args:
+        metodo_pago: Método de pago digital ('codi', 'spei', 'dimo').
+        pantalla: Pantalla o etapa actual del flujo (ej. 'cobro_qr', 'transferir', 'confirmacion', 'comprobante').
+        error_code: Código o mensaje de error visible en pantalla (opcional).
+        duda: Pregunta adicional del cajero o cliente (opcional).
+    """
+    partes = [duda.strip()] if duda else []
+    if error_code:
+        partes.append(f"error {error_code}")
+    consulta = " ".join(partes) or f"pasos y solucion en pantalla {pantalla} para {metodo_pago}"
+
+    fragmentos = buscar_guia_pago(
+        metodo_pago=metodo_pago,
+        pantalla=pantalla,
+        consulta=consulta,
+        top_k=3,
+    )
+    tipo_adv = "cobro" if metodo_pago.strip().lower() == "codi" else "transferencia"
+    advertencias = obtener_advertencias_pago(tipo_adv)
+
+    return json.dumps(
+        {
+            "status": "success" if fragmentos else "no_results",
+            "metodo_pago": metodo_pago.strip().lower(),
+            "pantalla": pantalla,
+            "error_code": error_code,
+            "advertencias_seguridad": advertencias,
+            "guias_recuperadas": fragmentos,
+        },
+        ensure_ascii=False,
+    )
 
 
 @tool

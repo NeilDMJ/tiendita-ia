@@ -20,22 +20,24 @@ FALLBACK_MODELS_NVIDIA = [
 ]
 
 
-def obtener_modelos_nvidia() -> List[str]:
+def obtener_modelos_nvidia(timeout: float = 4.0, strict: bool = False) -> List[str]:
     """
     Consulta en vivo GET {NVIDIA_BASE_URL}/models para listar los microservicios NIM disponibles.
-    Si la red no está disponible o falta la llave, retorna la lista de fallbacks oficiales.
+    Si strict=True, retorna [] cuando no hay credenciales válidas o falla la red (timeout <= 4s).
+    Si strict=False (default), retorna la lista de fallbacks oficiales.
     """
     if not NVIDIA_API_KEY or NVIDIA_API_KEY.startswith("tu_"):
-        return list(FALLBACK_MODELS_NVIDIA)
-    
+        return [] if strict else list(FALLBACK_MODELS_NVIDIA)
+
     headers = {
         "Authorization": f"Bearer {NVIDIA_API_KEY}",
-        "Accept": "application/json"
+        "Accept": "application/json",
+        "User-Agent": "TienditaIA/1.0 (Linux; x86_64)",
     }
     url = f"{NVIDIA_BASE_URL.rstrip('/')}/models"
-    
+
     try:
-        resp = requests.get(url, headers=headers, timeout=5.0)
+        resp = requests.get(url, headers=headers, timeout=min(timeout, 4.0))
         if resp.status_code == 200:
             datos = resp.json()
             modelos = [m["id"] for m in datos.get("data", []) if "id" in m]
@@ -47,5 +49,5 @@ def obtener_modelos_nvidia() -> List[str]:
                 return modelos
     except Exception:
         pass
-        
-    return list(FALLBACK_MODELS_NVIDIA)
+
+    return [] if strict else list(FALLBACK_MODELS_NVIDIA)

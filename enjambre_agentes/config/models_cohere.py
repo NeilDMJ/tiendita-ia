@@ -26,25 +26,28 @@ FALLBACK_MODELS_COHERE = [
 ]
 
 
-def obtener_modelos_cohere(tipo: str = "chat") -> list[str]:
+def obtener_modelos_cohere(tipo: str = "chat", timeout: float = 4.0, strict: bool = False) -> list[str]:
     """Consulta la API de Cohere y retorna los modelos disponibles.
     
     Args:
         tipo: 'chat' (modelos con endpoint chat), 'embed' (con endpoint embed) o 'todos'.
+        timeout: Tiempo máximo de espera HTTP (máx. 4s).
+        strict: Si True, retorna [] cuando no hay conexión en vivo o falta API Key.
         
     Returns:
         Lista de nombres de modelos (ej. ['command-r-plus', ...]).
     """
-    if not COHERE_API_KEY:
-        return FALLBACK_MODELS_COHERE
+    if not COHERE_API_KEY or COHERE_API_KEY.startswith("tu_"):
+        return [] if strict else list(FALLBACK_MODELS_COHERE)
 
     url = "https://api.cohere.com/v1/models"
     req = urllib.request.Request(url)
     req.add_header("Authorization", f"Bearer {COHERE_API_KEY}")
     req.add_header("Accept", "application/json")
+    req.add_header("User-Agent", "TienditaIA/1.0 (Linux; x86_64)")
 
     try:
-        with urllib.request.urlopen(req, timeout=10) as response:
+        with urllib.request.urlopen(req, timeout=min(timeout, 4.0)) as response:
             data = json.loads(response.read().decode('utf-8'))
             modelos = []
             for model in data.get("models", []):
@@ -57,10 +60,14 @@ def obtener_modelos_cohere(tipo: str = "chat") -> list[str]:
                 elif tipo == "todos":
                     modelos.append(nombre)
             modelos.sort()
-            return modelos if modelos else FALLBACK_MODELS_COHERE
+            if modelos:
+                return modelos
+            return [] if strict else list(FALLBACK_MODELS_COHERE)
     except Exception as e:
-        print(f"[Aviso] No se pudo consultar la API de Cohere en vivo ({e}). Usando lista de respaldo.")
-        return FALLBACK_MODELS_COHERE
+        if not strict:
+            print(f"[Aviso] No se pudo consultar la API de Cohere en vivo ({e}). Usando lista de respaldo.")
+            return list(FALLBACK_MODELS_COHERE)
+        return []
 
 
 if __name__ == "__main__":

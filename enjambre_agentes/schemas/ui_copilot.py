@@ -11,9 +11,9 @@ from pydantic import BaseModel, Field, field_validator
 
 class UIState(BaseModel):
     """Representa el estado actual de la pantalla en la terminal o punto de venta."""
-    screen: str = Field(..., description="Identificador de la pantalla actual (ej. 'seleccion_pago', 'ingreso_nip', 'espera_qr').")
+    screen: str = Field(..., description="Identificador de la pantalla actual (ej. 'seleccion_pago', 'cobro_qr', 'transferir', 'confirmacion', 'comprobante').")
     step: int = Field(default=1, description="Paso del flujo actual.")
-    payment_method: Optional[str] = Field(default=None, description="Método de pago seleccionado (tarjeta, transferencia, efectivo, qr).")
+    payment_method: Optional[str] = Field(default=None, description="Método de pago digital (codi, spei, dimo, tarjeta, transferencia, efectivo, qr).")
     error_code: Optional[str] = Field(default=None, description="Código o mensaje de error visible en pantalla si existe.")
     monto_pendiente: Optional[float] = Field(default=None, description="Monto total a cobrar pendiente de confirmación.")
 

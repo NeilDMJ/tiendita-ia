@@ -12,7 +12,23 @@ from config.keys import (
     validate_keys,
 )
 from config.logger import log_agente, log_herramienta, log_hitl, log_ok, log_alerta, log_error
-from config.models import get_llm, get_llm_para_agente, listar_modelos_disponibles
+from config.models import (
+    ACTIVE_AGENT_BRAINS,
+    DEFAULT_NVIDIA_BRAINS,
+    get_llm,
+    get_llm_para_agente,
+    set_agent_brain,
+    reset_brains_to_nvidia_default,
+    get_active_brains,
+    listar_modelos_disponibles,
+    detectar_proveedores_activos,
+    asignar_cerebros_por_agente,
+    obtener_estado_proveedores,
+    set_manual_override,
+    clear_manual_override,
+    get_manual_override,
+    override_model_context,
+)
 
 __all__ = [
     "NVIDIA_API_KEY",
@@ -29,7 +45,19 @@ __all__ = [
     "log_ok",
     "log_alerta",
     "log_error",
+    "ACTIVE_AGENT_BRAINS",
+    "DEFAULT_NVIDIA_BRAINS",
     "get_llm",
     "get_llm_para_agente",
+    "set_agent_brain",
+    "reset_brains_to_nvidia_default",
+    "get_active_brains",
     "listar_modelos_disponibles",
+    "detectar_proveedores_activos",
+    "asignar_cerebros_por_agente",
+    "obtener_estado_proveedores",
+    "set_manual_override",
+    "clear_manual_override",
+    "get_manual_override",
+    "override_model_context",
 ]

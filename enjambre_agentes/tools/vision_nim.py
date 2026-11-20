@@ -1,142 +1,149 @@
 """
-Cliente multimodal para NVIDIA NIM Vision y procesamiento de imágenes en Tiendita IA.
-Soporta escaneo de catálogo (/catalog-scan), identificación POS (/pos-checkout) y OCR (/receipt-ocr).
+Cliente multimodal real para NVIDIA NIM Vision en Tiendita IA.
+Procesa imágenes reales desde disco o API (base64) sin datos simulados:
+  - Escaneo de catálogo (/catalog-scan / catalog)
+  - Identificación en mostrador POS (/pos-checkout / pos)
+  - OCR y clasificación contable de comprobantes (/receipt-ocr / ticket)
 """
 from __future__ import annotations
 
 import json
-import os
-from typing import Optional
+from typing import Optional, Tuple
+
+import httpx
 from langchain_core.tools import tool
 
-NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY")
-NVIDIA_BASE_URL = os.getenv("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1")
+from config.keys import NVIDIA_API_KEY, NVIDIA_BASE_URL
+
+# Modelos Vision-Language reales disponibles en NVIDIA NIM (en orden de preferencia)
+VISION_NIM_MODELS = [
+    "nvidia/nemotron-3.5-super-vl-120b-a12b",
+    "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
+    "google/gemma-3-12b-it",
+]
+
+# Buffer en memoria de la imagen activa del turno actual (evita truncar base64 largo en prompts)
+_ACTIVE_VISION_IMAGE: Tuple[Optional[str], str] = (None, "image/jpeg")
+
+
+def set_active_vision_image(image_b64: Optional[str], mime_type: str = "image/jpeg") -> None:
+    """Registra la imagen real en base64 para que las herramientas NIM Vision la consuman directamente."""
+    global _ACTIVE_VISION_IMAGE
+    _ACTIVE_VISION_IMAGE = (image_b64, mime_type or "image/jpeg")
+
+
+def clear_active_vision_image() -> None:
+    """Limpia la imagen activa al concluir la operación multimodal."""
+    global _ACTIVE_VISION_IMAGE
+    _ACTIVE_VISION_IMAGE = (None, "image/jpeg")
+
+
+def _resolver_imagen(image_b64: Optional[str]) -> Tuple[Optional[str], str]:
+    """Usa la imagen activa cargada desde disco si el LLM pasa un marcador o cadena corta."""
+    active_b64, active_mime = _ACTIVE_VISION_IMAGE
+    if active_b64 and (not image_b64 or len(image_b64.strip()) < 64):
+        return active_b64, active_mime
+    if image_b64 and len(image_b64.strip()) >= 64:
+        return image_b64.strip(), active_mime
+    return None, active_mime
 
 
 def _call_nim_vision_endpoint(prompt: str, image_b64: str, mime_type: str = "image/jpeg") -> str:
-    """Llama a la API de NVIDIA NIM Vision con fallback analítico estructurado."""
+    """Llama en vivo a la API de NVIDIA NIM Vision con reintento entre modelos VL activos."""
     if not NVIDIA_API_KEY or NVIDIA_API_KEY.startswith("tu_"):
-        # Retorno estructurado de contingencia para pruebas locales sin requerir credencial externa
-        return ""
-    
-    try:
-        import httpx
-        headers = {
-            "Authorization": f"Bearer {NVIDIA_API_KEY}",
-            "Content-Type": "application/json"
-        }
-        payload = {
-            "model": "nvidia/neva-22b",
-            "messages": [
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt},
-                        {"type": "image_url", "image_url": {"url": f"data:{mime_type};base64,{image_b64}"}}
-                    ]
-                }
-            ],
-            "temperature": 0.1,
-            "max_tokens": 1024
-        }
-        with httpx.Client(timeout=30.0) as client:
-            resp = client.post(f"{NVIDIA_BASE_URL}/chat/completions", headers=headers, json=payload)
-            if resp.status_code == 200:
-                data = resp.json()
-                return data["choices"][0]["message"]["content"]
-    except Exception:
-        pass
-    return ""
+        return json.dumps({
+            "status": "error",
+            "message": "NVIDIA_API_KEY no está configurada para ejecutar NIM Vision.",
+        }, ensure_ascii=False)
 
+    real_b64, real_mime = _resolver_imagen(image_b64)
+    if not real_b64:
+        return json.dumps({
+            "status": "error",
+            "message": "No se recibió una imagen real válida en base64 para analizar.",
+        }, ensure_ascii=False)
 
-@tool
-def analyze_catalog_photo(image_b64: str, categoria_sugerida: Optional[str] = None) -> str:
-    """
-    Analiza una fotografía de catálogo o anaquel usando NIM Vision.
-    Detecta productos, infiere precios en empaque y propone SKUs normalizados.
-    """
-    prompt = (
-        "Analiza esta imagen comercial de productos o estante. Extrae cada producto visible en formato JSON "
-        "con campos: sku_sugerido, nombre, categoria, precio_estimado, confianza_deteccion (0.0 a 1.0)."
-    )
-    res = _call_nim_vision_endpoint(prompt, image_b64)
-    if res:
-        return res
-    
-    # Salida estándar simulada de alta fidelidad para catálogo
-    mock_result = {
-        "status": "success",
-        "conteo_total": 2,
-        "productos_detectados": [
-            {
-                "sku_sugerido": "SOPA-MARUCHAN-CAMARON",
-                "nombre": "Sopa Maruchan Instantánea Camarón con Chile y Limón 64g",
-                "categoria": categoria_sugerida or "abarrotes",
-                "precio_estimado": 18.50,
-                "confianza_deteccion": 0.94,
-                "lote_sugerido": "L-2026-NOV"
-            },
-            {
-                "sku_sugerido": "GALLETAS-GAMESA-MARIAS",
-                "nombre": "Galletas Gamesa Marías 170g",
-                "categoria": categoria_sugerida or "galletas",
-                "precio_estimado": 21.00,
-                "confianza_deteccion": 0.92,
-                "lote_sugerido": "L-2026-DIC"
+    headers = {
+        "Authorization": f"Bearer {NVIDIA_API_KEY}",
+        "Content-Type": "application/json",
+    }
+    url = f"{NVIDIA_BASE_URL.rstrip('/')}/chat/completions"
+    ultimo_error = "Sin respuesta de NIM Vision."
+
+    with httpx.Client(timeout=45.0) as client:
+        for model_id in VISION_NIM_MODELS:
+            payload = {
+                "model": model_id,
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": prompt},
+                            {
+                                "type": "image_url",
+                                "image_url": {"url": f"data:{real_mime};base64,{real_b64}"},
+                            },
+                        ],
+                    }
+                ],
+                "temperature": 0.1,
+                "max_tokens": 1024,
             }
-        ],
-        "observaciones": "Productos reconocidos con alta nitidez en mostrador frontal."
-    }
-    return json.dumps(mock_result, ensure_ascii=False)
+            try:
+                resp = client.post(url, headers=headers, json=payload)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    content = data["choices"][0]["message"]["content"]
+                    return json.dumps({
+                        "status": "success",
+                        "modelo_vision": model_id,
+                        "analisis": content,
+                    }, ensure_ascii=False)
+                ultimo_error = f"{model_id} devolvió HTTP {resp.status_code}: {resp.text[:200]}"
+            except Exception as exc:
+                ultimo_error = f"{model_id} falló: {exc}"
+
+    return json.dumps({"status": "error", "message": ultimo_error}, ensure_ascii=False)
 
 
 @tool
-def analyze_receipt(image_b64: str) -> str:
+def analyze_catalog_photo(image_b64: str = "ACTIVE_IMAGE", categoria_sugerida: Optional[str] = None) -> str:
     """
-    Ejecuta OCR sobre un ticket o factura de compra y clasifica contablemente el importe
-    en 'inversion_inventario' (mercancía para reventa) o 'gasto_operativo' (insumos/servicios del local).
+    Analiza una fotografía real de catálogo o anaquel usando NVIDIA NIM Vision.
+    Detecta productos visibles, infiere precios en empaque y propone SKUs normalizados.
+    """
+    cat_hint = f" Categoría sugerida: {categoria_sugerida}." if categoria_sugerida else ""
+    prompt = (
+        "Analiza esta imagen real comercial de productos o anaquel de una tienda de abarrotes."
+        f"{cat_hint} Extrae cada producto visible en formato JSON con campos: "
+        "sku_sugerido, nombre, categoria, precio_estimado, confianza_deteccion (0.0 a 1.0) y observaciones."
+    )
+    return _call_nim_vision_endpoint(prompt, image_b64)
+
+
+@tool
+def analyze_receipt(image_b64: str = "ACTIVE_IMAGE") -> str:
+    """
+    Ejecuta OCR real sobre un ticket o factura de compra mediante NVIDIA NIM Vision y clasifica
+    el importe en 'inversion_inventario' (mercancía para reventa) o 'gasto_operativo'.
     """
     prompt = (
-        "Extrae el texto de este comprobante o factura. Extrae: proveedor, folio_o_numero, fecha_emision, "
-        "total_importe, partidas (descripcion, cantidad, precio_unitario, subtotal), y clasifica rígidamente en "
-        "'inversion_inventario' o 'gasto_operativo' justificando la decisión."
+        "Extrae todo el texto real de este comprobante o factura. Devuelve un JSON con: "
+        "proveedor, folio_o_numero, fecha_emision, total_importe, partidas (descripcion, cantidad, "
+        "precio_unitario, subtotal), clasificacion_contable ('inversion_inventario' o 'gasto_operativo') "
+        "y justificacion_clasificacion."
     )
-    res = _call_nim_vision_endpoint(prompt, image_b64)
-    if res:
-        return res
-    
-    mock_ticket = {
-        "proveedor": "Distribuidora Mayorista Central S.A. de C.V.",
-        "folio_o_numero": "FAC-88492",
-        "fecha_emision": "2026-11-20",
-        "total_importe": 1450.00,
-        "clasificacion_contable": "inversion_inventario",
-        "justificacion_clasificacion": "El comprobante ampara bultos de abarrotes y bebidas con código de barras destinados a reposición de anaquel para venta al público.",
-        "partidas": [
-            {"descripcion": "Caja Aceite 1-2-3 1L (12 pzas)", "cantidad": 2.0, "precio_unitario": 480.00, "subtotal": 960.00},
-            {"descripcion": "Fardo Azúcar Estándar 10kg", "cantidad": 1.0, "precio_unitario": 490.00, "subtotal": 490.00}
-        ]
-    }
-    return json.dumps(mock_ticket, ensure_ascii=False)
+    return _call_nim_vision_endpoint(prompt, image_b64)
 
 
 @tool
-def analyze_pos_items(image_b64: str) -> str:
+def analyze_pos_items(image_b64: str = "ACTIVE_IMAGE") -> str:
     """
-    Examina los artículos colocados por un cliente sobre la barra de caja POS.
-    Detecta unidades y prepara la lista preliminar para cotización y carrito.
+    Examina visualmente mediante NVIDIA NIM Vision los artículos colocados sobre la barra de caja POS.
+    Devuelve la lista real de productos y cantidades detectadas para cotizar contra PostgreSQL.
     """
-    prompt = "Identifica los productos y la cantidad de unidades colocadas en la barra de caja. Devuelve JSON con lista de items."
-    res = _call_nim_vision_endpoint(prompt, image_b64)
-    if res:
-        return res
-    
-    mock_pos = {
-        "status": "success",
-        "items": [
-            {"sku": "LECHE-LALA-1L", "nombre": "Leche Entera Lala 1L", "cantidad_detectada": 2, "confianza": 0.96},
-            {"sku": "PAN-BIMBO-BLANCO", "nombre": "Pan Blanco Bimbo Grande", "cantidad_detectada": 1, "confianza": 0.91}
-        ],
-        "requiere_verificacion_manual": False
-    }
-    return json.dumps(mock_pos, ensure_ascii=False)
+    prompt = (
+        "Identifica los productos reales y la cantidad exacta de unidades visibles en esta foto de mostrador POS. "
+        "Devuelve un JSON con 'items': lista de objetos con nombre, marca, presentacion, cantidad_detectada y confianza."
+    )
+    return _call_nim_vision_endpoint(prompt, image_b64)

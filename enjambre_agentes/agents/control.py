@@ -10,11 +10,16 @@ from typing import Any, Dict
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langgraph.prebuilt import create_react_agent
 
-from config.models import get_llm_para_agente, extraer_texto_mensaje
+from config.models import get_llm, extraer_texto_mensaje
 from schemas.state import OrchestratorState
 from schemas.commerce import ApprovalPayload
 from tools.db_client import query_inventory, query_expiring_soon
-from tools.vision_nim import analyze_catalog_photo, analyze_receipt
+from tools.vision_nim import (
+    analyze_catalog_photo,
+    analyze_receipt,
+    set_active_vision_image,
+    clear_active_vision_image,
+)
 from tools.inventory_tools import register_product, update_stock, check_expiry_alerts, get_low_stock_alerts
 from tools.few_shot_retriever import retrieve_few_shots
 
@@ -33,7 +38,7 @@ REGLAS OBLIGATORIAS:
 
 def get_control_agent():
     """Construye el agente ReAct de Control con su LLM asignado."""
-    llm = get_llm_para_agente("control")
+    llm = get_llm(role="control")
     tools = [
         analyze_catalog_photo,
         analyze_receipt,
@@ -52,18 +57,32 @@ def control_node(state: OrchestratorState) -> Dict[str, Any]:
     """Nodo ejecutor para el Agente de Control en LangGraph."""
     agent = get_control_agent()
     
-    # Preparar contexto a partir del estado multimodal
-    mensajes = list(state.get("messages", []))
+    # Filtrar mensajes internos del supervisor y conservar la solicitud real del usuario al final
+    mensajes = [
+        m for m in state.get("messages", [])
+        if not extraer_texto_mensaje(getattr(m, "content", m)).startswith("(・_・)? [SUPERVISOR]")
+    ]
     vision_payload = state.get("vision_payload")
     event_source = state.get("event_source", "chat")
-    
-    contexto_adicional = f"[EVENTO_ORIGEN: {event_source}]"
+
+    mensajes_invocacion = list(mensajes)
     if vision_payload and vision_payload.get("image_b64"):
-        endpoint = vision_payload.get("endpoint", "")
-        contexto_adicional += f"\n[CARGA_MULTIMODAL: Imagen disponible para {endpoint}]"
-    
-    mensajes_invocacion = mensajes + [HumanMessage(content=contexto_adicional)]
-    resultado = agent.invoke({"messages": mensajes_invocacion})
+        endpoint = vision_payload.get("endpoint") or vision_payload.get("mode") or ""
+        mime = vision_payload.get("mime_type", "image/jpeg")
+        set_active_vision_image(vision_payload["image_b64"], mime)
+        mensajes_invocacion = [
+            SystemMessage(
+                content=(
+                    f"[EVENTO_ORIGEN: {event_source}] Imagen real cargada para modo='{endpoint}' ({mime}). "
+                    f"Invoca analyze_catalog_photo o analyze_receipt pasando image_b64='ACTIVE_IMAGE'."
+                )
+            )
+        ] + mensajes_invocacion
+    try:
+        resultado = agent.invoke({"messages": mensajes_invocacion})
+    finally:
+        if vision_payload and vision_payload.get("image_b64"):
+            clear_active_vision_image()
     mensajes_nuevos = resultado.get("messages", [])
     ultimo_mensaje = extraer_texto_mensaje(mensajes_nuevos[-1].content) if mensajes_nuevos else "Control completado."
     

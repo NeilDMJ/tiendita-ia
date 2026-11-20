@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Literal, Optional
 from pydantic import BaseModel, Field
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
-from config.models import get_llm_para_agente, extraer_texto_mensaje
+from config.models import get_llm, extraer_texto_mensaje
 from schemas.state import OrchestratorState
 
 
@@ -46,14 +46,15 @@ ESPECIALISTAS DISPONIBLES:
 
 REGLAS ESTRICTAS DE ORQUESTACIÓN:
 - PROHIBIDO utilizar palabras clave o reglas rígidas de texto (if 'pos' in query). Evalúa la intención semántica global, el evento detonante (event_source) y los datos disponibles.
-- Si la solicitud requiere encadenamiento compuesto (por ejemplo, registrar una factura y luego cotizar o verificar flujo de caja), especifica la secuencia en 'compound_chain'.
+- Para consultas directas que resuelve un solo especialista, deja 'compound_chain' vacío (null o []). NUNCA repitas el agente elegido en 'next_agent' dentro de 'compound_chain'.
+- Usa 'compound_chain' ÚNICAMENTE para los agentes ADICIONALES posteriores a 'next_agent' cuando la tarea realmente requiera dos o más especialistas distintos (ej. next_agent='control', compound_chain=['publicista']).
 - Si la tarea ya está concluida o se alcanzó el objetivo, emite 'FINISH'.
 """
 
 
 def supervisor_node(state: OrchestratorState) -> Dict[str, Any]:
     """Nodo central del Supervisor en LangGraph."""
-    llm = get_llm_para_agente("supervisor")
+    llm = get_llm(role="supervisor")
     iteration_count = state.get("iteration_count", 0)
     
     # Límite estricto: iteration_count <= 6
@@ -82,8 +83,9 @@ def supervisor_node(state: OrchestratorState) -> Dict[str, Any]:
     contexto_evaluacion = (
         f"Estado actual de la orquestación:\n"
         f"- Fuente del evento: {event_source}\n"
-        f"- Carga visual disponible: {'Sí' if vision_payload else 'No'}\n"
+        f"- Carga visual disponible: {'Sí (' + str(vision_payload.get('mode') or vision_payload.get('endpoint') or 'imagen') + ')' if vision_payload else 'No'}\n"
         f"- Estado de interfaz UI: {'Sí' if ui_state else 'No'}\n"
+        f"- Evidencia BD previa: {'Sí' if state.get('db_evidence') else 'No'}\n"
         f"- Iteraciones consumidas: {iteration_count} / 6\n"
         f"- Último mensaje registrado: {extraer_texto_mensaje(mensajes[-1].content) if mensajes else 'Sin mensajes previos.'}\n"
     )
@@ -114,21 +116,40 @@ def supervisor_node(state: OrchestratorState) -> Dict[str, Any]:
             pass
             
     if not decision:
-        # Asignación semántica de emergencia basada en event_source si fallan las llamadas
-        if event_source == "catalog-scan" or event_source == "receipt-ocr":
+        # Asignación semántica de emergencia basada en event_source / metadata si fallan las llamadas
+        vision_mode = str((vision_payload or {}).get("mode") or (vision_payload or {}).get("endpoint") or "").lower()
+        if event_source == "vision_api":
+            if "pos" in vision_mode:
+                decision = SupervisorDecision(next_agent="vendedor", reasoning="Imagen real de mostrador POS recibida vía vision_api.")
+            else:
+                decision = SupervisorDecision(next_agent="control", reasoning="Imagen real de catálogo o comprobante recibida vía vision_api.")
+        elif event_source in ("catalog-scan", "receipt-ocr"):
             decision = SupervisorDecision(next_agent="control", reasoning="Evento directo de inspección documental o anaquel.")
         elif event_source == "pos-checkout":
             decision = SupervisorDecision(next_agent="vendedor", reasoning="Evento directo de mostrador para cobro.")
         elif event_source == "cron":
-            decision = SupervisorDecision(next_agent="publicista", reasoning="Ejecución periódica programada para ofertas o caducidades.")
+            decision = SupervisorDecision(
+                next_agent="control",
+                reasoning="Barrido programado de caducidades y stock crítico en PostgreSQL.",
+                compound_chain=["publicista"],
+            )
         elif ui_state:
             decision = SupervisorDecision(next_agent="tutor_ui", reasoning="Interacción activa en pantalla de terminal.")
         else:
             decision = SupervisorDecision(next_agent="vendedor", reasoning="Canal general de atención comercial.")
             
+    # Sanitizar compound_chain: nunca repetir next_agent ni encadenar duplicados consecutivos
+    valid_specialists = {"control", "vendedor", "analista", "investigador", "publicista", "tutor_ui"}
+    cadena_limpia: List[str] = []
+    prev_ag = decision.next_agent
+    for ag in (decision.compound_chain or []):
+        if ag in valid_specialists and ag != prev_ag:
+            cadena_limpia.append(ag)
+            prev_ag = ag
+
     return {
         "next_agent": decision.next_agent,
-        "compound_chain": decision.compound_chain or [],
+        "compound_chain": cadena_limpia,
         "messages": [AIMessage(content=f"(・_・)? [SUPERVISOR] Enrutando a '{decision.next_agent}'. Motivo: {decision.reasoning}")],
         "iteration_count": iteration_count + 1
     }

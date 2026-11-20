@@ -20,9 +20,21 @@ from typing import Any, Dict, Literal, Optional
 from langchain_core.tools import tool
 
 from tools.db_client import _MOCK_INVENTORY, _MOCK_SALES, _get_connection, _serializar_dato
+from tools.rag_nemo import buscar_guia_pago, obtener_advertencias_pago
 
 # Sesiones de carritos en memoria (una por conversación; se persisten al hacer checkout)
 _ACTIVE_CARTS: Dict[str, Dict] = {}
+
+# Mapeo de métodos digitales mexicanos al enum `metodo_pago` de PostgreSQL
+_PG_METODO_PAGO_MAP = {
+    "efectivo": "efectivo",
+    "tarjeta": "tarjeta",
+    "transferencia": "transferencia",
+    "qr": "qr",
+    "codi": "qr",
+    "spei": "transferencia",
+    "dimo": "transferencia",
+}
 
 
 # ---------------------------------------------------------------------------
@@ -148,20 +160,60 @@ def apply_discount(cart_id: str, discount_amount: float) -> str:
 
 
 @tool
+def consultar_reglas_pago_pos(
+    metodo_pago: Literal["codi", "spei", "dimo", "qr", "transferencia"],
+    monto: float = 0.0,
+    duda: str = "",
+) -> str:
+    """
+    Consulta en el RAG oficial de Banxico (CoDi, SPEI, DiMo) los límites de monto sin comisión,
+    datos requeridos (CLABE, número celular, código QR, CEP) y verificaciones obligatorias
+    antes de cerrar un cobro digital en caja POS.
+
+    Args:
+        metodo_pago: Método digital a verificar ('codi', 'spei', 'dimo', 'qr', 'transferencia').
+        monto: Importe de la venta en pesos MXN para validar límites aplicables.
+        duda: Pregunta específica sobre el cobro digital (opcional).
+    """
+    consulta = duda.strip() or (
+        f"limites monto maximo sin comision requisitos datos necesarios y confirmacion de cobro {metodo_pago}"
+        + (f" por {monto:.2f} pesos" if monto > 0 else "")
+    )
+    fragmentos = buscar_guia_pago(
+        metodo_pago=metodo_pago,
+        pantalla="monto_concepto" if monto > 0 else "cobro",
+        consulta=consulta,
+        top_k=3,
+    )
+    advertencias = obtener_advertencias_pago("cobro")
+    return json.dumps(
+        {
+            "status": "success",
+            "metodo_pago": metodo_pago,
+            "monto_evaluado": monto,
+            "advertencias_seguridad": advertencias,
+            "reglas_recuperadas": fragmentos,
+        },
+        ensure_ascii=False,
+    )
+
+
+@tool
 def checkout_cart(
     cart_id: str,
-    payment_method: Literal["efectivo", "tarjeta", "transferencia", "qr"],
+    payment_method: Literal["efectivo", "tarjeta", "transferencia", "qr", "codi", "spei", "dimo"],
     monto_recibido: float = 0.0,
     fuera_de_linea: bool = False,
 ) -> str:
     """
     Cierra la venta del carrito: persiste en PostgreSQL vía registrar_venta(),
     que valida existencias, descuenta stock, gestiona lotes FEFO y registra el pago.
-    Si la BD no está disponible, usa el fallback en memoria (_MOCK_SALES).
+    Si el cobro es digital (codi, spei, dimo, qr, transferencia), adjunta automáticamente
+    las reglas/límites oficiales recuperados del RAG de pagos digitales.
 
     Args:
         cart_id: Identificador del carrito a cerrar.
-        payment_method: Método de pago ('efectivo', 'tarjeta', 'transferencia', 'qr').
+        payment_method: Método de pago ('efectivo', 'tarjeta', 'transferencia', 'qr', 'codi', 'spei', 'dimo').
         monto_recibido: Efectivo entregado por el cliente (para calcular cambio).
         fuera_de_linea: Si True, permite vender aunque la existencia llegue a cero (venta offline).
     """
@@ -170,6 +222,26 @@ def checkout_cart(
         return json.dumps({"status": "error", "message": "Carrito vacío o no encontrado."}, ensure_ascii=False)
 
     id_local = str(uuid.uuid4())
+    pg_metodo = _PG_METODO_PAGO_MAP.get(payment_method.strip().lower(), "transferencia")
+
+    # Si es pago digital mexicano (CoDi/SPEI/DiMo), recuperar reglas y límites desde el RAG
+    reglas_pago_digital: Optional[Dict[str, Any]] = None
+    if payment_method.strip().lower() in ("codi", "spei", "dimo", "qr", "transferencia"):
+        guias = buscar_guia_pago(
+            metodo_pago=payment_method,
+            pantalla="monto_concepto",
+            consulta=f"limites monto maximo comision requisitos confirmacion cobro {payment_method} {cart['total']} pesos",
+            top_k=2,
+        )
+        reglas_pago_digital = {
+            "metodo_comercial": payment_method.lower(),
+            "metodo_bd": pg_metodo,
+            "advertencias": obtener_advertencias_pago("cobro"),
+            "referencias_rag": [
+                {"doc": g["doc"], "seccion": g["seccion"], "score": g["score"], "extracto": g["texto"][:260]}
+                for g in guias
+            ],
+        }
 
     # --- Intentar con PostgreSQL (registrar_venta) ---
     items_jsonb = [
@@ -182,10 +254,10 @@ def checkout_cart(
     ]
     solicitud = {
         "id_local": id_local,
-        "metodo_pago": payment_method,
+        "metodo_pago": pg_metodo,
         "recibido": monto_recibido or cart["total"],
         "fuera_de_linea": fuera_de_linea,
-        "origen": "chat",
+        "origen": "asistente",
         "items": items_jsonb,
     }
 
@@ -200,40 +272,23 @@ def checkout_cart(
         cambio = round(monto_recibido - float(respuesta_dict.get("total", 0)), 2) if monto_recibido else 0.0
         del _ACTIVE_CARTS[cart_id]
 
-        return json.dumps({
+        salida: Dict[str, Any] = {
             "status": "success",
             "fuente": "postgresql",
             "ticket": respuesta_dict,
             "cambio": cambio,
             "items": cart["items"],
-        }, ensure_ascii=False, default=_serializar_dato)
+        }
+        if reglas_pago_digital:
+            salida["reglas_pago_digital"] = reglas_pago_digital
+        return json.dumps(salida, ensure_ascii=False, default=_serializar_dato)
 
     except Exception as e:
-        # --- Fallback en memoria ---
-        venta_id = f"V-{str(uuid.uuid4())[:6].upper()}"
-        for it in cart["items"]:
-            prod = next((p for p in _MOCK_INVENTORY if p["sku"] == it["sku"]), None)
-            if prod:
-                prod["stock_actual"] = max(0, prod.get("stock_actual", 0) - it["cantidad"])
-
-        registro = {
-            "venta_id": venta_id,
-            "cart_id": cart_id,
-            "total": cart["total"],
-            "metodo_pago": payment_method,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "items": cart["items"],
-        }
-        _MOCK_SALES.append(registro)
-        del _ACTIVE_CARTS[cart_id]
-
-        cambio = round(monto_recibido - cart["total"], 2) if monto_recibido else 0.0
         return json.dumps({
-            "status": "success",
-            "fuente": "fallback_memoria",
-            "nota": f"BD no disponible: {e}",
-            "ticket": registro,
-            "cambio": cambio,
+            "status": "error",
+            "fuente": "postgresql",
+            "message": f"No se pudo registrar la venta en PostgreSQL: {e}",
+            "reglas_pago_digital": reglas_pago_digital,
         }, ensure_ascii=False)
 
 
