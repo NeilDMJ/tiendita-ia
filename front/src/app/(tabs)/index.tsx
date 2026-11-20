@@ -1,4 +1,4 @@
-import { PantallaInicio } from '../inicio';
+import { PantallaInicio } from '@/screens/inicio';
 
 export default function Inicio() {
   return <PantallaInicio />;
