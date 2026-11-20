@@ -31,6 +31,21 @@ export interface CampoProps {
   autoFocus?: boolean;
   onBlur?: () => void;
   icono?: NombreIcono;
+  /** Icono del texto de ayuda (default `information`). */
+  iconoAyuda?: NombreIcono;
+  /** Varias líneas: crece hasta `maxLineas` y luego hace scroll. */
+  multilinea?: boolean;
+  /** Default 5. */
+  maxLineas?: number;
+  maxLength?: number;
+  /**
+   * EXC-11: oculta la etiqueta visible (solo compositor de chat). La etiqueta sigue siendo el label
+   * accesible y el `placeholder` + el botón "Enviar" dejan claro el propósito.
+   */
+  etiquetaOculta?: boolean;
+  /** No pinta ayuda/error debajo (el contenedor los muestra en otro lugar); el borde sí cambia. */
+  ocultarMensajes?: boolean;
+  onFocus?: () => void;
   ref?: Ref<ComponentRef<typeof TextInput>>;
   testID?: string;
   style?: StyleProp<ViewStyle>;
@@ -55,6 +70,13 @@ export function Campo({
   autoFocus,
   onBlur,
   icono,
+  iconoAyuda = 'information',
+  multilinea = false,
+  maxLineas = 5,
+  maxLength,
+  etiquetaOculta = false,
+  ocultarMensajes = false,
+  onFocus,
   ref,
   testID,
   style,
@@ -89,12 +111,14 @@ export function Campo({
 
   return (
     <View style={[estilos.contenedor, style]}>
-      <View style={estilos.filaEtiqueta}>
-        <Text style={[estilos.etiqueta, { color: colorEtiqueta }, enfocado && estilos.etiquetaActiva]}>
-          {etiqueta}
-        </Text>
-        {obligatorio ? <Text style={estilos.obligatorio}>* Obligatorio</Text> : null}
-      </View>
+      {etiquetaOculta ? null : (
+        <View style={estilos.filaEtiqueta}>
+          <Text style={[estilos.etiqueta, { color: colorEtiqueta }, enfocado && estilos.etiquetaActiva]}>
+            {etiqueta}
+          </Text>
+          {obligatorio ? <Text style={estilos.obligatorio}>* Obligatorio</Text> : null}
+        </View>
+      )}
       <View
         style={[
           estilos.caja,
@@ -119,13 +143,28 @@ export function Campo({
           inputMode={modoEntrada}
           editable={!deshabilitado}
           autoFocus={autoFocus}
-          onFocus={() => setEnfocado(true)}
+          onFocus={() => {
+            setEnfocado(true);
+            onFocus?.();
+          }}
+          multiline={multilinea}
+          maxLength={maxLength}
+          submitBehavior={multilinea ? 'newline' : undefined}
+          textAlignVertical={multilinea ? 'top' : undefined}
           onBlur={alSalir}
           allowFontScaling
           accessibilityLabel={etiqueta + (obligatorio ? ', obligatorio' : '')}
           accessibilityHint={error ?? ayuda}
           accessibilityState={{ disabled: deshabilitado }}
-          style={[estilos.entrada, deshabilitado && estilos.entradaDeshabilitada]}
+          style={[
+            estilos.entrada,
+            multilinea && {
+              maxHeight: type.bodyLargePlus.lineHeight * maxLineas + espacio.m * 2,
+              paddingTop: espacio.m,
+              paddingBottom: espacio.m,
+            },
+            deshabilitado && estilos.entradaDeshabilitada,
+          ]}
         />
         {sufijo ? <Text style={estilos.afijo}>{sufijo}</Text> : null}
         {icono ? (
@@ -138,7 +177,7 @@ export function Campo({
           />
         ) : null}
       </View>
-      {error ? (
+      {ocultarMensajes ? null : error ? (
         <View style={estilos.mensaje} accessibilityLiveRegion="polite">
           <MaterialCommunityIcons
             name="alert-circle"
@@ -152,7 +191,7 @@ export function Campo({
       ) : ayuda ? (
         <View style={estilos.mensaje}>
           <MaterialCommunityIcons
-            name="information"
+            name={iconoAyuda}
             size={iconos.linea}
             color={color.onSurfaceVariant}
             accessibilityElementsHidden

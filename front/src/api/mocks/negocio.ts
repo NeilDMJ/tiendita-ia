@@ -7,7 +7,14 @@ import NetInfo from '@react-native-community/netinfo';
 import { EXISTENCIA_BAJA } from '@/constants';
 
 import { ErrorApi } from '../cliente';
-import type { DetalleVenta, Producto, RespuestaVenta, SolicitudVenta } from '../esquemas';
+import type {
+  DatosConfirmarAlta,
+  DetalleVenta,
+  Producto,
+  RespuestaAlta,
+  RespuestaVenta,
+  SolicitudVenta,
+} from '../esquemas';
 
 const catalogo: Producto[] = [
   { sku: 'REF-COLA-600', nombre: 'Refresco de cola 600 ml', precio_unitario: 18, existencia: 12, caducidad: '2027-04-15', categoria: 'Bebidas' },
@@ -32,13 +39,13 @@ const masVendidosSkus = ['REF-COLA-600', 'TORT-1KG', 'HUEVO-12', 'LECHE-ENT-1L',
 const ventas: DetalleVenta[] = [];
 const porIdLocal = new Map<string, RespuestaVenta>();
 
-const quitarAcentos = (t: string) =>
+export const quitarAcentos = (t: string) =>
   t
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase();
 
-async function exigirConexion() {
+export async function exigirConexion() {
   const estado = await NetInfo.fetch();
   if (estado.isConnected === false || estado.isInternetReachable === false) throw new ErrorApi('sin_conexion');
 }
@@ -114,4 +121,48 @@ export async function mockDetalleVenta(id: string): Promise<DetalleVenta> {
   const venta = ventas.find((v) => v.venta_id === id);
   if (!venta) throw new ErrorApi('datos_faltantes', 'No encontramos esta venta.');
   return venta;
+}
+
+// ---------- Consultas para las respuestas del asistente (MOCK) ----------
+
+/** Copia del catálogo sintético (para que el asistente mock conteste con los mismos datos). */
+export function mockCatalogo(): Producto[] {
+  return catalogo.map((p) => ({ ...p }));
+}
+
+/** Ventas registradas en esta sesión de la app (en memoria). */
+export function mockResumenVentasHoy() {
+  const conteo = new Map<string, { nombre: string; piezas: number }>();
+  for (const v of ventas) {
+    for (const i of v.items) {
+      const clave = i.sku ?? i.nombre;
+      const previo = conteo.get(clave);
+      conteo.set(clave, { nombre: i.nombre, piezas: (previo?.piezas ?? 0) + i.cantidad });
+    }
+  }
+  const masVendido = [...conteo.values()].sort((a, b) => b.piezas - a.piezas)[0] ?? null;
+  return { numero: ventas.length, total: ventas.reduce((s, v) => s + v.total, 0), masVendido };
+}
+
+export function mockStockBajo(): Producto[] {
+  return catalogo.filter((p) => p.existencia <= EXISTENCIA_BAJA).map((p) => ({ ...p }));
+}
+
+/** MOCK — POST /inventario/altas (propuesta; la pantalla de alta es Fase 4). */
+export async function mockRegistrarAlta(datos: DatosConfirmarAlta): Promise<RespuestaAlta> {
+  await exigirConexion();
+  const producto = catalogo.find((p) => p.sku === datos.sku);
+  if (producto) {
+    producto.existencia += datos.cantidad;
+    if (datos.precio_venta !== null) producto.precio_unitario = datos.precio_venta;
+    return { sku: producto.sku, nombre: producto.nombre, quedan: producto.existencia };
+  }
+  const nuevo: Producto = {
+    sku: datos.sku ?? `MOCK-${catalogo.length + 1}`,
+    nombre: datos.nombre,
+    precio_unitario: datos.precio_venta ?? 0,
+    existencia: datos.cantidad,
+  };
+  catalogo.push(nuevo);
+  return { sku: nuevo.sku, nombre: nuevo.nombre, quedan: nuevo.existencia };
 }

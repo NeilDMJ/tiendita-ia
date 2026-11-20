@@ -9,6 +9,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { useTecladoVisible } from '@/hooks/use-teclado';
 import { anilloFoco, color, espacio, estado, iconos, medidas, motion, pesoActivo, shape, type } from '@/theme';
 
 import { Tocable } from './tocable';
@@ -97,11 +98,16 @@ function Destino({
 }
 
 /**
- * M3 Navigation bar (00-sistema §9.14) para `Tabs` de Expo Router.
+ * M3 Navigation bar (00-sistema §9.14) para `Tabs` de Expo Router. Se oculta con el teclado abierto
+ * si la pestaña activa pide `tabBarHideOnKeyboard`.
  * Activo = píldora `secondaryContainer` + icono relleno + etiqueta 700 (no depende del color).
  * Etiquetas siempre visibles; máximo 4 destinos.
  */
 export function BarraNavegacion({ state, descriptors, emitter, navigateToTab, insets }: BottomTabBarProps) {
+  const teclado = useTecladoVisible();
+  // `tabBarHideOnKeyboard` (como la barra por defecto): el compositor del chat queda pegado al teclado.
+  const ocultar = teclado && descriptors[state.routes[state.index].key]?.options.tabBarHideOnKeyboard === true;
+  if (ocultar) return null;
   return (
     <View style={[estilos.barra, { paddingBottom: insets.bottom }]} accessibilityRole="tablist">
       {state.routes.map((route, index) => {

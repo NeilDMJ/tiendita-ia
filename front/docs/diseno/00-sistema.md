@@ -606,6 +606,7 @@ Accesibilidad: `role="button"`, label = texto visible; es el último elemento en
 | `EXC-8` | Navegación "atrás" solo icono | Icono + "Atrás" | Iconos siempre con texto |
 | `EXC-9` | Extended FAB se colapsa al hacer scroll | Nunca se colapsa | Iconos siempre con texto |
 | `EXC-10` | Filter chip sin seleccionar: borde 1 dp `outlineVariant` | Borde 1 dp `outline` (4.27:1 sobre `surface`, 4.06:1 sobre `surfaceContainerLow`), fondo transparente | El límite de un control tocable debe tener ≥ 3:1 (WCAG 1.4.11) |
+| `EXC-11` | Text field con etiqueta visible | Compositor del chat (02-asistente §2.5) **sin etiqueta visible**: label accesible "Tu pregunta", placeholder "Escribe tu pregunta…" y botón "Enviar" con icono + texto al lado. Solo aplica al compositor de chat; todo otro campo sigue con `EXC-3` | Patrón de mensajería estándar; el contexto (chat + Enviar) es inequívoco y la etiqueta restaría espacio sobre el teclado |
 
 ---
 
