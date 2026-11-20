@@ -63,6 +63,14 @@ export function PantallaAsistente() {
 
   const hayMensajes = chat.mensajes.length > 0;
 
+  // Barra de acciones rápidas: SIEMPRE disponible. Si la última respuesta trae sugerencias de seguimiento
+  // se ofrecen esas; si no, las iniciales (¿Cuánto vendí hoy?, etc.).
+  const ultimoMensaje = chat.mensajes[chat.mensajes.length - 1];
+  const seguimiento =
+    ultimoMensaje?.autor === 'asistente' && ((ultimoMensaje.sugerencias?.length ?? 0) > 0 || ultimoMensaje.no_resuelto)
+      ? ultimoMensaje
+      : null;
+
   /** Tras enviar, el foco (teclado y lector) regresa al campo: no salta a la respuesta. */
   function enfocarCampo() {
     refCampo.current?.focus();
@@ -87,7 +95,7 @@ export function PantallaAsistente() {
     }
   }
 
-  function renderExtras(m: MensajeDelAsistente, ultimo: boolean) {
+  function renderExtras(m: MensajeDelAsistente) {
     const tarjetas = (m.acciones ?? []).filter((a) => !(m.no_resuelto && a.tipo === 'abrir_pantalla'));
     return (
       <View style={estilos.extras}>
@@ -108,23 +116,6 @@ export function PantallaAsistente() {
           />
         ))}
         {m.no_resuelto ? <AlternativasNoResuelto acciones={m.acciones} onAbrir={acciones.abrir} /> : null}
-        {ultimo && ((m.sugerencias?.length ?? 0) > 0 || m.no_resuelto) ? (
-          <DesplegableAcciones>
-          <View style={estilos.sugerencias}>
-            {(m.sugerencias ?? []).map((s) => (
-              <ChipSugerencia key={s} texto={s} anchoCompleto={letraGrande} onPress={() => enviarSugerencia(s)} />
-            ))}
-            {m.no_resuelto ? (
-              <ChipSugerencia
-                texto="Preguntar de otra forma"
-                icono="pencil"
-                anchoCompleto={letraGrande}
-                onPress={() => refCampo.current?.focus()}
-              />
-            ) : null}
-          </View>
-          </DesplegableAcciones>
-        ) : null}
       </View>
     );
   }
@@ -181,12 +172,31 @@ export function PantallaAsistente() {
             onDesplazado={setDesplazado}
           />
         ) : (
-          <>
-            <View style={estilos.pantalla}>
-              <EstadoVacioChat />
-            </View>
-            {teclado ? null : <SugerenciasIniciales onEnviar={enviarSugerencia} />}
-          </>
+          <View style={estilos.pantalla}>
+            <EstadoVacioChat />
+          </View>
+        )}
+
+        {!chat.cargado || teclado ? null : seguimiento ? (
+          <View style={estilos.barraAcciones}>
+            <DesplegableAcciones>
+              <View style={estilos.sugerencias}>
+                {(seguimiento.sugerencias ?? []).map((sug) => (
+                  <ChipSugerencia key={sug} texto={sug} anchoCompleto={letraGrande} onPress={() => enviarSugerencia(sug)} />
+                ))}
+                {seguimiento.no_resuelto ? (
+                  <ChipSugerencia
+                    texto="Preguntar de otra forma"
+                    icono="pencil"
+                    anchoCompleto={letraGrande}
+                    onPress={() => refCampo.current?.focus()}
+                  />
+                ) : null}
+              </View>
+            </DesplegableAcciones>
+          </View>
+        ) : (
+          <SugerenciasIniciales onEnviar={enviarSugerencia} />
         )}
 
         <Compositor
@@ -284,4 +294,5 @@ const estilos = StyleSheet.create({
   textoCargando: { ...type.bodyLarge, color: color.onSurfaceVariant },
   extras: { gap: espacio.s },
   sugerencias: { flexDirection: 'row', flexWrap: 'wrap', gap: tactil.separacion },
+  barraAcciones: { paddingHorizontal: espacio.l, paddingVertical: espacio.s },
 });
