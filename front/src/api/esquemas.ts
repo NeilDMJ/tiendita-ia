@@ -12,6 +12,7 @@ export const ItemDetectado = z.object({
   cantidad: z.number().int().nonnegative(),
   precio_unitario: z.number().nonnegative().nullable(),
   confianza: z.number().min(0).max(1),
+  /** [x, y, ancho, alto] normalizada 0–1 respecto a la foto */
   caja: z.tuple([z.number(), z.number(), z.number(), z.number()]).optional(),
 });
 export type ItemDetectado = z.infer<typeof ItemDetectado>;
@@ -42,14 +43,27 @@ export type RespuestaReceiptOcr = z.infer<typeof RespuestaReceiptOcr>;
 export type ModoCamara = 'cobro' | 'alta' | 'ticket';
 
 // ---------- Asistente ----------
-export const RolAsistente = z.enum(['caja', 'bodega', 'cuentas', 'promociones', 'tutor', 'general', 'banco', 'usuario']);
+export const RolAsistente = z.enum(['caja', 'bodega', 'cuentas', 'promociones', 'tutor', 'general', 'banco']);
 export type RolAsistente = z.infer<typeof RolAsistente>;
+
+/** 02-asistente §5.2. `modificar_item` solo llega con contexto `revision_cobro`. */
+export const TipoAccion = z.enum([
+  'confirmar_venta',
+  'confirmar_alta',
+  'aprobar_promo',
+  'abrir_pantalla',
+  'modificar_item',
+]);
+export type TipoAccion = z.infer<typeof TipoAccion>;
 
 export const AccionAsistente = z.object({
   id: z.string(),
-  tipo: z.enum(['confirmar_venta', 'confirmar_alta', 'aprobar_promo', 'abrir_pantalla']),
+  tipo: TipoAccion,
+  /** Texto del botón/tarjeta, en lenguaje de tienda. */
   titulo: z.string(),
+  /** Se valida POR TIPO al mostrar (`parsearDatosAccion`): una acción mal formada no tira toda la respuesta. */
   datos: z.unknown(),
+  vence_en: z.string().optional(),
 });
 export type AccionAsistente = z.infer<typeof AccionAsistente>;
 
@@ -64,18 +78,147 @@ export type PasoGuia = z.infer<typeof PasoGuia>;
 export const MensajeAsistente = z.object({
   rol: RolAsistente,
   texto: z.string(),
-  acciones: z.array(AccionAsistente).optional(),
+  acciones: z.array(AccionAsistente).max(3).optional(),
   no_resuelto: z.boolean().optional(),
   // Guía bancaria (todos opcionales: el resto de roles no los usa)
   pasos: z.array(PasoGuia).optional(),
   advertencias: z.array(z.string()).optional(),
   guia_verificada: z.boolean().optional(),
-  respuestas_rapidas: z.array(z.string()).optional(),
   // Contexto de la conversación: se devuelve en `historial` para que el back entienda los seguimientos
   banco: z.string().optional(),
   operacion: z.string().optional(),
+  /** Chips de seguimiento (máx. 3). */
+  sugerencias: z.array(z.string().max(60)).max(3).optional(),
 });
 export type MensajeAsistente = z.infer<typeof MensajeAsistente>;
+
+// ---------- Asistente: solicitud (02-asistente §5.1) ----------
+export const PantallaAsistente = z.enum(['asistente', 'revision_cobro', 'inicio', 'inventario', 'pago']);
+export type PantallaAsistente = z.infer<typeof PantallaAsistente>;
+
+/** = `nivelDeItem()` del front. */
+export const NivelItem = z.enum(['alta', 'baja', 'falta', 'manual']);
+export type NivelItem = z.infer<typeof NivelItem>;
+
+export const ItemContexto = z.object({
+  /** Posición en `carrito.items` (orden del servidor, no el visual). */
+  indice: z.number().int().nonnegative(),
+  /** id local estable de la fila */
+  clave: z.string(),
+  /** Número que ve el tendero en la fila ("el producto 1"). */
+  numero_en_foto: z.number().int().positive().nullable(),
+  sku: z.string().nullable(),
+  nombre: z.string(),
+  cantidad: z.number().int().positive(),
+  precio_unitario: z.number().nonnegative().nullable(),
+  existencia: z.number().int().nullable(),
+  nivel: NivelItem,
+  /** Solo para el back; nunca se muestra. */
+  confianza: z.number().min(0).max(1),
+});
+export type ItemContexto = z.infer<typeof ItemContexto>;
+
+export const ContextoAsistente = z.discriminatedUnion('pantalla', [
+  z.object({ pantalla: z.literal('asistente') }),
+  z.object({ pantalla: z.literal('inicio') }),
+  z.object({ pantalla: z.literal('inventario') }),
+  z.object({ pantalla: z.literal('pago') }),
+  z.object({
+    pantalla: z.literal('revision_cobro'),
+    imagen_id: z.string().nullable(),
+    total: z.number().nonnegative(),
+    items: z.array(ItemContexto).max(50),
+  }),
+]);
+export type ContextoAsistente = z.infer<typeof ContextoAsistente>;
+
+export const TurnoHistorial = z.object({
+  autor: z.enum(['tendero', 'asistente']),
+  /** Solo si autor = asistente. */
+  rol: RolAsistente.optional(),
+  texto: z.string().max(2000),
+  /** Contexto bancario del turno del asistente (seguimientos: "¿y si no me deja?"). */
+  banco: z.string().optional(),
+  operacion: z.string().optional(),
+});
+export type TurnoHistorial = z.infer<typeof TurnoHistorial>;
+
+// POST /asistente/mensaje
+export const SolicitudAsistente = z.object({
+  /** id del teléfono: un Reintentar no duplica la respuesta. */
+  id_mensaje: z.string(),
+  texto: z.string().trim().min(1).max(500),
+  /** Últimos 12 turnos, sin tarjetas. */
+  historial: z.array(TurnoHistorial).max(12),
+  /** Ausente = { pantalla: 'asistente' }. */
+  contexto: ContextoAsistente.optional(),
+});
+export type SolicitudAsistente = z.infer<typeof SolicitudAsistente>;
+
+// ---------- Asistente: `datos` por tipo de acción (02-asistente §5.3) ----------
+export const ItemPropuesto = z.object({
+  sku: z.string().nullable(),
+  nombre: z.string(),
+  cantidad: z.number().int().positive(),
+  /** null → la tarjeta obliga a "Revisar y editar". */
+  precio_unitario: z.number().nonnegative().nullable(),
+});
+export type ItemPropuesto = z.infer<typeof ItemPropuesto>;
+
+export const DatosConfirmarAlta = z.object({
+  sku: z.string().nullable(),
+  nombre: z.string(),
+  cantidad: z.number().int().positive(),
+  precio_venta: z.number().nonnegative().nullable(),
+  /** 'AAAA-MM-DD' */
+  caducidad: z.string().nullable(),
+});
+export type DatosConfirmarAlta = z.infer<typeof DatosConfirmarAlta>;
+
+export const DatosAprobarPromo = z.object({
+  promo_id: z.string(),
+  producto: z.string(),
+  copy: z.string().max(280),
+  precio_promo: z.number().nonnegative(),
+  /** 'AAAA-MM-DD' */
+  vigente_hasta: z.string(),
+  video_url: z.string().nullable(),
+  /** true → chip "Simulación" obligatorio */
+  simulacion: z.boolean(),
+});
+export type DatosAprobarPromo = z.infer<typeof DatosAprobarPromo>;
+
+export const PantallaDestino = z.enum([
+  'cobrar',
+  'camara_cobro',
+  'camara_alta',
+  'camara_ticket',
+  'inventario',
+  'historial',
+  'pago',
+  'promociones',
+]);
+export type PantallaDestino = z.infer<typeof PantallaDestino>;
+
+export const DatosAbrirPantalla = z.object({ pantalla: PantallaDestino });
+export type DatosAbrirPantalla = z.infer<typeof DatosAbrirPantalla>;
+
+export const DatosModificarItem = z.object({
+  indice: z.number().int().nonnegative(),
+  /** Debe coincidir con la fila actual. */
+  clave: z.string(),
+  /** Segunda verificación + texto "Antes". */
+  nombre_actual: z.string(),
+  cambios: z
+    .object({
+      sku: z.string().nullable().optional(),
+      nombre: z.string().optional(),
+      precio_unitario: z.number().nonnegative().optional(),
+      cantidad: z.number().int().positive().optional(),
+    })
+    .refine((c) => Object.keys(c).length > 0, 'sin cambios'),
+});
+export type DatosModificarItem = z.infer<typeof DatosModificarItem>;
 
 // ---------- Tutor de pagos (estado de pantalla, no capturas) ----------
 export type EstadoPantalla = {
@@ -85,3 +228,86 @@ export type EstadoPantalla = {
   errores_visibles: string[];
   segundos_inactivo: number;
 };
+
+// ---------- Negocio: catálogo y ventas (propuesta de 01-cobrar §5; acordar con back/) ----------
+// GET /productos?q=texto&limite=10   y   GET /productos/mas-vendidos?limite=6
+export const Producto = z.object({
+  sku: z.string(),
+  nombre: z.string(),
+  precio_unitario: z.number().nonnegative(),
+  existencia: z.number().int(), // tope del stepper y aviso "Poco"
+  /** Fecha de caducidad ISO 8601 (YYYY-MM-DD). null = no aplica (ej. jabón). */
+  caducidad: z.string().nullable().optional(),
+  /** Categoría para agrupar y filtrar (ej. 'Lácteos', 'Abarrotes'). */
+  categoria: z.string().optional(),
+});
+export type Producto = z.infer<typeof Producto>;
+
+export const MetodoPago = z.enum(['efectivo', 'digital_simulado']);
+export type MetodoPago = z.infer<typeof MetodoPago>;
+
+/** `datos` de la acción `confirmar_venta` del asistente (02-asistente §5.3). */
+export const DatosConfirmarVenta = z.object({
+  items: z.array(ItemPropuesto).min(1).max(50),
+  /** default 'efectivo' */
+  metodo_pago: MetodoPago.optional(),
+});
+export type DatosConfirmarVenta = z.infer<typeof DatosConfirmarVenta>;
+
+// POST /inventario/altas (PROPUESTA de 02-asistente §3.1; acordar en Fase 4 con back/)
+export const RespuestaAlta = z.object({ sku: z.string(), nombre: z.string(), quedan: z.number().int() });
+export type RespuestaAlta = z.infer<typeof RespuestaAlta>;
+
+export const ItemVenta = z.object({
+  sku: z.string().nullable(), // null solo si libre === true
+  nombre: z.string(),
+  cantidad: z.number().int().positive(),
+  precio_unitario: z.number().nonnegative(),
+  libre: z.boolean().optional(), // producto suelto: no descuenta inventario
+  corregido: z.boolean(), // útil para medir/reentrenar la visión
+});
+export type ItemVenta = z.infer<typeof ItemVenta>;
+
+// POST /ventas
+export const SolicitudVenta = z.object({
+  id_local: z.string(), // id del teléfono → idempotencia (un reintento nunca duplica)
+  imagen_id: z.string().nullable(), // de RespuestaPosCheckout, null si fue sin foto
+  metodo_pago: MetodoPago,
+  recibido: z.number().nullable(),
+  items: z.array(ItemVenta),
+  duracion_seg: z.number().optional(), // indicador "Antes vs. ahora"
+});
+export type SolicitudVenta = z.infer<typeof SolicitudVenta>;
+
+export const Existencia = z.object({
+  sku: z.string(),
+  nombre: z.string(),
+  quedan: z.number().int(),
+  bajo: z.boolean(),
+});
+export type Existencia = z.infer<typeof Existencia>;
+
+export const RespuestaVenta = z.object({
+  venta_id: z.string(),
+  folio: z.string(),
+  total: z.number(),
+  creada_en: z.string(),
+  existencias: z.array(Existencia),
+});
+export type RespuestaVenta = z.infer<typeof RespuestaVenta>;
+
+/** Cuerpo del 409 de POST /ventas. */
+export const ConflictoExistencia = z.object({ sku: z.string(), existencia: z.number().int() });
+export type ConflictoExistencia = z.infer<typeof ConflictoExistencia>;
+
+// GET /ventas?dia=hoy  y  GET /ventas/{id}  (PROPUESTA: no está en 01-cobrar §5; acordar con back/)
+export const DetalleVenta = z.object({
+  venta_id: z.string(),
+  folio: z.string(),
+  total: z.number(),
+  creada_en: z.string(),
+  metodo_pago: MetodoPago,
+  recibido: z.number().nullable(),
+  items: z.array(ItemVenta),
+});
+export type DetalleVenta = z.infer<typeof DetalleVenta>;

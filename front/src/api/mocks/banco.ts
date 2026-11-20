@@ -95,7 +95,7 @@ export function mockRespuestaBanco(texto: string): MensajeAsistente | null {
       rol: 'banco',
       texto:
         'Eso no lo puedo resolver desde aquí. Para eso lo mejor es contactar a tu banco por sus canales oficiales. ¿Te ayudo con alguna operación paso a paso?',
-      respuestas_rapidas: ['Quiero hacer una transferencia', 'Quiero ver mi saldo'],
+      sugerencias: ['Quiero hacer una transferencia', 'Quiero ver mi saldo'],
     };
   }
 
@@ -115,7 +115,7 @@ export function mockRespuestaBanco(texto: string): MensajeAsistente | null {
     return {
       rol: 'banco',
       texto: `Con gusto. ¿Qué quieres hacer en ${banco}?`,
-      respuestas_rapidas: (Object.keys(FRASE_OP) as Operacion[]).map((o) => `${FRASE_OP[o]} en ${banco}`),
+      sugerencias: (Object.keys(FRASE_OP) as Operacion[]).slice(0, 3).map((o) => `${FRASE_OP[o]} en ${banco}`),
       no_resuelto: true,
     };
   }
@@ -123,7 +123,7 @@ export function mockRespuestaBanco(texto: string): MensajeAsistente | null {
     return {
       rol: 'banco',
       texto: `Te guío con ${NOMBRE_OP[operacion]}. ¿Qué banco usas?`,
-      respuestas_rapidas: ['BBVA', 'Banorte', 'Santander', 'Otro banco'].map((b) => `${FRASE_OP[operacion]} en ${b}`),
+      sugerencias: ['BBVA', 'Banorte', 'Santander'].map((b) => `${FRASE_OP[operacion]} en ${b}`),
       no_resuelto: true,
     };
   }
@@ -137,6 +137,6 @@ export function mockRespuestaBanco(texto: string): MensajeAsistente | null {
     pasos: verificada ? BBVA_TRANSFERENCIA : GENERICAS[operacion],
     advertencias: ADVERTENCIAS[operacion],
     guia_verificada: verificada,
-    respuestas_rapidas: ['Mi pantalla se ve distinta'],
+    sugerencias: ['Mi pantalla se ve distinta'],
   };
 }

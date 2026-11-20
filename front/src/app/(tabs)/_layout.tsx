@@ -1,46 +1,50 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router/tabs';
-import type { ComponentProps } from 'react';
 import type { ColorValue } from 'react-native';
 
-import { bordes, colores, tipografia } from '@/theme';
+import { BarraNavegacion } from '@/components/barra-navegacion';
+import type { NombreIcono } from '@/constants';
+import { color, iconos, type } from '@/theme';
 
-type NombreIcono = ComponentProps<typeof MaterialCommunityIcons>['name'];
-
-function icono(nombre: NombreIcono) {
-  function IconoPestana({ color }: { color: ColorValue }) {
-    return <MaterialCommunityIcons name={nombre} size={28} color={typeof color === "string" ? color : undefined} />;
+/** Icono de destino: relleno cuando está activo (una de las 3 señales no cromáticas de M3). */
+function icono(inactivo: NombreIcono, activo: NombreIcono) {
+  function IconoDestino({ color: tinte, focused }: { color: ColorValue; focused: boolean }) {
+    return (
+      <MaterialCommunityIcons
+        name={focused ? activo : inactivo}
+        size={iconos.linea}
+        color={typeof tinte === 'string' ? tinte : undefined}
+        accessibilityElementsHidden
+        importantForAccessibility="no"
+      />
+    );
   }
-  return IconoPestana;
+  return IconoDestino;
 }
 
-/** Barra inferior fija: máximo 4 destinos, icono + etiqueta siempre (Nielsen #4). */
+/** M3 Navigation bar fija: 4 destinos, icono + etiqueta siempre (00-sistema §9.14). */
 export default function TabsLayout() {
   return (
     <Tabs
+      tabBar={(props) => <BarraNavegacion {...props} />}
       screenOptions={{
-        headerShadowVisible: false,
-        headerStyle: { backgroundColor: colores.fondo, borderBottomWidth: bordes.fino, borderBottomColor: colores.divisor },
-        headerTitleStyle: { ...tipografia.etiqueta, fontSize: 20, color: colores.texto },
-        tabBarActiveTintColor: colores.acento,
-        tabBarInactiveTintColor: colores.textoSecundario,
-        tabBarLabelStyle: { fontSize: 14, fontWeight: '700' },
-        tabBarStyle: {
-          backgroundColor: colores.fondo,
-          borderTopWidth: bordes.grueso,
-          borderTopColor: colores.texto,
-          elevation: 0, // flat
-          shadowOpacity: 0, // flat
-          minHeight: 64,
-        },
-        tabBarItemStyle: { minHeight: 56 },
-        sceneStyle: { backgroundColor: colores.fondo },
+        headerShadowVisible: false, // separación tonal, no sombra (M3 top app bar)
+        headerStyle: { backgroundColor: color.surface },
+        headerTitleStyle: { ...type.titleLarge, color: color.onSurface },
+        headerTintColor: color.onSurface,
+        tabBarAllowFontScaling: true,
+        // La barra se oculta con el teclado (chat del asistente: el compositor queda pegado al teclado).
+        tabBarHideOnKeyboard: true,
+        sceneStyle: { backgroundColor: color.surface },
       }}
     >
-      <Tabs.Screen name="index" options={{ title: 'Inicio', tabBarIcon: icono('home-outline') }} />
-      <Tabs.Screen name="cobrar" options={{ title: 'Cobrar', tabBarIcon: icono('cash-register') }} />
-      <Tabs.Screen name="inventario" options={{ title: 'Inventario', tabBarIcon: icono('package-variant-closed') }} />
-      <Tabs.Screen name="asistente" options={{ title: 'Asistente', tabBarIcon: icono('chat-outline') }} />
+      <Tabs.Screen name="index" options={{ title: 'Inicio', tabBarIcon: icono('home-outline', 'home') }} />
+      <Tabs.Screen name="cobrar" options={{ title: 'Cobrar', tabBarIcon: icono('point-of-sale', 'cash-register') }} />
+      <Tabs.Screen
+        name="inventario"
+        options={{ title: 'Inventario', tabBarIcon: icono('package-variant-closed', 'package-variant') }}
+      />
+      <Tabs.Screen name="asistente" options={{ title: 'Asistente', tabBarIcon: icono('chat-outline', 'chat') }} />
     </Tabs>
   );
 }
