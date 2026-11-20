@@ -44,6 +44,7 @@ export const ROLES: Record<RolAsistente, { nombre: string; icono: NombreIcono }>
   promociones: { nombre: 'Promociones', icono: 'bullhorn-outline' },
   tutor: { nombre: 'Ayuda de pagos', icono: 'school-outline' },
   general: { nombre: 'Tu asistente', icono: 'chat-outline' },
+  banco: { nombre: 'Guía del banco', icono: 'bank-outline' },
 };
 
 /** "Te contestan" del estado vacío del chat (02-asistente §2.4). `general` no aparece. */

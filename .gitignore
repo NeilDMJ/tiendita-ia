@@ -1,3 +1,9 @@
+# Secretos
+API_nvidia
+.env
+.env.*
+!.env.example
+
 # ==============================================================================
 # Repositorios Subyacentes Ignorados
 # ==============================================================================
@@ -54,3 +60,8 @@ datasets/
 __pycache__/
 .pytest_cache/
 .env
+wheels_dli/
+/raw.zip
+/vision.zip
+/wheels_dli.zip
+wheels_torch/

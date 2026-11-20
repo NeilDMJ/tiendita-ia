@@ -84,7 +84,9 @@ from tools.rag_nemo import buscar_rag_pagos
 async def lifespan(_app: FastAPI):
     # Arranque: validar que existe el directorio de reportes
     REPORTES_DIR.mkdir(parents=True, exist_ok=True)
-    yield
+    # Asistente bancario (back/app): precalienta Ollama si está configurado
+    async with (_ciclo_banco(_app) if _ciclo_banco else contextlib.nullcontext()):
+        yield
     # Apagado: cerrar limpiamente todas las conexiones abiertas en el pool
     close_db_pool()
 
@@ -106,6 +108,31 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ─── Servicios de back/ montados en este mismo servidor (un solo puerto para la app) ──
+#   back/vision → /vision/pos-checkout, /vision/catalog-scan, /vision/receipt-ocr, /vision/salud
+#   back/app    → /asistente/mensaje (agente guía bancario) y /salud
+# back/ no es paquete (back/tests importa `app` como módulo de primer nivel): se agrega back/ al
+# FINAL del path para no tapar los paquetes de enjambre_agentes (config, tools, scripts...).
+import sys  # noqa: E402
+
+_DIR_BACK = str(Path(__file__).resolve().parent.parent / "back")
+if _DIR_BACK not in sys.path:
+    sys.path.append(_DIR_BACK)
+try:
+    from vision import router as vision_router  # noqa: E402
+
+    app.include_router(vision_router)
+except ImportError as _e:  # sin onnxruntime/pillow el resto de la API sigue funcionando
+    print(f"⚠ Visión deshabilitada: {_e}. Instala: uv add onnxruntime pillow numpy python-multipart")
+
+_ciclo_banco = None
+try:
+    from app.main import ciclo_de_vida as _ciclo_banco, router as banco_router  # noqa: E402
+
+    app.include_router(banco_router)
+except ImportError as _e:
+    print(f"⚠ Asistente bancario deshabilitado: {_e}. Instala: uv add pydantic-settings httpx")
 
 # Rutas públicas exentas de autenticación X-API-Key cuando TIENDITA_API_KEY está activa
 _PUBLIC_REST_PATHS = {

@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRef, useState, type ComponentRef } from 'react';
-import { AccessibilityInfo, findNodeHandle, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { AccessibilityInfo, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { parsearDatosAccion } from '@/api/acciones-asistente';
 import type { DatosModificarItem } from '@/api/esquemas';
@@ -22,6 +22,7 @@ import { formatoMoneda } from '@/utils/formato-moneda';
 import { Compositor } from '../asistente/compositor';
 import { ListaMensajes } from '../asistente/lista-mensajes';
 import { TarjetaPropuesta } from '../asistente/tarjeta-propuesta';
+import { nodoAccesible } from '@/utils/nodo-accesible';
 
 export interface HojaCajaProps {
   visible: boolean;
@@ -66,7 +67,7 @@ export function HojaCaja({ visible, onCerrar, onAplicar, onEditarFila, onBuscarP
     setTexto('');
     // El foco (teclado y lector) regresa al campo; no salta a la respuesta.
     refCampo.current?.focus();
-    const nodo = refCampo.current ? findNodeHandle(refCampo.current) : null;
+    const nodo = refCampo.current ? nodoAccesible(refCampo.current) : null;
     if (nodo) AccessibilityInfo.setAccessibilityFocus(nodo);
   }
 

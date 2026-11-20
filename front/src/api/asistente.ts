@@ -4,6 +4,17 @@ import { pedir, pedirJson, USAR_MOCKS, type OpcionesPedido } from './cliente';
 import { MensajeAsistente, type EstadoPantalla, type SolicitudAsistente } from './esquemas';
 import { esperar } from './mocks';
 import { mockRespuestaAsistente } from './mocks/asistente';
+import { anonimizar } from '@/utils/anonimizar';
+
+const AVISO_BLOQUEO =
+  'No envié tu mensaje porque parece traer datos privados (tarjeta, CLABE, NIP o clave). ' +
+  'Por tu seguridad, no los escribas aquí. Cuéntame qué quieres hacer sin esos datos y te guío.';
+
+/**
+ * 1 = el chat usa el asistente real (POST /asistente/mensaje del servidor unido) aunque el resto
+ * siga con mocks. /asistente/acciones y /asistente/tutor aún no existen en el back: siguen simulados.
+ */
+const ASISTENTE_REAL = process.env.EXPO_PUBLIC_ASISTENTE_REAL === '1';
 
 /** Tiempo límite de una respuesta del asistente (02-asistente §5.4). */
 export const TIEMPO_ASISTENTE_MS = 25_000;
@@ -17,7 +28,18 @@ export async function enviarMensaje(
   opciones: OpcionesPedido = {},
 ): Promise<MensajeAsistente> {
   const conLimite = { ...opciones, tiempoMs: opciones.tiempoMs ?? TIEMPO_ASISTENTE_MS };
-  if (USAR_MOCKS) return mockRespuestaAsistente(solicitud, conLimite);
+  // Privacidad: lo sensible nunca sale del teléfono; montos y celulares se enmascaran antes de enviar.
+  const limpio = anonimizar(solicitud.texto);
+  if (limpio.bloquear) return { rol: 'banco', texto: AVISO_BLOQUEO };
+  solicitud = {
+    ...solicitud,
+    texto: limpio.texto,
+    historial: solicitud.historial
+      .map((t) => ({ ...t, texto: anonimizar(t.texto) }))
+      .filter((t) => !(t.autor === 'tendero' && t.texto.bloquear))
+      .map((t) => ({ ...t, texto: t.texto.texto })),
+  };
+  if (USAR_MOCKS && !ASISTENTE_REAL) return mockRespuestaAsistente(solicitud, conLimite);
   return pedirJson('/asistente/mensaje', MensajeAsistente, solicitud, conLimite);
 }
 

@@ -43,7 +43,7 @@ export type RespuestaReceiptOcr = z.infer<typeof RespuestaReceiptOcr>;
 export type ModoCamara = 'cobro' | 'alta' | 'ticket';
 
 // ---------- Asistente ----------
-export const RolAsistente = z.enum(['caja', 'bodega', 'cuentas', 'promociones', 'tutor', 'general']);
+export const RolAsistente = z.enum(['caja', 'bodega', 'cuentas', 'promociones', 'tutor', 'general', 'banco']);
 export type RolAsistente = z.infer<typeof RolAsistente>;
 
 /** 02-asistente §5.2. `modificar_item` solo llega con contexto `revision_cobro`. */
@@ -67,11 +67,26 @@ export const AccionAsistente = z.object({
 });
 export type AccionAsistente = z.infer<typeof AccionAsistente>;
 
+/** Guía paso a paso de una operación bancaria (rol 'banco'). Ver docs/DISENO-agente-bancario.md §2. */
+export const PasoGuia = z.object({
+  n: z.number().int().positive(),
+  texto: z.string(),
+  pantalla: z.string().optional(),
+});
+export type PasoGuia = z.infer<typeof PasoGuia>;
+
 export const MensajeAsistente = z.object({
   rol: RolAsistente,
   texto: z.string(),
   acciones: z.array(AccionAsistente).max(3).optional(),
   no_resuelto: z.boolean().optional(),
+  // Guía bancaria (todos opcionales: el resto de roles no los usa)
+  pasos: z.array(PasoGuia).optional(),
+  advertencias: z.array(z.string()).optional(),
+  guia_verificada: z.boolean().optional(),
+  // Contexto de la conversación: se devuelve en `historial` para que el back entienda los seguimientos
+  banco: z.string().optional(),
+  operacion: z.string().optional(),
   /** Chips de seguimiento (máx. 3). */
   sugerencias: z.array(z.string().max(60)).max(3).optional(),
 });
@@ -122,6 +137,9 @@ export const TurnoHistorial = z.object({
   /** Solo si autor = asistente. */
   rol: RolAsistente.optional(),
   texto: z.string().max(2000),
+  /** Contexto bancario del turno del asistente (seguimientos: "¿y si no me deja?"). */
+  banco: z.string().optional(),
+  operacion: z.string().optional(),
 });
 export type TurnoHistorial = z.infer<typeof TurnoHistorial>;
 
@@ -223,6 +241,10 @@ export const Producto = z.object({
   precio_unitario: z.number().nonnegative(), // por unidad (pieza, kg o litro)
   existencia: z.number(), // tope del stepper y aviso "Poco"; decimal si es granel
   unidad: UnidadMedida.optional(), // sin unidad = 'pieza'
+  /** Fecha de caducidad ISO 8601 (YYYY-MM-DD). null = no aplica (ej. jabón). */
+  caducidad: z.string().nullable().optional(),
+  /** Categoría para agrupar y filtrar (ej. 'Lácteos', 'Abarrotes'). */
+  categoria: z.string().optional(),
 });
 export type Producto = z.infer<typeof Producto>;
 

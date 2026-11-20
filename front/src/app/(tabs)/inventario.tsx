@@ -1,5 +1,5 @@
-import { PantallaPendiente } from '@/components/pantalla-pendiente';
+import { PantallaInventario } from '../inventario';
 
 export default function Inventario() {
-  return <PantallaPendiente titulo="Inventario" descripcion="Tus productos, existencias y fechas de caducidad." />;
+  return <PantallaInventario />;
 }

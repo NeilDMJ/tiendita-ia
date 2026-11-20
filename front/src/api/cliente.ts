@@ -2,6 +2,8 @@
  * Cliente HTTP con timeout y errores tipados con mensaje humano.
  * La UI nunca muestra términos técnicos: usa `error.mensaje`.
  */
+import { File } from 'expo-file-system';
+import { Platform } from 'react-native';
 import type { z } from 'zod';
 
 export const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8000';
@@ -107,9 +109,16 @@ export function pedirJson<T>(ruta: string, esquema: z.ZodType<T>, cuerpo: unknow
   );
 }
 
-export function subirImagen<T>(ruta: string, esquema: z.ZodType<T>, uri: string, opciones?: OpcionesPedido) {
+export async function subirImagen<T>(ruta: string, esquema: z.ZodType<T>, uri: string, opciones?: OpcionesPedido) {
   const datos = new FormData();
-  // React Native acepta { uri, name, type } como archivo en FormData.
-  datos.append('imagen', { uri, name: 'foto.jpg', type: 'image/jpeg' } as unknown as Blob);
+  if (Platform.OS === 'web') {
+    // En web la URI es blob:/data:; se sube como Blob.
+    const blob = await (await fetch(uri)).blob();
+    datos.append('imagen', blob, 'foto.jpg');
+  } else {
+    // El fetch de Expo (SDK 52+) NO acepta { uri, name, type } de React Native
+    // ("Unsupported FormDataPart implementation"): necesita un objeto con bytes(), como File.
+    datos.append('imagen', new File(uri) as unknown as Blob, 'foto.jpg');
+  }
   return pedir(ruta, esquema, { method: 'POST', body: datos }, opciones);
 }

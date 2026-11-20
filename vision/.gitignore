@@ -1,0 +1,11 @@
+raw/
+dataset/
+runs/
+*.zip
+# los pesos base se descargan solos
+/yolo11n.pt
+# El .engine depende de la GPU; se entrega por el Panel si es grande
+artefactos/**/*.engine
+artefactos/**/eval_trt/
+videos/
+/yolo11n-cls.pt

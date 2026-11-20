@@ -46,6 +46,14 @@ dependencies = [
     "python-dotenv",
     "aiofiles",
     "requests",
+    # Visión: back/vision sirve best.onnx en /vision/*
+    "onnxruntime",
+    "pillow",
+    "numpy",
+    "python-multipart",
+    # Asistente bancario: back/app sirve /asistente/mensaje
+    "pydantic-settings",
+    "httpx",
 ]
 
 [tool.uv]
