@@ -4,6 +4,12 @@ FastAPI que recibe el mensaje del chat, lo anonimiza, busca la guía verificada 
 **solo para redactar el texto**. Los pasos salen de `app/datos/guias.json`, nunca del modelo
 (los LLM inventan nombres de botones). Diseño completo: `../front/docs/DISENO-agente-bancario.md`.
 
+> **Integración con el equipo.** Este backend implementa `POST /asistente/mensaje` con el contrato del chat unificado
+> (`SolicitudAsistente` → `MensajeAsistente`, con `sugerencias`). Responde la **guía bancaria** y las consultas de
+> DiMo/CoDi/SPEI. El orquestador de `../enjambre_agentes` (LangGraph, `/orchestrate`) y la base de datos
+> (`back/db`, `docker-compose.yml`) siguen aparte: **aún no están conectados a este endpoint** (ambos usan el puerto 8000;
+> corre uno a la vez o cambia el puerto). Conectar caja/bodega/cuentas es el siguiente paso.
+
 ## Qué hace el modelo y qué no
 
 | Lo hace el modelo | Lo hace el código (sin modelo) |

@@ -69,4 +69,4 @@ async def asistente_mensaje(solicitud: SolicitudMensaje) -> MensajeAsistente:
     async def buscar(consulta: str):
         return await buscar_hibrido(cfg, consulta)
 
-    return await responder(solicitud.texto, generador(cfg), solicitud.historial, buscar)
+    return await responder(solicitud.texto, generador(cfg), [t.a_mensaje() for t in solicitud.historial], buscar)

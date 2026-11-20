@@ -107,8 +107,8 @@ def test_datos_sensibles_no_llegan_al_modelo():
 
 def test_fuera_de_alcance_y_aclaraciones_sin_modelo():
     assert "canales oficiales" in correr("dónde invierto en acciones", modelo_prohibido).texto
-    assert correr("quiero pagar la luz", modelo_prohibido).respuestas_rapidas
-    assert correr("uso Banorte", modelo('{"banco": null, "operacion": null, "tema": "banca"}')).respuestas_rapidas
+    assert correr("quiero pagar la luz", modelo_prohibido).sugerencias
+    assert correr("uso Banorte", modelo('{"banco": null, "operacion": null, "tema": "banca"}')).sugerencias
 
 
 # ---------- el modelo entiende la intención ----------
@@ -249,3 +249,17 @@ def test_consulta_no_remite_a_figuras_que_el_usuario_no_ve():
     f = Fragmento("x#1", "x.md", "Doc", "", "Dimo permite enviar con el número de celular del receptor registrado. El emisor debe realizar los pasos descritos en la Figura 4.3. Después confirma el nombre.", "u", "alta")
     assert "Figura" not in sin_referencias(f).texto and "celular" in sin_referencias(f).texto
     assert not texto_valido("Sigue los pasos de la Figura 4.3.", "", None, revisar_bancos=False)
+
+
+def test_endpoint_acepta_el_contrato_del_chat_nuevo():
+    cliente = TestClient(app)
+    cuerpo = {
+        "id_mensaje": "abc",
+        "texto": "uso Banorte",
+        "historial": [{"autor": "tendero", "texto": "quiero pagar la luz"}],
+        "contexto": {"pantalla": "asistente"},
+    }
+    r = cliente.post("/asistente/mensaje", json=cuerpo)
+    assert r.status_code == 200
+    j = r.json()
+    assert j["operacion"] == "pago_servicio" and len(j.get("sugerencias", [])) <= 3  # el contexto viaja en el historial

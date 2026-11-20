@@ -132,7 +132,7 @@ async def _conversar(
             texto = SEGUIMIENTO_RESPALDO
     except ErrorLLM:
         texto = SEGUIMIENTO_RESPALDO
-    return _banco(texto, banco=banco, operacion=operacion, respuestas_rapidas=["Mi pantalla se ve distinta"])
+    return _banco(texto, banco=banco, operacion=operacion, sugerencias=["Mi pantalla se ve distinta"])
 
 
 async def _guiar(t: str, banco: str, operacion: str, generar: GeneradorTexto) -> MensajeAsistente:
@@ -161,7 +161,7 @@ async def _guiar(t: str, banco: str, operacion: str, generar: GeneradorTexto) ->
         pasos=guia.pasos,
         advertencias=guia.advertencias,
         guia_verificada=guia.verificada,
-        respuestas_rapidas=["Mi pantalla se ve distinta"],
+        sugerencias=["Mi pantalla se ve distinta"],
         banco=banco,
         operacion=operacion,
     )
@@ -174,7 +174,7 @@ SIN_INFORMACION = (
     "o en banxico.org.mx. ¿Te ayudo con una transferencia, un pago o un cobro?"
 )
 SALTO = chr(10)
-RAPIDAS_CONSULTA = ["¿Qué es CoDi?", "¿Qué es DiMo?", "¿Cómo cobro con CoDi?"]
+SUGERENCIAS_CONSULTA = ["¿Qué es CoDi?", "¿Qué es DiMo?", "¿Cómo cobro con CoDi?"]
 
 
 async def _consultar(
@@ -186,7 +186,7 @@ async def _consultar(
     fragmentos = await buscar(consulta) if buscar else indice().buscar(consulta, k=4)
     fragmentos = [f for f in map(sin_referencias, fragmentos) if f]
     if not fragmentos:
-        return _banco(SIN_INFORMACION, operacion="consulta", respuestas_rapidas=RAPIDAS_CONSULTA)
+        return _banco(SIN_INFORMACION, operacion="consulta", sugerencias=SUGERENCIAS_CONSULTA)
     fuentes = SALTO.join(f"- {f.texto}" for f in fragmentos)
     conversacion = [
         {"role": "user" if m.rol == "usuario" else "assistant", "content": m.texto} for m in turnos[-4:] if m.texto
@@ -206,7 +206,7 @@ async def _consultar(
     origen = fragmentos[0].titulo
     if origen and "no tengo esa informaci" not in texto.lower():
         texto += f"{SALTO}{SALTO}Fuente: {origen}" + ("" if "banco de méxico" in origen.lower() else " (Banco de México)")
-    return _banco(texto, operacion="consulta", respuestas_rapidas=RAPIDAS_CONSULTA)
+    return _banco(texto, operacion="consulta", sugerencias=SUGERENCIAS_CONSULTA)
 
 
 # ---------- punto de entrada ----------
@@ -223,7 +223,7 @@ async def responder(
     t = seguro.texto
 
     if FUERA_DE_ALCANCE.search(t):
-        return _banco(FUERA_DE_ALCANCE_TEXTO, respuestas_rapidas=["Quiero hacer una transferencia", "Quiero ver mi saldo"])
+        return _banco(FUERA_DE_ALCANCE_TEXTO, sugerencias=["Quiero hacer una transferencia", "Quiero ver mi saldo"])
 
     turnos = _turnos(historial or [])
     banco_ctx, operacion_ctx = _contexto(turnos)
@@ -245,22 +245,22 @@ async def responder(
         if clasificado:
             c_banco, c_operacion, tema = clasificado
             if tema == "fuera_de_alcance":
-                return _banco(FUERA_DE_ALCANCE_TEXTO, respuestas_rapidas=["Quiero hacer una transferencia", "Quiero ver mi saldo"])
+                return _banco(FUERA_DE_ALCANCE_TEXTO, sugerencias=["Quiero hacer una transferencia", "Quiero ver mi saldo"])
             banco, operacion = banco or c_banco, operacion or c_operacion
 
     if not banco and not operacion:
-        return MensajeAsistente(rol="general", texto=NO_ENTENDI, no_resuelto=True, respuestas_rapidas=list(FRASE_OP.values()))
+        return MensajeAsistente(rol="general", texto=NO_ENTENDI, no_resuelto=True, sugerencias=list(FRASE_OP.values())[:3])
     if not operacion:
         return _banco(
             f"Con gusto. ¿Qué quieres hacer en {banco}?",
-            respuestas_rapidas=[f"{f} en {banco}" for f in FRASE_OP.values()],
+            sugerencias=[f"{f} en {banco}" for f in FRASE_OP.values()],
             no_resuelto=True,
             banco=banco,
         )
     if not banco:
         return _banco(
             f"Te guío con {NOMBRE_OP[operacion]}. ¿Qué banco usas?",
-            respuestas_rapidas=[f"{FRASE_OP[operacion]} en {b}" for b in ("BBVA", "Banorte", "Santander", "Otro banco")],
+            sugerencias=[f"{FRASE_OP[operacion]} en {b}" for b in ("BBVA", "Banorte", "Santander")],
             no_resuelto=True,
             operacion=operacion,
         )
