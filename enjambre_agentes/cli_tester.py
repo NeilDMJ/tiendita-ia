@@ -36,6 +36,7 @@ if _ROOT not in sys.path:
 
 from graph import run_orchestration, run_orchestration_stream, resume_orchestration
 from tools_bridge import to_mcp_tool_definitions
+from response_formatter import formatear_respuesta, formatear_para_cli, respuesta_json
 
 # ─── Rich: decoración con fallback limpio ────────────────────────────────────
 try:
@@ -130,15 +131,9 @@ def _print_node_transition(node: str, state: Dict[str, Any]) -> None:
 
 
 def _print_last_message(result: Dict[str, Any]) -> None:
-    """Extrae y formatea el último mensaje del agente."""
-    messages = result.get("messages", [])
-    if not messages:
-        return
-    last = messages[-1]
-    content = getattr(last, "content", str(last))
-    agent = result.get("sender", "agente")
-    color = _AGENT_COLORS.get(agent, "white")
-    _panel(content, f"[{color}]{agent.upper()}[/{color}]", style="green")
+    """Imprime el último mensaje usando el formato estructurado del response_formatter."""
+    formateada = formatear_respuesta(result)
+    print(formatear_para_cli(formateada))
 
 
 def _render_strategic_report(report: Dict[str, Any]) -> None:

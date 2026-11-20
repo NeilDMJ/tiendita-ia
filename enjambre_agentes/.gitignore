@@ -75,6 +75,9 @@ out/
 .cache/
 
 # ==============================================================================
+# Data Flywheel: buffer de feedback HITL y datasets SFT generados
+datasets/
+
 # Archivos de Claves, Entornos y Secretos
 # ==============================================================================
 .env

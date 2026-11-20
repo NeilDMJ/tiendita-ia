@@ -128,6 +128,11 @@ class UIStateModel(BaseModel):
     campos_vacios: List[str] = Field(default_factory=list, description="Campos requeridos pendientes")
     error_visible: Optional[str] = Field(default=None, description="Mensaje de error mostrado al usuario")
     intentos: int = Field(default=1, ge=1, description="Número de intentos realizados")
+    elementos_visibles: Optional[List[str]] = Field(
+        default=None,
+        description="Botones/campos realmente visibles en pantalla. Si la app lo envía, el guardrail del "
+                    "Tutor UI valida contra esta lista en lugar del catálogo por defecto."
+    )
 
 
 class StrategicReportModel(BaseModel):
