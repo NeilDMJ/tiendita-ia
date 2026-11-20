@@ -79,5 +79,3 @@ export const CHAT = {
   cargaVisibleMs: 300,
 } as const;
 
-/** Número de soporte por WhatsApp (de .env; vacío = se oculta el botón). Nunca datos reales en el código. */
-export const SOPORTE_WHATSAPP = process.env.EXPO_PUBLIC_SOPORTE_WHATSAPP ?? '';

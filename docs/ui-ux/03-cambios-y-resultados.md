@@ -61,3 +61,57 @@
 | `app.json` | `userInterfaceStyle: automatic` |
 
 Capturas: `capturas/despues/11…16-oscuro-*.jpg`.
+
+---
+
+# Cierre (Fase 6)
+
+## Último cambio pedido
+
+- **Soporte por WhatsApp eliminado** del módulo Asistente: se quitó el botón "Escribir a soporte" de la tarjeta "No pude resolverlo", la constante `SOPORTE_WHATSAPP` y la variable `EXPO_PUBLIC_SOPORTE_WHATSAPP` (`.env.example` y `.env`). La tarjeta conserva las 3 salidas dentro de la app. Se actualizó `front/docs/diseno/02-asistente.md`.
+
+## Checklist de la auditoría
+
+| # | Problema | Estado |
+|---|---|---|
+| 1 | Asistente se caía | ✅ Resuelto (causa: chat guardado con rol `banco` de otra rama) |
+| 2 | Rutas duplicadas `inicio`/`inventario` | ✅ Resuelto |
+| 3 | Jerarquía tipográfica débil | ✅ Escala con saltos reales (16 · 18 · 20 · 22 · 24 · 32 · 40); mínimo 16 sp se conserva por accesibilidad |
+| 4 | Inicio: título duplicado, sin acción principal | ✅ Resuelto |
+| 5 | Cobrar: tarea principal sin protagonismo | ✅ Resuelto |
+| 6 | Sin ancho máximo en web/tablet | ✅ `ContenedorPantalla` (640 dp) |
+| 7 | Inventario: cifras pequeñas, búsqueda se perdía al bajar | ✅ Resuelto |
+| 8 | Sin modo oscuro | ⚠️ **Implementado y verificado en web; en el teléfono no se ve** (ver abajo) |
+| 9 | Tema no refleja la marca | ✅ Identidad nueva en `theme.ts` |
+| 10 | Lint con errores | ✅ 0 errores, 0 avisos |
+
+## Verificación final
+
+| Chequeo | Resultado |
+|---|---|
+| `tsc --noEmit` | ✅ |
+| `expo lint` | ✅ 0 errores, 0 avisos |
+| Colores (hex/rgb) fuera de `theme.ts` | ✅ ninguno (una coincidencia es un comentario) |
+| `fontWeight` / `fontSize` sueltos | ✅ ninguno |
+| Contraste WCAG AA, claro y oscuro | ✅ 0 fallos (`node docs/ui-ux/contraste.mjs`) |
+| Flujo de cobro completo (web, datos simulados) | ✅ |
+| App en teléfono real (Expo Go) | ✅ según el usuario: "la app ya agarra bien el teléfono" |
+| Modo oscuro en teléfono | ❌ no aparece (causa sin diagnosticar) |
+| Flujo con cámara real | ⚠️ no verificado por mí (web no puede tomar foto) |
+| Cámara, comprobante, historial y diálogos en oscuro | ⚠️ no revisados |
+| Móvil 360 px, lector de pantalla, movimiento reducido | ⚠️ no verificados |
+| Pruebas automáticas | — el proyecto no tiene tests |
+
+## Pendiente conocido
+
+1. **Modo oscuro en teléfono.** Posibles causas: `app.json` (`userInterfaceStyle: automatic`) y caché del manifiesto de Expo Go; `Appearance` no detecta el modo en Expo Go; o `Storage.getItemSync`/`reloadAppAsync` fallan en nativo. Pasos de diagnóstico: reiniciar con `npx expo start -c`, cerrar Expo Go por completo, y elegir Oscuro en Inicio → ícono de Apariencia (ahí se ve qué esquema está activo).
+2. Cambio de modo del sistema con la app abierta no se refleja hasta reabrirla (limitación de diseño, ver `02-sistema-de-diseno.md`).
+3. Sin hacer: onboarding, microinteracciones, estados vacíos con ilustración.
+4. Observaciones sin tocar: botón "Caja" en Revisión poco claro; pista de la barra de pasos tenue.
+5. Rama `ui/rediseno` **solo local**: no se ha hecho `push` ni Pull Request.
+
+## Recomendaciones futuras
+
+- Mover los estilos a una fábrica con contexto de tema para que el modo oscuro cambie en caliente.
+- Tests de componentes (Jest) y de contraste automatizados en CI.
+- Revisar con tenderos reales el botón de enviar solo con ícono y el tamaño mínimo de 16 sp.

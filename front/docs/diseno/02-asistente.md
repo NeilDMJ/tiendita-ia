@@ -218,13 +218,13 @@ M3 no tiene un componente "chat bubble"; se arma con tokens de color, forma y ti
 │ │ [camera  Cobrar con foto      ] tonal 48 │ │ acciones abrir_pantalla que mande el back,
 │ │ [package Ver inventario       ] tonal 48 │ │ o este conjunto por defecto
 │ │ [receipt Ver ventas de hoy    ] tonal 48 │ │
-│ │ [whatsapp Escribir a soporte  ] text  48 │ │ solo si EXPO_PUBLIC_SOPORTE_WHATSAPP existe
+│ │                                           │ │
 │ ╰──────────────────────────────────────────╯ │
 │ (Preguntar de otra forma)                    │ suggestion chip: enfoca el campo
 ```
 - Se usa card **outlined** con borde `outline` (no `outlineVariant`) porque agrupa controles (`EXC-10`, 4.27:1). No es rojo: no es un error del tendero (Nielsen #9: mensaje humano + salida directa).
 - Si el back manda `acciones` tipo `abrir_pantalla` en un `no_resuelto`, se usan esas (máx. 3); si no, el conjunto por defecto.
-- Soporte: abre `https://wa.me/<número>` con `Linking`; el número viene de `.env` (en la demo, número del equipo o se oculta; nunca datos reales en mocks).
+- ~~Soporte por WhatsApp~~: **eliminado** (decisión del producto). `no_resuelto` solo ofrece salidas directas dentro de la app.
 
 ### 2.7 Sin conexión
 
@@ -606,8 +606,8 @@ Reintentar reusa el **mismo** `id_mensaje` (el back devuelve la misma respuesta 
 | 6 | Reconocer > recordar | Sugerencias tocables, lista "Te contestan", seguimiento sugerido por respuesta, historial guardado |
 | 7 | Flexibilidad | Chips que envían directo para novatos; escribir o dictar para expertos; "vendí 2 cocas y un pan" como atajo al cobro sin foto |
 | 8 | Minimalista | Sin colores por rol, sin bordes en burbujas, sin avatares ni ilustraciones; elevación solo en tarjetas accionables |
-| 9 | Recuperación de errores | Cada falla con motivo humano + [Reintentar]; `no_resuelto` con salidas directas (Cobrar con foto, Inventario, Buscar producto, soporte) |
-| 10 | Ayuda | El asistente **es** la ayuda contextual; Ayuda de pagos enlaza a la práctica del cobro digital; contacto por WhatsApp |
+| 9 | Recuperación de errores | Cada falla con motivo humano + [Reintentar]; `no_resuelto` con salidas directas (Cobrar con foto, Inventario, Buscar producto) |
+| 10 | Ayuda | El asistente **es** la ayuda contextual; Ayuda de pagos enlaza a la práctica del cobro digital |
 
 **Bases del hackathon cubiertas:** asistente conversacional integrado al recorrido principal (hoja de Caja en la revisión), sugerencias rápidas, estado "escribiendo…", paso de lo entendido a un formulario ("Revisar y editar" → `revision/cobro`), revisión obligatoria antes de guardar, errores visibles (sin conexión, no resuelto, tiempo, datos ilegibles), lo simulado etiquetado ("Simulación").
 
@@ -650,7 +650,7 @@ Reintentar reusa el **mismo** `id_mensaje` (el back devuelve la misma respuesta 
 | `src/utils/contexto-cobro.ts` | `aContextoCobro(carrito)`, `validarModificacion(item, datos)`, `aplicarModificacion` |
 | `src/utils/texto-chat.ts` | `limpiarFormato`, `separadorDeDia` |
 | `src/constants.ts` | `ROLES.general.nombre = 'Tu asistente'`; `SUGERENCIAS_INICIO`, `SUGERENCIAS_CAJA`; textos de "Te contestan" |
-| `.env.example` | `EXPO_PUBLIC_SOPORTE_WHATSAPP=` (vacío), `EXPO_PUBLIC_MOCK_ASISTENTE=ok` |
+| `.env.example` | `EXPO_PUBLIC_MOCK_ASISTENTE=ok` (el soporte por WhatsApp se eliminó) |
 
 Modelo local sugerido (no se envía tal cual al back):
 ```ts

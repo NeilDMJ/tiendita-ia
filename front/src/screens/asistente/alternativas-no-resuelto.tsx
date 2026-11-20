@@ -1,10 +1,10 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Linking, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { parsearDatosAccion, RUTAS_DESTINO } from '@/api/acciones-asistente';
 import type { PantallaDestino } from '@/api/esquemas';
 import { Boton } from '@/components/boton';
-import { SOPORTE_WHATSAPP, type NombreIcono } from '@/constants';
+import type { NombreIcono } from '@/constants';
 import type { AccionChat } from '@/estado/chat';
 import { bordes, color, espacio, iconos, shape, tactil, type } from '@/theme';
 
@@ -53,17 +53,6 @@ export function AlternativasNoResuelto({
         {opciones.map((o) => (
           <Boton key={o.destino} texto={o.texto} icono={o.icono} variante="tonal" onPress={() => onAbrir(o.destino)} />
         ))}
-        {SOPORTE_WHATSAPP ? (
-          <Boton
-            texto="Escribir a soporte"
-            icono="whatsapp"
-            variante="text"
-            accessibilityHint="Abre WhatsApp"
-            onPress={() => {
-              Linking.openURL(`https://wa.me/${SOPORTE_WHATSAPP.replace(/\D/g, '')}`).catch(() => undefined);
-            }}
-          />
-        ) : null}
       </View>
     </View>
   );
