@@ -15,6 +15,7 @@
 | [05_STACK_NVIDIA_Y_RESILIENCIA.md](./05_STACK_NVIDIA_Y_RESILIENCIA.md) | Configurar modelos, NVIDIA NIM/NeMo, fallbacks o seguridad | NIM LLMs, NIM Vision, NeMo Retriever, NeMo Guardrails (Colang), NeMo Customizer (LoRA/SFT), `ACTIVE_AGENT_BRAINS`, `ResilientChatModel` y Circuit Breaker. |
 | [06_OPERACION_CLI_API_Y_EXTENSION.md](./06_OPERACION_CLI_API_Y_EXTENSION.md) | Ejecutar el sistema o añadir nuevos agentes/tools | Comandos CLI (`main.py`, `scripts/cli_tester.py`), endpoints FastAPI (`api.py`), variables `.env` y guías paso a paso para extender el enjambre. |
 | [07_CONSUMO_API_LAN_Y_REMOTO.md](./07_CONSUMO_API_LAN_Y_REMOTO.md) | Consumir la API desde otra PC en Wi-Fi, app móvil o Internet | Guía paso a paso de `main.py --serve`, firewall LAN, túneles `ssh`, ejemplos `curl`/Python/JS para todos los endpoints REST y WebSocket bidireccional con HITL. |
+| [08_DIAGRAMA_INTERACCION_AGENTES.md](./08_DIAGRAMA_INTERACCION_AGENTES.md) | Visualizar cómo interactúan los agentes y sus flujos paso a paso | Diagrama general de agentes/aristas/subsistemas y diagramas de secuencia para HITL (`/cron`) y Tutor UI (`/pago`). |
 
 Documentos complementarios en la raíz del repositorio:
 - [AGENTS.md](../AGENTS.md) — Resumen ejecutivo de roles y reglas para agentes de IA.
