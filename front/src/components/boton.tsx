@@ -32,6 +32,11 @@ export interface BotonProps {
   cargando?: boolean;
   textoCargando?: string;
   anchoCompleto?: boolean;
+  /**
+   * Muestra solo el icono (botón cuadrado). `texto` sigue siendo la etiqueta para el lector de pantalla,
+   * así que debe seguir describiendo la acción. Requiere `icono`. Ignora `anchoCompleto`.
+   */
+  soloIcono?: boolean;
   accessibilityHint?: string;
   testID?: string;
   style?: StyleProp<ViewStyle>;
@@ -64,6 +69,7 @@ export function Boton({
   cargando = false,
   textoCargando,
   anchoCompleto = true,
+  soloIcono = false,
   accessibilityHint,
   testID,
   style,
@@ -79,6 +85,7 @@ export function Boton({
   const fondo = deshabilitado ? (transparente ? 'transparent' : color.surfaceContainerHighest) : v.contenedor;
   const borde = deshabilitado ? color.outlineVariant : v.borde;
   const etiqueta = cargando && textoCargando ? textoCargando : texto;
+  const cuadrado = soloIcono && icono !== undefined;
 
   return (
     <Tocable
@@ -95,8 +102,10 @@ export function Boton({
       style={({ hover, enfocado }) => [
         estilos.base,
         tamano === 'principal' && estilos.principal,
-        anchoCompleto ? estilos.anchoCompleto : estilos.anchoAjustado,
+        anchoCompleto && !cuadrado ? estilos.anchoCompleto : estilos.anchoAjustado,
         icono || cargando ? estilos.conIcono : null,
+        cuadrado ? estilos.soloIcono : null,
+        cuadrado ? { width: tamano === 'principal' ? tactil.principal : tactil.minimo } : null,
         nombre === 'text' || nombre === 'textError' ? estilos.textoSolo : null,
         { backgroundColor: fondo },
         conBorde ? { borderWidth: bordes.fino, borderColor: borde } : null,
@@ -118,7 +127,7 @@ export function Boton({
             importantForAccessibility="no"
           />
         ) : null}
-        <Text style={[estilos.texto, { color: colorContenido }]}>{etiqueta}</Text>
+        {cuadrado ? null : <Text style={[estilos.texto, { color: colorContenido }]}>{etiqueta}</Text>}
       </View>
     </Tocable>
   );
@@ -135,6 +144,7 @@ const estilos = StyleSheet.create({
   },
   principal: { minHeight: tactil.principal },
   conIcono: { paddingLeft: espacio.l },
+  soloIcono: { paddingHorizontal: 0 },
   textoSolo: { paddingHorizontal: espacio.m },
   anchoCompleto: { alignSelf: 'stretch' },
   anchoAjustado: { alignSelf: 'flex-start' },

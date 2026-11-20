@@ -29,7 +29,7 @@ export interface CompositorProps {
 
 /**
  * Compositor del chat (02-asistente §2.5): `Campo` outlined multilínea SIN etiqueta visible (EXC-11)
- * + `Boton` filled 56 "Enviar". Enter = salto de línea; solo se envía con el botón.
+ * + `Boton` filled 56 solo icono ("Enviar" queda como etiqueta del lector). Enter = salto de línea; solo se envía con el botón.
  * Campo vacío: no se deshabilita el botón; muestra "Escribe tu pregunta primero" y enfoca el campo.
  */
 export function Compositor({
@@ -66,12 +66,20 @@ export function Compositor({
       icono="stop"
       variante="tonal"
       tamano="principal"
-      anchoCompleto={letraGrande}
+      soloIcono
+      style={letraGrande ? estilos.alFinal : undefined}
       accessibilityHint="Cancela la respuesta que está en camino"
       onPress={onDetener}
     />
   ) : (
-    <Boton texto="Enviar" icono="send" tamano="principal" anchoCompleto={letraGrande} onPress={enviar} />
+    <Boton
+      texto="Enviar"
+      icono="send"
+      tamano="principal"
+      soloIcono
+      style={letraGrande ? estilos.alFinal : undefined}
+      onPress={enviar}
+    />
   );
 
   return (
@@ -147,6 +155,7 @@ const estilos = StyleSheet.create({
   plano: { gap: espacio.xs },
   fila: { flexDirection: 'row', alignItems: 'flex-end', gap: tactil.separacion },
   columna: { gap: tactil.separacion },
+  alFinal: { alignSelf: 'flex-end' },
   campo: { flex: 1 },
   mensaje: { flexDirection: 'row', gap: espacio.xs, alignItems: 'flex-start' },
   error: { ...type.labelLarge, color: color.error, flex: 1 },
