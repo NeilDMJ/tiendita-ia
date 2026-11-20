@@ -1,0 +1,129 @@
+{
+  "fecha": "2026-11-20T04:53:10-06:00",
+  "conjunto": "test (sesiones reservadas, no usadas en entrenamiento ni validación)",
+  "fotos_test": 801,
+  "global": {
+    "exactitud_top1": 0.9376,
+    "exactitud_top5": 1.0
+  },
+  "por_clase": {
+    "agua_1l": {
+      "fotos_test": 117,
+      "precision": 0.936,
+      "exhaustividad": 1.0
+    },
+    "agua_bonafont": {
+      "fotos_test": 110,
+      "precision": 0.8017,
+      "exhaustividad": 0.8455
+    },
+    "agua_members_mark": {
+      "fotos_test": 118,
+      "precision": 0.8561,
+      "exhaustividad": 0.9576
+    },
+    "chokis": {
+      "fotos_test": 120,
+      "precision": 1.0,
+      "exhaustividad": 0.9917
+    },
+    "coca_cola": {
+      "fotos_test": 95,
+      "precision": 1.0,
+      "exhaustividad": 0.7895
+    },
+    "doritos": {
+      "fotos_test": 241,
+      "precision": 1.0,
+      "exhaustividad": 0.971
+    },
+    "fondo": {
+      "fotos_test": 0,
+      "precision": null,
+      "exhaustividad": null
+    }
+  },
+  "matriz_confusion": {
+    "agua_1l": {
+      "agua_1l": 117
+    },
+    "agua_bonafont": {
+      "agua_bonafont": 93,
+      "agua_members_mark": 16,
+      "agua_1l": 1
+    },
+    "agua_members_mark": {
+      "agua_members_mark": 113,
+      "agua_1l": 5
+    },
+    "chokis": {
+      "chokis": 119,
+      "agua_members_mark": 1
+    },
+    "coca_cola": {
+      "coca_cola": 75,
+      "agua_bonafont": 20
+    },
+    "doritos": {
+      "doritos": 234,
+      "agua_1l": 2,
+      "agua_bonafont": 3,
+      "agua_members_mark": 2
+    },
+    "fondo": {}
+  },
+  "confusiones_mas_frecuentes": {
+    "coca_cola -> agua_bonafont": 20,
+    "agua_bonafont -> agua_members_mark": 16,
+    "agua_members_mark -> agua_1l": 5,
+    "doritos -> agua_bonafont": 3,
+    "doritos -> agua_1l": 2,
+    "doritos -> agua_members_mark": 2,
+    "agua_bonafont -> agua_1l": 1,
+    "chokis -> agua_members_mark": 1
+  },
+  "umbral_de_confianza": {
+    "umbral": 0.6,
+    "fotos_aceptadas_sin_confirmar": "786/801",
+    "exactitud_en_aceptadas": 0.9491,
+    "fotos_que_piden_confirmacion": 15
+  },
+  "comparacion_modelo_base": {
+    "modelo": "yolo11n-cls.pt (ImageNet-1k, sin ajustar)",
+    "comparable": false,
+    "motivo": "El modelo base clasifica en 1000 categorías genéricas de ImageNet (p. ej. 'pop bottle', 'water bottle', 'packet'); no tiene nuestros productos, así que su exactitud sobre nuestras clases es 0 por definición. Se reporta qué categoría genérica asigna a cada producto para mostrar que, sin ajuste fino, no distingue productos con distinto precio.",
+    "prediccion_base_por_producto": {
+      "agua_1l": {
+        "water_bottle": 101,
+        "ballpoint": 3,
+        "pop_bottle": 3
+      },
+      "agua_bonafont": {
+        "water_bottle": 56,
+        "hair_slide": 11,
+        "thimble": 8
+      },
+      "agua_members_mark": {
+        "water_bottle": 97,
+        "rubber_eraser": 8,
+        "safety_pin": 5
+      },
+      "chokis": {
+        "pencil_box": 25,
+        "Band_Aid": 16,
+        "packet": 16
+      },
+      "coca_cola": {
+        "pop_bottle": 48,
+        "water_bottle": 44,
+        "oil_filter": 2
+      },
+      "doritos": {
+        "packet": 177,
+        "wallet": 28,
+        "pencil_box": 8
+      },
+      "fondo": {}
+    }
+  }
+}

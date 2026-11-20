@@ -1,0 +1,54 @@
+{
+  "tarea": "clasificación de imágenes",
+  "modelo_base": {
+    "nombre": "YOLO11n-cls (clasificación)",
+    "archivo": "yolo11n-cls.pt",
+    "procedencia": "Ultralytics, preentrenado en ImageNet-1k (1000 clases) — https://docs.ultralytics.com/tasks/classify/",
+    "licencia": "AGPL-3.0"
+  },
+  "datos": "/home/dante/Documents/Universidad/hackaton-nvidia/vision/dataset",
+  "clases": [
+    "agua_1l",
+    "agua_bonafont",
+    "agua_members_mark",
+    "chokis",
+    "coca_cola",
+    "doritos",
+    "fondo"
+  ],
+  "parametros": {
+    "data": "/home/dante/Documents/Universidad/hackaton-nvidia/vision/dataset",
+    "modelo": "yolo11n-cls.pt",
+    "nombre": "v1",
+    "epochs": 30,
+    "imgsz": 224,
+    "batch": 32,
+    "patience": 10,
+    "seed": 0,
+    "fliplr": 0.5,
+    "flipud": 0.0,
+    "hsv_h": 0.04,
+    "hsv_s": 0.7,
+    "hsv_v": 0.5,
+    "erasing": 0.3,
+    "auto_augment": null
+  },
+  "inicio": "2026-11-20T04:07:44-06:00",
+  "fin": "2026-11-20T04:09:09-06:00",
+  "duracion_min": 1.4,
+  "epocas_ejecutadas": 12,
+  "mejor_fitness_val": 1.0,
+  "entorno": {
+    "python": "3.14.10",
+    "so": "Linux-7.3.5-arch1-1-x86_64-with-glibc2.44",
+    "torch": "2.15.0+cu132",
+    "cuda": "13.2",
+    "gpu": "NVIDIA GeForce RTX 3050 Laptop GPU",
+    "ultralytics": "8.4.216",
+    "nvidia_smi": "NVIDIA GeForce RTX 3050 Laptop GPU, 620.73.04, 4096 MiB"
+  },
+  "artefacto": {
+    "ruta": "artefactos/v1/best.pt",
+    "sha256": "b8e94a1fc716dea81f1af7f36bc6c909c9339c68cb361f69b27415ac254bf9fb"
+  }
+}
