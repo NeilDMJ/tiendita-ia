@@ -1,0 +1,12 @@
+{
+  "name": "m3-esquema-tendero",
+  "private": true,
+  "type": "module",
+  "description": "Genera el esquema de color M3 claro (SchemeTonalSpot) + rol personalizado success para la app del tendero. No es dependencia de front/.",
+  "scripts": {
+    "generar": "node generar.mjs"
+  },
+  "dependencies": {
+    "@material/material-color-utilities": "^0.3.0"
+  }
+}

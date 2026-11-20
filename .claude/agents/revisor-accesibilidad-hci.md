@@ -16,7 +16,7 @@ Revisa los archivos indicados; si no se indican, revisa `front/docs/diseno/` y e
 - **Tipografía** cuerpo ≥ 16px; escalable (unidades relativas / `allowFontScaling` / `textScaler`) sin truncar ni romper layout.
 - **No solo color**: estados (agotado, oferta, error, confianza baja de IA, éxito) con icono + texto.
 - **Lectores de pantalla**: etiquetas accesibles, roles, orden de foco lógico, imágenes informativas con texto alternativo, anuncios de cambios de estado (`aria-live` / `accessibilityLiveRegion`).
-- **Foco visible**: anillo sólido de 2px, sin depender de sombras.
+- **Foco visible**: indicador de foco M3 (anillo de 2–3dp con contraste ≥ 3:1) o capa de estado de foco, nunca solo un cambio sutil de sombra.
 - **Una mano**: acciones principales en la zona inferior alcanzable.
 - **Movimiento**: respeta reducción de movimiento.
 
