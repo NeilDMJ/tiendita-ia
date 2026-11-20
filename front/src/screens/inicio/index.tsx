@@ -6,6 +6,7 @@ import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { buscarProductos } from '@/api/negocio';
+import { Boton } from '@/components/boton';
 import { Dialogo } from '@/components/dialogo';
 import { Marca } from '@/components/marca';
 import { Tocable } from '@/components/tocable';
@@ -13,7 +14,7 @@ import { EXISTENCIA_BAJA, SEGUNDOS_VENTA_MANUAL } from '@/constants';
 import { useCarrito } from '@/estado/carrito';
 import { useConexion } from '@/hooks/use-conexion';
 import { useVentasHoy } from '@/hooks/use-ventas-hoy';
-import { color, elevacion, espacio, fuente, iconos, shape, tactil, type } from '@/theme';
+import { color, espacio, iconos, shape, tactil, type } from '@/theme';
 import { calcularTotal, plural } from '@/utils/carrito';
 import { formatoMoneda } from '@/utils/formato-moneda';
 
@@ -172,21 +173,30 @@ export function PantallaInicio() {
           </View>
         </View>
 
-        {/* 2. Botón protagonista de acceso directo a la IA / Chatbot */}
+        {/* 2. Acción principal del día: cobrar. Único botón relleno de la pantalla */}
+        <Boton
+          texto="Cobrar con foto"
+          icono="camera"
+          tamano="principal"
+          onPress={() => router.push('/camara?modo=cobro')}
+          accessibilityHint="Abre la cámara para cobrar los productos del mostrador"
+        />
+
+        {/* 3. Acceso secundario al asistente (tarjeta suave, no compite con Cobrar) */}
         <Tocable
           onPress={abrirAsistente}
-          colorContenido={color.onPrimary}
+          colorContenido={color.onPrimaryContainer}
           radio={shape.large}
           accessibilityRole="button"
           accessibilityLabel="Hablar con el Asistente IA de la tienda"
           accessibilityHint="Abre el chat inteligente para revisar ventas, cuentas e inventario"
-          style={[estilos.botonIA, elevacion.level2]}
+          style={estilos.botonIA}
         >
           <View style={estilos.badgeIconoIA}>
             <MaterialCommunityIcons
               name="chat-outline"
               size={iconos.linea}
-              color={color.primary}
+              color={color.onPrimary}
               accessibilityElementsHidden
               importantForAccessibility="no"
             />
@@ -200,16 +210,16 @@ export function PantallaInicio() {
           <MaterialCommunityIcons
             name="chevron-right"
             size={iconos.linea}
-            color={color.onPrimary}
+            color={color.onPrimaryContainer}
             accessibilityElementsHidden
             importantForAccessibility="no"
           />
         </Tocable>
 
-        {/* 3. Gráficas y Reporte de Ventas */}
+        {/* 4. Gráficas y Reporte de Ventas */}
         <CorteCaja metricas={metricas} onVerHistorial={abrirHistorial} />
 
-        {/* 4. Centro de Alertas operativas e inventario */}
+        {/* 5. Centro de Alertas operativas e inventario */}
         <AlertasDia
           borradorTotal={totalBorrador}
           borradorCantidad={hayBorrador ? carrito.items.length : 0}
@@ -282,9 +292,8 @@ const estilos = StyleSheet.create({
     gap: espacio.xs,
   },
   saludoTexto: {
-    ...type.headlineSmall,
+    ...type.headlineLarge,
     color: color.onSurface,
-    fontFamily: fuente.bold,
   },
   subtituloBienvenida: {
     ...type.bodyLarge,
@@ -292,7 +301,7 @@ const estilos = StyleSheet.create({
   },
   botonIA: {
     minHeight: tactil.principal + 16,
-    backgroundColor: color.primary,
+    backgroundColor: color.primaryContainer,
     borderRadius: shape.large,
     padding: espacio.l,
     flexDirection: 'row',
@@ -303,7 +312,7 @@ const estilos = StyleSheet.create({
     width: tactil.minimo,
     height: tactil.minimo,
     borderRadius: shape.full,
-    backgroundColor: color.onPrimary,
+    backgroundColor: color.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -313,11 +322,10 @@ const estilos = StyleSheet.create({
   },
   tituloBotonIA: {
     ...type.titleMedium,
-    color: color.onPrimary,
-    fontFamily: fuente.bold,
+    color: color.onPrimaryContainer,
   },
   subtituloBotonIA: {
     ...type.bodyLarge,
-    color: color.primaryContainer,
+    color: color.onPrimaryContainer,
   },
 });
