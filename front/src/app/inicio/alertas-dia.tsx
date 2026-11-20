@@ -6,7 +6,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Aviso } from '@/components/aviso';
 import { Boton } from '@/components/boton';
 import { EXISTENCIA_BAJA } from '@/constants';
-import { bordes, color, espacio, iconos, shape, type } from '@/theme';
+import { bordes, color, espacio, iconos, shape, tactil, type } from '@/theme';
 import { plural } from '@/utils/carrito';
 import { formatoMoneda } from '@/utils/formato-moneda';
 
@@ -25,10 +25,6 @@ export interface AlertasDiaProps {
   cargandoStock?: boolean;
 }
 
-/**
- * Centro de Alertas operativas del día en Inicio (M3):
- * Supervisa stock bajo en mostrador, ventas en cola sin conexión y ventas pendientes de terminar.
- */
 export function AlertasDia({
   borradorTotal,
   borradorCantidad,
@@ -47,9 +43,18 @@ export function AlertasDia({
 
   return (
     <View style={estilos.contenedor}>
-      <Text style={estilos.encabezadoSeccion} accessibilityRole="header">
-        Alertas y avisos de la tienda
-      </Text>
+      <View style={estilos.cabeceraSeccion}>
+        <MaterialCommunityIcons
+          name="bell-ring-outline"
+          size={iconos.linea}
+          color={color.primary}
+          accessibilityElementsHidden
+          importantForAccessibility="no"
+        />
+        <Text style={estilos.encabezadoSeccion} accessibilityRole="header">
+          Alertas importantes
+        </Text>
+      </View>
 
       {/* 1. Alerta: Venta sin terminar en mostrador */}
       {hayBorrador ? (
@@ -95,25 +100,28 @@ export function AlertasDia({
         />
       ) : null}
 
-      {/* 4. Alerta: Productos con poco stock o agotados */}
+      {/* 4. Alerta de Inventario: Productos con poco stock o agotados */}
       {hayProductosBajoStock ? (
         <View style={estilos.cardStock}>
           <View style={estilos.cabeceraStock}>
-            <MaterialCommunityIcons
-              name="alert-circle"
-              size={iconos.linea}
-              color={color.error}
-              accessibilityElementsHidden
-              importantForAccessibility="no"
-            />
-            <Text style={estilos.tituloStock}>
-              {productosAlerta.length} {plural(productosAlerta.length, 'producto necesita mercancía', 'productos necesitan mercancía')}
-            </Text>
+            <View style={estilos.iconoAlertaStock}>
+              <MaterialCommunityIcons
+                name="alert-circle"
+                size={iconos.linea}
+                color={color.onErrorContainer}
+                accessibilityElementsHidden
+                importantForAccessibility="no"
+              />
+            </View>
+            <View style={estilos.flex}>
+              <Text style={estilos.tituloStock}>
+                {plural(productosAlerta.length, 'producto por surtir', 'productos por surtir')}
+              </Text>
+              <Text style={estilos.cuerpoStock}>
+                Revisa tu mercancía antes de que se acabe
+              </Text>
+            </View>
           </View>
-
-          <Text style={estilos.cuerpoStock}>
-            Revisa las piezas en mostrador antes de que se agoten:
-          </Text>
 
           <View style={estilos.listaStock}>
             {productosAlerta.slice(0, 4).map((p) => {
@@ -128,7 +136,9 @@ export function AlertasDia({
                   <View style={estilos.infoProducto}>
                     <Text style={estilos.nombreProducto}>{p.nombre}</Text>
                     <Text style={estilos.piezasProducto}>
-                      {agotado ? 'Sin existencia' : `Quedan ${p.existencia} pz`}
+                      {agotado
+                        ? 'Sin piezas disponibles'
+                        : `Quedan ${plural(p.existencia, 'pieza', 'piezas')}`}
                     </Text>
                   </View>
                   <View style={[estilos.chipStock, agotado ? estilos.chipAgotado : estilos.chipPoco]}>
@@ -139,8 +149,13 @@ export function AlertasDia({
                       accessibilityElementsHidden
                       importantForAccessibility="no"
                     />
-                    <Text style={[estilos.textoChip, { color: agotado ? color.onErrorContainer : color.onTertiaryContainer }]}>
-                      {agotado ? 'Agotado' : `Poco (≤ ${EXISTENCIA_BAJA} pz)`}
+                    <Text
+                      style={[
+                        estilos.textoChip,
+                        { color: agotado ? color.onErrorContainer : color.onTertiaryContainer },
+                      ]}
+                    >
+                      {agotado ? 'Agotado' : `Bajo (≤ ${EXISTENCIA_BAJA})`}
                     </Text>
                   </View>
                 </View>
@@ -162,7 +177,7 @@ export function AlertasDia({
       {sinAlertas ? (
         <Aviso
           tipo="exito"
-          titulo="Todo al corriente"
+          titulo="Todo en orden en tu tienda"
           mensaje="No tienes ventas pendientes por enviar ni productos por agotarse."
         />
       ) : null}
@@ -174,13 +189,22 @@ const estilos = StyleSheet.create({
   contenedor: {
     gap: espacio.m,
   },
+  cabeceraSeccion: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: espacio.s,
+  },
   encabezadoSeccion: {
     ...type.titleMedium,
     color: color.onSurface,
+    fontWeight: '700',
+  },
+  flex: {
+    flex: 1,
   },
   cardStock: {
     backgroundColor: color.surfaceContainerLow,
-    borderRadius: shape.medium,
+    borderRadius: shape.large,
     padding: espacio.l,
     gap: espacio.m,
     borderWidth: bordes.fino,
@@ -189,11 +213,20 @@ const estilos = StyleSheet.create({
   cabeceraStock: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: espacio.s,
+    gap: espacio.m,
+  },
+  iconoAlertaStock: {
+    width: tactil.minimo,
+    height: tactil.minimo,
+    borderRadius: shape.medium,
+    backgroundColor: color.errorContainer,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   tituloStock: {
     ...type.titleMedium,
     color: color.error,
+    fontWeight: '700',
   },
   cuerpoStock: {
     ...type.bodyLarge,
@@ -209,6 +242,7 @@ const estilos = StyleSheet.create({
     paddingVertical: espacio.s,
     borderBottomWidth: bordes.fino,
     borderBottomColor: color.outlineVariant,
+    gap: espacio.s,
   },
   infoProducto: {
     flex: 1,
