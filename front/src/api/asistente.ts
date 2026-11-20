@@ -10,6 +10,12 @@ const AVISO_BLOQUEO =
   'No envié tu mensaje porque parece traer datos privados (tarjeta, CLABE, NIP o clave). ' +
   'Por tu seguridad, no los escribas aquí. Cuéntame qué quieres hacer sin esos datos y te guío.';
 
+/**
+ * 1 = el chat usa el asistente real (POST /asistente/mensaje del servidor unido) aunque el resto
+ * siga con mocks. /asistente/acciones y /asistente/tutor aún no existen en el back: siguen simulados.
+ */
+const ASISTENTE_REAL = process.env.EXPO_PUBLIC_ASISTENTE_REAL === '1';
+
 /** Tiempo límite de una respuesta del asistente (02-asistente §5.4). */
 export const TIEMPO_ASISTENTE_MS = 25_000;
 
@@ -33,7 +39,7 @@ export async function enviarMensaje(
       .filter((t) => !(t.autor === 'tendero' && t.texto.bloquear))
       .map((t) => ({ ...t, texto: t.texto.texto })),
   };
-  if (USAR_MOCKS) return mockRespuestaAsistente(solicitud, conLimite);
+  if (USAR_MOCKS && !ASISTENTE_REAL) return mockRespuestaAsistente(solicitud, conLimite);
   return pedirJson('/asistente/mensaje', MensajeAsistente, solicitud, conLimite);
 }
 
