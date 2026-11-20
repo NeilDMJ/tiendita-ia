@@ -1,0 +1,72 @@
+Tu propuesta tiene mucho potencial porque conecta **visión por computadora**, **orquestación multi-agente** y **asistencia contextual en interfaz** en un mismo flujo operativo. Para que otros agentes de IA (de arquitectura o de código) entiendan y construyan esto sin alucinar ni duplicar lógica, conviene separar claramente qué hace el **pipeline determinista/visión** y qué hacen los **agentes cognitivos**.
+
+---
+
+## Puntos clave para refinar la arquitectura
+
+* **Separar Visión (Percepción) de Agentes (Decisión):** El modelo de visión no debe "hablar" directo con la base de datos. Debe funcionar como una API de extracción que devuelve un JSON estructurado (`producto`, `cantidad`, `confianza`, `fecha_caducidad_ocr`). Un agente (o tool) recibe ese JSON, valida contra el catálogo y ejecuta el `INSERT`/`UPDATE`.
+* **Evitar solapamiento entre roles de agentes:** Tienes 5 roles propuestos (*Vendedor, Analista, Publicista, Control e Investigador*). Para que no compitan entre sí, define fronteras estrictas de lectura/escritura en la base de datos y usa un **Agente Orquestador (Router)** en el chatbot que delegue según la intención del usuario o eventos disparados por el sistema (triggers).
+* **El "Tutor de Pagos Digitales" requiere contexto de estado, no solo visión:** En lugar de analizar capturas de pantalla constantemente (lento y costoso), la app móvil debe enviar al agente un **árbol de estado de la UI** (pantalla actual, paso del flujo, errores visibles) junto con la imagen solo cuando el usuario pida ayuda o se quede bloqueado.
+* **Diferenciar OCR documental vs. Detección de objetos:** Registrar productos físicos o cobrar en mostrador usa *Object Detection / Classification*. Registrar tickets de gastos, inversiones o facturas usa *OCR + Extracción estructurada (VLM)*. Conviene modelarlos como dos endpoints distintos en tu API de visión.
+* **Automatización por eventos (Triggers):** La generación de videos promocionales por caducidad próxima no debe depender de que el usuario pregunte; debe ser un *cron job* o evento de base de datos que despierte al **Agente de Control**, quien avisa al **Agente Publicista** para generar el activo multimedia y al **Vendedor** para sugerir descuentos.
+
+---
+
+## Matriz de Roles y Responsabilidades
+
+| Agente | Disparador (Trigger) | Permisos en BD | Responsabilidad Principal |
+| --- | --- | --- | --- |
+| **Orquestador** | Mensaje del usuario en chat o evento de UI | Ninguno (solo lectura de contexto) | Clasifica la intención, enruta al agente especialista y consolida la respuesta final. |
+| **Control (Inventario)** | Foto de alta de stock, ticket de compra o *cron* diario | Lectura / Escritura (`inventario`, `gastos`, `mermas`) | Registra altas/bajas, detecta stock crítico o caducidad próxima y alerta a otros agentes. |
+| **Vendedor (POS / Catálogo)** | Foto de cobro en caja o consulta de cliente/vendedor | Lectura (`inventario`), Escritura (`ventas`) | Procesa el carrito desde el JSON de visión, registra ventas, sugiere *upselling* y aplica promos. |
+| **Analista** | Solicitud de métricas o cierre de período | Solo Lectura (`ventas`, `gastos`, `inventario`) | Calcula márgenes, rotación de inventario, flujo de caja (ingresos vs. tickets de inversión/gastos). |
+| **Investigador** | Solicitud de reporte estratégico | Lectura (`ventas`), Acceso a búsqueda/mercado | Genera reportes estructurados: sector, tendencias, perfil de clientes, problemas, soluciones, hipótesis, objetivos e impacto. |
+| **Publicista** | Alerta de caducidad/sobrestock o solicitud manual | Lectura (`inventario`, `reportes`) | Redacta copys, diseña campañas y dispara la generación de videos promocionales cortos. |
+| **Tutor UI (Copiloto)** | Evento de pantalla en app móvil o solicitud de ayuda | Lectura de estado de sesión y guías | Observa la pantalla/acción actual del usuario y lo guía paso a paso para completar pagos digitales. |
+
+---
+
+## Especificación lista para compartir con Agentes de IA
+
+Puedes copiar y pegar este bloque directamente como contexto inicial (`PRD.md` o `system_context`) para tus agentes de desarrollo:
+
+```markdown
+# Especificación del Sistema: Ecosistema Multi-Agente de Gestión Comercial con Visión Artificial
+
+## 1. Visión General del Producto
+Aplicación móvil con interfaz híbrida (Dashboard operativo + Chatbot multi-agente + Copiloto de pantalla) diseñada para administrar inventarios, registrar ventas mediante visión por computadora, analizar finanzas/mercado, automatizar marketing y guiar a usuarios en pagos digitales.
+
+## 2. Arquitectura por Capas
+
+### Capa A: Servicios de Percepción (Vision & OCR API)
+Endpoints independientes que reciben imágenes desde la app móvil y devuelven JSON estructurado:
+1. `POST /vision/catalog-scan`: Detección y clasificación de productos físicos para alta en inventario (nombre, categoría, atributos visuales, confianza).
+2. `POST /vision/pos-checkout`: Detección múltiple en mostrador para cobro rápido (lista de ítems detectados, cantidades estimadas, SKU sugerido).
+3. `POST /vision/receipt-ocr`: Extracción documental para tickets de gastos, compras a proveedores, inversiones y comprobantes de venta (fecha, monto, conceptos, impuestos, tipo de movimiento).
+
+### Capa B: Orquestación Multi-Agente (Backend Cognitivo)
+Sistema coordinado por un **Agente Orquestador** conectado a la base de datos transaccional y vectorial:
+- **Agente de Control:** Administra el catálogo, actualiza existencias a partir de `/catalog-scan` y `/receipt-ocr`, y ejecuta reglas de monitoreo (stock bajo, productos próximos a caducar).
+- **Agente Vendedor:** Convierte la salida de `/pos-checkout` en una orden de venta, registra la transacción en BD, recomienda productos complementarios y aplica descuentos activos.
+- **Agente Analista:** Cruza ingresos (ventas) contra egresos (tickets de gastos e inversiones) para entregar estado financiero, rentabilidad por producto y anomalías.
+- **Agente Investigador:** Elabora reportes de inteligencia de negocio con estructura fija:
+  1. Identificación y sector
+  2. Estado del mercado y tendencias
+  3. Segmento de clientes
+  4. Problemas detectados y soluciones propuestas
+  5. Hipótesis, objetivos e impacto esperado
+  6. Hallazgos clave basados en datos internos
+- **Agente Publicista:** Recibe alertas del Agente de Control (ej. caducidad próxima o baja rotación) y genera guiones, copys y llamadas a APIs de generación de video corto para promociones.
+- **Agente Tutor (UI Copilot):** Recibe el estado de la pantalla móvil (vista activa, campos llenados, errores de validación o captura contextual) para asistir en tiempo real al usuario durante flujos de pagos digitales.
+
+### Capa C: Interfaz Móvil
+1. **Dashboard Ejecutivo:** KPIs en tiempo real (ventas del día, balance gastos/inversiones, alertas de caducidad, acceso rápido a cámara POS/Tickets).
+2. **Interfaz Conversacional:** Chat unificado con indicadores visuales de qué agente está respondiendo y tarjetas interactivas para confirmar acciones críticas (ej. confirmar cobro detectado por foto).
+3. **Overlay de Tutoría:** Asistente flotante contextual activo durante flujos de pago digital.
+
+## 3. Flujos Críticos (End-to-End)
+- **Flujo de Cobro:** Cámara captura productos -> API Vision devuelve lista JSON -> Agente Vendedor muestra resumen en chat/UI -> Usuario confirma -> Se registra venta y se descuenta stock.
+- **Flujo de Caducidad -> Video:** Agente de Control detecta lote próximo a vencer -> Notifica a Agente Publicista -> Genera propuesta de promoción + video corto -> Notifica al usuario para aprobar publicación.
+- **Flujo de Tutoría de Pago:** Usuario entra a pasarela de pago -> App envía estado de pantalla al Agente Tutor -> Agente detecta duda o inactividad -> Despliega guía paso a paso sobre la pantalla.
+
+```
