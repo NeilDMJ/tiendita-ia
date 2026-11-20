@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { AccessibilityInfo, ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
-import type { MetodoPago } from '@/api/esquemas';
+import { esPagoDigital, MetodoPago } from '@/api/esquemas';
 import { simularPagoDigital } from '@/api/pagos';
 import { Aviso } from '@/components/aviso';
 import { Boton } from '@/components/boton';
@@ -11,7 +11,7 @@ import { ChipFiltro } from '@/components/chip-filtro';
 import { EtiquetaSimulacion } from '@/components/etiqueta-simulacion';
 import { HojaInferior } from '@/components/hoja-inferior';
 import { Tocable } from '@/components/tocable';
-import type { NombreIcono } from '@/constants';
+import { METODOS_PAGO, type NombreIcono } from '@/constants';
 import { bordes, color, espacio, iconos, pesoActivo, shape, tactil, type } from '@/theme';
 import { formatoMoneda, leerMonto } from '@/utils/formato-moneda';
 
@@ -29,6 +29,9 @@ export interface HojaCobroProps {
 }
 
 const ATAJOS = [100, 200, 500];
+
+/** Orden de las opciones: efectivo primero (el más común en la tiendita). */
+const MetodoPagoLista = MetodoPago.options;
 
 type EstadoPago = 'inactivo' | 'esperando' | 'recibido' | 'no_recibido';
 
@@ -109,7 +112,7 @@ export function HojaCobro({
           : null;
   const cambio = recibidoNumero !== null && faltan === 0 ? recibidoNumero - total : null;
   const bloqueado = errorRecibido !== null;
-  const digital = metodo === 'digital_simulado';
+  const digital = esPagoDigital(metodo);
   // si el pago ya llegó pero falló el registro, reintentar solo registra (no se cobra dos veces)
   const esperandoPago = pago === 'esperando' || (pago === 'recibido' && error === null);
 
@@ -126,7 +129,7 @@ export function HojaCobro({
     if (resultado === 'recibido') {
       setPago('recibido');
       AccessibilityInfo.announceForAccessibility('Pago recibido. Simulación. Guardando venta.');
-      onRegistrar('digital_simulado', null);
+      onRegistrar(metodo, null);
     } else {
       setPago('no_recibido');
     }
@@ -141,14 +144,14 @@ export function HojaCobro({
         digital ? (
           <Boton
             texto={
-              pago === 'recibido' ? `Registrar venta ${formatoMoneda(total)}` : `Cobrar ${formatoMoneda(total)} con pago digital`
+              pago === 'recibido' ? `Registrar venta ${formatoMoneda(total)}` : `Cobrar ${formatoMoneda(total)} con ${METODOS_PAGO[metodo].nombre.toLowerCase().replace('qr', 'QR')}`
             }
             tamano="principal"
             icono="cellphone"
             cargando={esperandoPago || cargando}
             textoCargando={pago === 'esperando' ? 'Esperando el pago…' : 'Guardando venta…'}
             accessibilityHint="Simulación: no se mueve dinero real"
-            onPress={pago === 'recibido' ? () => onRegistrar('digital_simulado', null) : cobrarDigital}
+            onPress={pago === 'recibido' ? () => onRegistrar(metodo, null) : cobrarDigital}
           />
         ) : (
           <Boton
@@ -186,14 +189,16 @@ export function HojaCobro({
 
       <View style={estilos.grupo} accessibilityRole="radiogroup" accessibilityLabel="¿Cómo te pagan?">
         <Text style={estilos.etiqueta}>¿Cómo te pagan?</Text>
-        <OpcionPago elegida={metodo === 'efectivo'} icono="cash" texto="Efectivo" onPress={() => elegirMetodo('efectivo')} />
-        <OpcionPago
-          elegida={metodo === 'digital_simulado'}
-          icono="cellphone"
-          texto="Pago digital"
-          simulacion
-          onPress={() => elegirMetodo('digital_simulado')}
-        />
+        {MetodoPagoLista.map((m) => (
+          <OpcionPago
+            key={m}
+            elegida={metodo === m}
+            icono={METODOS_PAGO[m].icono}
+            texto={METODOS_PAGO[m].nombre}
+            simulacion={esPagoDigital(m)}
+            onPress={() => elegirMetodo(m)}
+          />
+        ))}
       </View>
 
       {metodo === 'efectivo' ? (
