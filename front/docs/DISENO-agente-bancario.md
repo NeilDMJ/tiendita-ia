@@ -207,3 +207,17 @@ Vacío (sugerencias de ejemplo), cargando, error (`ErrorApi.mensaje`), sin conex
 - `front/src/api/esquemas.ts`: esquema zod de la salida estructurada (§2).
 - `front/src/api/mocks/index.ts`: mock que reproduzca el caso BBVA.
 - `back/`: hoy vacío; alojaría FastAPI, anonimizador, RAG y guardrails.
+
+## 8. Verificación contra documentación de NVIDIA
+
+Revisado el 2026-11-19 con búsqueda web (fuentes secundarias en su mayoría; confirmar en la doc oficial antes de implementar).
+
+**Confirmado**
+- API alojada: base URL `https://integrate.api.nvidia.com/v1`, compatible con la API Chat Completions de OpenAI, autenticación `Authorization: Bearer <NVIDIA_API_KEY>` (clave generada en build.nvidia.com). Cambiar a otro endpoint NIM (servidor del concurso) es solo cambiar la URL base.
+- Ejemplo de ID de modelo: `meta/llama-3.3-70b-instruct`. El catálogo cambia: copiar el ID exacto desde build.nvidia.com.
+- Voz en español: Riva/Magpie TTS Multilingual lista español `es-US`; el soporte de ASR en español (p. ej. `es-ES`) varía según la versión del NIM de voz. Revisar la matriz de soporte de la versión que se use (docs.nvidia.com/nim, "Speech NIM / ASR NIM Support Matrix"). Magpie TTS Multilingual no está soportado en Blackwell según las notas de la versión 1.10.0.
+
+**Sin verificar (pendiente)**
+- ID concreto de un modelo Nemotron instruct.
+- NeMo Guardrails, NeMo Retriever, NeMo Curator y NeMo Customizer (LoRA): descritos por conocimiento general, no confirmados en esta revisión.
+- Límites y créditos gratuitos de la API alojada: varían según las fuentes; consultar build.nvidia.com.
