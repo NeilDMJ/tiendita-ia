@@ -44,3 +44,11 @@ def detectar_banco(texto: str) -> str | None:
 
 def detectar_operacion(texto: str) -> Operacion | None:
     return next((op for patron, op in OPERACIONES if patron.search(texto)), None)
+
+# Saludos y despedidas: se contestan sin modelo y sin citar fuentes.
+SALUDO = re.compile(
+    r"^\s*[¡¿]*(hola|holi|buen[oa]s(?: d[ií]as| tardes| noches)?|hey|qu[eé] tal|c[oó]mo est[aá]s)[\s!.¡¿?]*$", re.I
+)
+GRACIAS = re.compile(
+    r"^\s*[¡¿]*(muchas )?(gracias|ok|okey|vale|listo|perfecto|entendido|adi[oó]s|hasta luego|nos vemos)[\s!.¡¿?]*$", re.I
+)

@@ -263,3 +263,10 @@ def test_endpoint_acepta_el_contrato_del_chat_nuevo():
     assert r.status_code == 200
     j = r.json()
     assert j["operacion"] == "pago_servicio" and len(j.get("sugerencias", [])) <= 3  # el contexto viaja en el historial
+
+
+def test_saludo_no_cita_fuentes_ni_usa_el_modelo_aunque_venga_de_una_consulta():
+    historial = [MensajeAsistente(rol="usuario", texto="qué es codi"), MensajeAsistente(rol="banco", texto="x", operacion="consulta")]
+    r = correr("hola", modelo_prohibido, historial)
+    assert "Fuente" not in r.texto and r.sugerencias
+    assert "Con gusto" in correr("¡gracias!", modelo_prohibido, historial).texto

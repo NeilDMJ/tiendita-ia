@@ -15,8 +15,10 @@ from .deteccion import (
     BANCOS,
     FRASE_OP,
     FUERA_DE_ALCANCE,
+    GRACIAS,
     NOMBRE_OP,
     PANTALLA_DISTINTA,
+    SALUDO,
     detectar_banco,
     detectar_operacion,
 )
@@ -42,6 +44,12 @@ FUERA_DE_ALCANCE_TEXTO = (
     "Eso no lo puedo resolver desde aquí. Para eso lo mejor es contactar a tu banco por sus "
     "canales oficiales. ¿Te ayudo con alguna operación paso a paso?"
 )
+SALUDO_TEXTO = (
+    "¡Hola! Te guío paso a paso en la app de tu banco (transferencias, pagos, saldo, cobros) "
+    "y te explico qué son DiMo, CoDi y SPEI. ¿Qué necesitas?"
+)
+DESPEDIDA_TEXTO = "¡Con gusto! Aquí sigo si necesitas algo más."
+SUGERENCIAS_INICIO = ["Quiero hacer una transferencia", "¿Qué es CoDi?", "¿Qué es DiMo?"]
 NO_ENTENDI = "No entendí bien. ¿Quieres hacer una transferencia, pagar un servicio, ver tu saldo o revisar un cobro?"
 PANTALLA_SIN_CONTEXTO = (
     "Los bancos cambian su app seguido. Cuéntame qué opciones ves en la pantalla (sin escribir "
@@ -221,6 +229,11 @@ async def responder(
     if seguro.bloquear:  # nunca llega al modelo
         return _banco(AVISO_BLOQUEO)
     t = seguro.texto
+
+    if SALUDO.match(t):  # sin modelo, sin documentos y sin fuentes
+        return _banco(SALUDO_TEXTO, sugerencias=SUGERENCIAS_INICIO)
+    if GRACIAS.match(t):
+        return _banco(DESPEDIDA_TEXTO)
 
     if FUERA_DE_ALCANCE.search(t):
         return _banco(FUERA_DE_ALCANCE_TEXTO, sugerencias=["Quiero hacer una transferencia", "Quiero ver mi saldo"])
