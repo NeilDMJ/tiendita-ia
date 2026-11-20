@@ -1,0 +1,530 @@
+---
+titulo: "Comunicados misceláneos de Banco de México (lista de titulares)"
+descripcion: "Solo titulares de comunicados; sin contenido de fondo."
+fuente: "https://www.banxico.org.mx/publicaciones-y-prensa/miscelaneos/comunicados-miscelaneos-comun.html"
+tipo: "web"
+tema: "comunicados"
+relevancia: "baja"
+fecha_ingesta: "2026-11-19"
+---
+# Comunicados misceláneos de Banco de México (lista de titulares)
+
+- El Directorio Ejecutivo del FMI concluye la Consulta del Artículo IV y la revisión de medio término en el marco de su acuerdo de Línea de Crédito Flexible
+- Consulta pública del proyecto de Disposiciones de carácter general a las que deberán sujetarse las operaciones de fideicomiso
+- Tercera sesión de 2026 del Comité Técnico del Fondo de Pensiones para el Bienestar
+- El Banco de México informa sobre el cierre ordenado del programa Directo a México®
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- Consulta pública del proyecto de Reglas para la organización, funcionamiento y operación de cámaras de compensación para pagos con tarjetas
+- Consulta pública del proyecto de Disposiciones de carácter general aplicables a redes de medios de disposición
+- Segunda sesión de 2026 del Comité Técnico del Fondo de Pensiones para el Bienestar
+- Cambio de fecha de la publicación del Informe Trimestral correspondiente al segundo trimestre de 2026
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- Banco de México anuncia que a partir del tercer trimestre de 2026 complementará las medidas disponibles para administrar la liquidez del sistema a través de la recompra de Cetes y/o Bondes F
+- Preguntas frecuentes. Compra de valores gubernamentales
+- Banco de México instruye medidas para simplificar y estandarizar la experiencia en el envío de transferencias electrónicas y amplía los niveles de operación de cuentas de depósito a la vista
+- El Banco de México anuncia al equipo ganador de la onceava edición del Reto Banxico 2026
+- Publicación de los estados financieros dictaminados del Banco de México correspondientes al ejercicio 2025
+- Primera sesión de 2026 del Comité Técnico del Fondo de Pensiones para el Bienestar
+- Consulta pública del proyecto de disposiciones para modificar la Circular 3/2012, en materia de niveles de operación de cuentas de depósito a la vista
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- Consulta pública de los proyectos de disposiciones para modificar las circulares 3/2012 y 14/2017, con objeto de homologar la experiencia de personas usuarias en transferencias electrónicas de fondos a través de dispositivos móviles
+- Consulta pública de los proyectos de disposiciones para reformar las circulares 27/2008 y 17/2014 del Banco de México, con objeto de modificar las reglas generales a las que deberán sujetarse las operaciones y actividades de las sociedades de información crediticia y sus usuarios, así como las disposiciones de carácter general aplicables a la información que las entidades financieras deben proporcionar a dichas sociedades
+- Consulta pública previa para la emisión del Anexo 5 del proyecto de Reglas para la organización, funcionamiento y operación de cámaras de compensación para pagos con tarjetas, sobre el intercambio de mensajes de transacciones financieras
+- Consulta pública del proyecto de Reglas para la organización, funcionamiento y operación de cámaras de compensación para pagos con tarjetas
+- Consulta pública del proyecto de disposiciones sobre las "Reglas para el suministro de información al Banco de México"
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- Cuarta sesión de 2025 del Comité Técnico del Fondo de Pensiones para el Bienestar
+- Calendario de publicación para 2026 de la encuesta sobre las expectativas de los especialistas en economía del sector privado
+- Tercera sesión de 2025 del Comité Técnico del Fondo de Pensiones para el Bienestar
+- Consulta pública del proyecto de disposiciones para reformar la Circular 21/2009 del Banco de México, con objeto de modificar los componentes y supuestos del Costo Anual Total (CAT)
+- Se somete a consulta pública el proyecto de las nuevas Disposiciones de carácter general aplicables a las redes de medios de disposición
+- Se dan a conocer los resultados de la Consulta del Artículo IV para 2025 llevada a cabo por el Fondo Monetario Internacional
+- Inician procesos de liquidación voluntaria y pago a ahorradores de CIBanco, S.A., Institución de Banca Múltiple
+- Consulta pública sobre los proyectos de disposiciones para modificar las "Reglas aplicables al código identificador de personas morales y fideicomisos (Código LEI)", emitidas mediante la Circular 14/2015, y las "Reglas para la realización de operaciones derivadas", contenidas en la Circular 4/2012, en materia del Código LEI y requerimientos de márgenes
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- Modificaciones a las características de las Operaciones de Mercado Abierto
+- Puesta en circulación de una moneda de plata y billetes conmemorativos del Centenario de la fundación del Banco de México
+- Cambio de fecha de la publicación del Informe trimestral correspondiente al segundo trimestre de 2025
+- Banco de México emite disposiciones en relación con el uso de prestaciones laborales como respaldo de servicios financieros contratados por los trabajadores que amplían las opciones de crédito ya existentes
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- La Junta de Gobierno de la CNBV decretó la intervención gerencial temporal de dos instituciones bancarias: CI Banco, S.A. e Intercam Banco, S.A.
+- Segunda sesión de 2025 del Comité Técnico del Fondo de Pensiones para el Bienestar
+- Publicación de los estados financieros dictaminados del Banco de México correspondientes al ejercicio 2024 y determinación del remanente de operación
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- Primera sesión de 2025 del Comité Técnico del Fondo de Pensiones para el Bienestar
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- Banco de México informa sobre la interoperabilidad de Dimo® y el lanzamiento de su sitio web
+- Calendario de publicación para 2025 de la encuesta sobre las expectativas de los especialistas en economía del sector privado
+- Reconocimiento de Derivatives Service Bureau Limited (DSB) como proveedor del Identificador Único de Producto (UPI)
+- Consulta pública de los proyectos de disposiciones para modificar las Circulares 13/2017 y 14/2017, en materia de participación indirecta y temas misceláneos del Sistema de Pagos Electrónicos Interbancarios (SPEI)
+- El Directorio Ejecutivo del FMI concluye la Consulta del Artículo IV y la revisión de medio término en el marco de su acuerdo de Línea de Crédito Flexible
+- Consulta pública sobre proyecto de disposiciones en materia de operaciones de caja, corresponsalía y manejo de piezas presuntamente falsas o alteradas, y modificaciones a las disposiciones de carácter general para determinar los medios para dar a conocer las circulares que el Banco de México emita en materia de almacenamiento, abastecimiento, canje, entrega, retiro, reproducción y destrucción de billetes y monedas metálicas, así como corresponsalía de caja, emitidas mediante la Circular 8/2023
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- Consulta pública del segundo proyecto de disposiciones para modificar las "Disposiciones aplicables a las operaciones de las instituciones de crédito, las sociedades financieras de objeto múltiple reguladas que mantengan vínculos patrimoniales con instituciones de crédito y la Financiera Nacional de Desarrollo Agropecuario, Rural, Forestal y Pesquero", emitidas mediante la Circular 3/2012, en relación con el uso de prestaciones laborales como respaldo de serv. fin. contratados por trabajadores
+- Consulta pública sobre el proyecto de modificaciones a las "Reglas para la realización de operaciones derivadas", emitidas mediante la Circular 4/2012, en materia de fondos de inversión de cobertura y otros aspectos
+- Consulta pública del proyecto de disposiciones para modificar las Reglas de préstamo de valores, con objeto de establecer reglas aplicables a los fondos de inversión de cobertura
+- Exhorto a todos los participantes de mercado a utilizar la TIIE de fondeo como referencia en nuevos contratos
+- Consulta pública del proyecto de disposiciones para modificar las Reglas de reportos, con objeto de establecer reglas aplicables a los fondos de inversión de cobertura
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- Primera sesión del Comité Técnico del Fondo de Pensiones para el Bienestar
+- Consulta pública sobre el proyecto de disposiciones para modificar la Circular 4/2012, en materia de intercambio transfronterizo de información de operaciones derivadas
+- Publicación de los estados financieros dictaminados del Banco de México correspondientes al ejercicio 2023
+- Ampliación del plazo de las medidas provisionales en materia de montos de pago mínimo aplicables a créditos, préstamos o financiamientos revolventes asociados a tarjetas de crédito, emitidas para enfrentar los daños ocasionados por el huracán Otis
+- Proyecto Agorá: los bancos centrales y el sector bancario emprenden un ambicioso proyecto para analizar la tokenización de pagos transfronterizos
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- Consulta pública sobre el proyecto de disposiciones para modificar la Circular 9/2023 en materia de Operaciones de Caja, sobre la actualización de los factores que se utilizan para calcular las comisiones que pagan los usuarios por el servicio de corresponsalía de caja
+- Excepciones a las restricciones para el uso de la TIIE de 28 días como subyacente en swaps que se celebren durante 2025
+- Victoria Rodríguez Ceja, Gobernadora del Banco de México, es nombrada banquera central del año 2024 para América
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- Consulta pública del proyecto de disposiciones para modificar las "Disposiciones aplicables a las operaciones de las instituciones de crédito, las sociedades financieras de objeto múltiple reguladas que mantengan vínculos patrimoniales con instituciones de crédito...", emitidas mediante la Circular 3/2012, en relación con el uso de remuneraciones y prestaciones laborales como respaldo de servicios financieros contratados por trabajadores
+- Calendario de publicación para 2024 de la encuesta sobre las expectativas de los especialistas en economía del sector privado
+- Consulta pública del proyecto de Circular del Banco de México, con objeto de establecer una facilidad permanente de liquidez
+- Consulta pública del proyecto de disposiciones para modificar las Reglas aplicables a las operaciones de reporto
+- Medidas provisionales en materia de montos de pago mínimo aplicables a créditos, préstamos o financiamientos revolventes asociados a tarjetas de crédito, emitidos para enfrentar los daños ocasionados por el huracán Otis
+- Se dan a conocer los resultados de la Consulta del Artículo IV para 2023 llevada a cabo por el Fondo Monetario Internacional
+- Consulta pública sobre el proyecto de modificaciones a las "Disposiciones de carácter general en materia de registro de comisiones"
+- TIIE de fondeo compuesta por adelantado a plazos de 28, 91 y 182 días
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- Consulta pública de los proyectos de disposiciones para modificar la regulación del Sistema de Pagos Electrónicos Interbancarios (SPEI) y del Sistema de Pagos Interbancarios en Dólares (SPID), en materia de ciberseguridad y tecnologías de la información
+- Consulta pública del proyecto de disposiciones para modificar la Circular 4/2012, en materia de requerimientos para la celebración de operaciones derivadas
+- Consulta pública sobre disposiciones del Banco de México para modificar la Circular de Operaciones de Caja
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- Transición de las TIIE a plazos mayores a un día hábil bancario a la TIIE de fondeo en operaciones derivadas
+- Medios para dar a conocer las circulares que el Banco de México emita en materia de almacenamiento, abastecimiento, canje, entrega, retiro, reproducción y destrucción de billetes y monedas metálicas, así como corresponsalía de caja
+- Deshabilitación de versiones del protocolo TLS en los sitios web del Banco de México
+- Publicación de los estados financieros dictaminados del Banco de México correspondientes al ejercicio 2022
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- Deshabilitación de versiones del protocolo TLS en los sitios web del Banco de México
+- Entrada en vigor del Catálogo de Categorías de Comisiones
+- Próxima actualización de la versión 1.3 del protocolo TLS en el sitio web del Banco de México
+- Se abren inscripciones a la octava edición del Reto Banxico, competencia académica dirigida a estudiantes de nivel licenciatura en México
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- Transición de las TIIE a plazos mayores a un día hábil bancario a la TIIE de fondeo
+- Estudiantes de preparatoria destacaron el papel de la confianza en el funcionamiento del dinero, tanto efectivo como electrónico
+- Consulta pública del proyecto de modificaciones a las "Reglas del Módulo de Atención Electrónica"
+- Calendario de publicación para 2023 de la encuesta sobre las expectativas de los especialistas en economía del sector privado
+- Se dan a conocer los resultados de la Consulta del Artículo IV para 2022 llevada a cabo por el Fondo Monetario Internacional
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- El Museo Banco de México celebra su primer aniversario
+- Consulta pública sobre el proyecto de modificaciones a las Reglas para la realización de operaciones derivadas, contenidas en la Circular 4/2012 del Banco de México
+- Consulta pública sobre el proyecto de modificaciones a las Reglas a las que deberán sujetarse las instituciones de crédito, casas de bolsa, fondos de inversión, sociedades de inversión especializadas de fondos para el retiro, almacenes generales de depósito, instituciones de seguros, instituciones de fianzas, sociedades financieras de objeto múltiple reguladas que mantengan vínculos patrimoniales con una institución de crédito y la FND, en sus operaciones de reporto
+- El Banco de México anuncia que la publicación del calendario de política monetaria vigente para el siguiente año calendario se realizará a partir de esta ocasión en el informe trimestral correspondiente al trimestre abril-junio
+- Consulta pública para el proyecto de disposiciones sobre las "Reglas aplicables al Identificador Único de Transacción (UTI) y al Identificador Único de Producto (UPI) en operaciones derivadas" y de modificaciones a las "Reglas para la realización de operaciones derivadas" contenidas en la Circular 4/2012
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- Estudiantes defienden su opinión sobre la política monetaria en México frente al propio Instituto Central
+- Consulta pública sobre el proyecto de modificaciones a las Reglas generales a las que deberán sujetarse las operaciones y actividades de las sociedades de información crediticia y sus usuarios, contenidas en la Circular 27/2008 del Banco de México
+- Consulta pública sobre el proyecto de catálogo de categorías de las comisiones a que se refiere el numeral 2.1.3., fracción I, de las Disposiciones de carácter general en materia de registro de comisiones
+- Publicación de los estados financieros dictaminados del Banco de México correspondientes al ejercicio 2021
+- Aviso sobre la publicación de índices de valor unitario, de volumen y términos de intercambio del comercio exterior de mercancías de México
+- Aviso sobre nueva herramienta para consulta de información de comercio exterior de mercancías de México
+- Consulta pública sobre diversas reglas y disposiciones específicas emitidas mediante las Circulares 1/2022, 3/2022 y 4/2022, que modifican las Circulares 14/2017, 3/2012 y 13/2017, emitidas por el Banco de México
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- Autoridades de las instituciones del sistema financiero instalan Comité de Igualdad de Género
+- Se acerca el cierre de inscripciones para la séptima edición del Reto Banxico, competencia académica dirigida a estudiantes de nivel licenciatura en México
+- El Consejo de Administración del Banco de Pagos Internacionales elige a la Lic. Victoria Rodríguez Ceja como nueva integrante
+- El Banco de México anuncia el pago anticipado de Bondes D colocados con fines de regulación monetaria por un monto de 50,000 millones de pesos
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- El Banco de México anuncia la publicación de pronósticos de inflación desestacionalizados como acción adicional de comunicación de política monetaria
+- Consulta pública sobre disposiciones del Banco de México para modificar la Circular de Operaciones de caja
+- El Senado de la República aprobó la designación de la C. Victoria Rodríguez Ceja como miembro de la Junta de Gobierno del Banco de México
+- El Banco de México anuncia a las personas ganadoras del Premio Contacto Banxico, por el desarrollo del tema El Banco de México y la toma de decisiones económico financieras frente a circunstancias inesperadas
+- El Comité de Evaluación entregó al C. Presidente de los Estados Unidos Mexicanos las listas de aspirantes para ocupar una vacante en el órgano de gobierno de la Comisión Federal de Competencia Económica y una vacante en el órgano de gobierno del Instituto Federal de Telecomunicaciones
+- Calendario de publicación para 2022 de la encuesta sobre las expectativas de los especialistas en economía del sector privado
+- Hoy presentaron exámenes de conocimientos las personas aspirantes a ocupar vacantes de comisionada o comisionado en los órganos de gobierno de la COFECE y del IFT
+- Publicación de la Encuesta Nacional sobre las Finanzas de los Hogares (ENFIH) 2019
+- Se dan a conocer los resultados de la Consulta del Artículo IV para 2021 llevada a cabo por el Fondo Monetario Internacional
+- La Red de Bancos Centrales y Supervisores para Enverdecer el Sistema Financiero (NGFS) y el Banco de México destacan la importancia de mejorar la resiliencia del sistema financiero a los riesgos ambientales y relacionados con el clima en el marco de la Conferencia de las Partes de la ONU sobre Cambio Climático (COP26)
+- Proceso de transición de las tasas LIBOR a nuevas tasas de referencia alineadas a los estándares internacionales
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- Inicia proceso de liquidación de Accendo Banco, S.A., Institución de Banca Múltiple
+- Banco de México reabre la sala bancaria de su Edificio Principal y anuncia la apertura del Museo Banco de México a la sociedad
+- Se publicarán las convocatorias para seleccionar aspirantes a los cargos de comisionadas y comisionados de la Comisión Federal de Competencia Económica (COFECE) y del Instituto Federal de Telecomunicaciones (IFT)
+- Asignación General de Derechos Especiales de Giro (DEG) del Fondo Monetario Internacional
+- Consulta pública sobre disposiciones del Banco de México para modificar las Reglas del Módulo de Atención Electrónica
+- El Banco de México anuncia acciones adicionales en la comunicación de política monetaria
+- Consulta pública sobre disposiciones del Banco de México para modificar la Circular de Operaciones de caja
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- Banco de México, SHCP y CNBV advierten sobre riesgos de utilizar activos virtuales
+- El Banco de México anuncia el acuerdo de extensión de la vigencia de la línea "swap" con la Reserva Federal de Estados Unidos por 60 mil millones de dólares, fortaleciendo el vínculo de cooperación entre autoridades monetarias para procurar la estabilidad financiera a nivel global
+- Consulta pública sobre disposiciones del Banco de México para modificar la regulación de las subastas de coberturas cambiarias
+- El Grupo Consultivo Regional para las Américas del Consejo de Estabilidad Financiera (FSB) discutió sobre las vulnerabilidades globales y regionales, y las medidas de apoyo ante la pandemia por COVID-19
+- Publicación de los estados financieros dictaminados del Banco de México correspondientes al ejercicio 2020
+- El Comité de Evaluación entregó al C. Presidente de los Estados Unidos Mexicanos la lista de aspirantes para ocupar una vacante en el órgano de gobierno de la Comisión Federal de Competencia Económica
+- Hoy presentaron examen de conocimientos las personas aspirantes a ocupar la vacante de comisionado en el órgano de gobierno de la Comisión Federal de Competencia Económica
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- El Gobernador del Banco de México, Alejandro Díaz de León, es nombrado "Gobernador del Año de la Banca Central", por la Editorial Financiera Central Banking
+- Modificación de la vigencia de las medidas orientadas a promover un comportamiento ordenado de los mercados financieros, fortalecer los canales de otorgamiento de crédito y proveer liquidez para el sano desarrollo del sistema financiero
+- Sesionó ayer el Comité de Regulación de Liquidez Bancaria
+- Ante la vacante generada por la falta absoluta de un comisionado, se publicará la convocatoria para participar en el proceso de selección al cargo de comisionado de la Comisión Federal de Competencia Económica (COFECE)
+- Autoridades financieras anuncian programa de bancarización para apoyar a migrantes y sus familias
+- Se publican las bases para la sexta edición del Reto Banxico, competencia académica dirigida a estudiantes de nivel licenciatura en México
+- El Gobernador del Banco de México se reúne con Su Majestad la Reina Máxima de los Países Bajos, Asesora Especial del Secretario General de las Naciones Unidas sobre Inclusión Financiera para el Desarrollo, para fortalecer la cooperación en materia de inclusión financiera en México
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- El Banco de México anuncia el acuerdo de extensión de la vigencia de la línea "swap" con la Reserva Federal de Estados Unidos por 60 mil millones de dólares, fortaleciendo el vínculo de cooperación entre autoridades monetarias para procurar la estabilidad
+- El Banco de México refrenda su más amplia disposición a contribuir con el Congreso de la Unión en la construcción de un marco legal que beneficie a quienes reciben legítimamente divisas en efectivo, salvaguardando el ámbito institucional y la integridad del sistema financiero mexicano
+- El Banco de México reitera su plena disposición a colaborar con el Congreso de la Unión con respecto al proyecto de decreto por el que se reforman y adicionan diversas disposiciones de la Ley del Banco de México en materia de captación de divisas, aprobado por el Senado de la República y en proceso de análisis en la Cámara de Diputados
+- Consideraciones sobre el proyecto de decreto de reformas a la Ley del Banco de México para que adquiera moneda extranjera en efectivo, aprobado por el Senado de la República
+- El Grupo Consultivo Regional para las Américas del Consejo de Estabilidad Financiera (FSB) discutió la evolución de los mercados financieros y el fortalecimiento de los sistemas de pagos globales
+- Alumnos de bachillerato explican cómo lo que hace Banco de México tiene que ver con el dinero en todas las etapas de su vida
+- Consideraciones sobre la Iniciativa que reforma y adiciona la Ley del Banco de México para que capte moneda extranjera en efectivo
+- Calendario de publicación para 2021 de la encuesta sobre las expectativas de los especialistas en economía del sector privado
+- El Comité de Evaluación entregó al C. Presidente de los Estados Unidos Mexicanos las listas de aspirantes para ocupar una vacante en el órgano de gobierno de la Comisión Federal de Competencia Económica y dos vacantes en el órgano de gobierno del Instituto Federal de Telecomunicaciones
+- El 10 y 11 de noviembre de 2020 presentaron exámenes de conocimientos las personas aspirantes a ocupar las vacantes de comisionado en los órganos de gobierno de la COFECE y del IFT
+- Consulta pública sobre disposiciones del Banco de México para modificar la regulación del SPEI
+- Se dan a conocer los resultados de la Consulta del Artículo IV para 2020 llevada a cabo por el Fondo Monetario Internacional
+- Cuarta convocatoria de Enlaces Universitarios Banxico, dirigida a los estudiantes de instituciones de educación superior en México
+- Creación del  Grupo de Trabajo de Tasas de Referencia Alternativas en México
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- Se publicarán las convocatorias para seleccionar nuevas personas comisionadas de la Comisión Federal de Competencia Económica (COFECE) y del Instituto Federal de Telecomunicaciones (IFT)
+- Extensión de la vigencia de las medidas orientadas a promover un comportamiento ordenado de los mercados financieros, fortalecer los canales de otorgamiento de crédito y proveer liquidez para el sano desarrollo del sistema financiero
+- El Banco de México anuncia ajustes para reforzar las facilidades a fin de proveer recursos a las instituciones bancarias para el financiamiento a las micro, pequeñas y medianas empresas, así como a personas físicas afectadas por la pandemia
+- El Banco de México anuncia la extensión de la vigencia de la línea "swap" con la Reserva Federal de Estados Unidos
+- Proyecto de modificaciones a la Circular 3/2012, en materia de regímenes de admisión de pasivos y de inversión para las operaciones pasivas en moneda extranjera
+- El Banco de México anuncia ajustes a la facilidad de operaciones de reporto a plazo con títulos corporativos
+- El Banco de México anuncia ajustes en su operación en el mercado de fondeo interbancario, en la fecha de entrada en vigor de las decisiones de política monetaria y en la mecánica de cálculo de los intereses en las operaciones de mercado abierto
+- El Banco de México informa sobre el estado operativo de su página  Web
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- Inicia proceso de liquidación de Banco Ahorro Famsa, S.A., Institución de Banca Múltiple
+- Estudiantes de licenciatura evalúan los retos que enfrenta el Banco de México frente a la pandemia Covid-19 en el certamen "Reto Banxico"
+- Consulta pública del proyecto de disposiciones de carácter general aplicables a la emisión electrónica de títulos
+- El Grupo Consultivo Regional para las Américas del Consejo de Estabilidad Financiera (FSB) discutió las vulnerabilidades financieras y el impacto del COVID-19
+- Banco de México y Naciones Unidas a través de sus programas de medio ambiente (PNUMA) y desarrollo (PNUD) presentan un reporte sobre estrategias y metodologías para mitigar riesgos ambientales y sociales en el sistema financiero mexicano
+- Consulta pública sobre los proyectos de disposiciones en materia de cuentas de depósitos para menores de edad y montos máximos provisionales para cuentas nivel 2
+- Medidas adicionales para promover un comportamiento ordenado de los mercados financieros, fortalecer los canales de otorgamiento de crédito y proveer liquidez para el sano desarrollo del sistema financiero
+- Encuentro entre el Presidente de la República y el Gobernador del Banco de México
+- Precisión en relación a la Circular 8/2020 en torno a la operación de los corresponsales de caja
+- Sesionó hoy el Comité de Regulación de Liquidez Bancaria
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- Medidas que toma el Banco de México ante el COVID-19
+- Medidas para proveer liquidez en moneda nacional y extranjera y para mejorar el funcionamiento de los mercados nacionales
+- Consejo de Estabilidad Financiera (FSB) publicó la revisión entre pares de México sobre la implementación de las reformas de derivados extrabursátiles (OTC)
+- El Banco de México anuncia el establecimiento de líneas "swap" con la Reserva Federal de Estados Unidos
+- El Banco de México informa sobre el estado de salud de uno de sus trabajadores
+- Anuncio de las autoridades financieras: subasta de 2,000 millones de dólares de coberturas cambiarias liquidables en moneda nacional y operación de permuta de valores gubernamentales
+- Consulta pública de la nota conceptual para la emisión de regulación aplicable a las instituciones de crédito para la operación de cajeros automáticos aceptadores y dispensadores de billetes
+- Consulta pública de la nota conceptual para la emisión de disposiciones de carácter general para regular las interfaces de programación de aplicaciones informáticas estandarizadas que deben establecer las cámaras de compensación y las sociedades de información crediticia
+- El Banco de México actualiza los criterios generales de comunicación de la Junta de Gobierno y servidores públicos e implementa esfuerzos adicionales en la comunicación de la política monetaria
+- El Comité de Evaluación entregó al C. Presidente de los Estados Unidos Mexicanos la lista de aspirantes para ocupar la vacante en el órgano de gobierno de la Comisión Federal de Competencia Económica y emite una nueva convocatoria para ocupar la vacante en el órgano de gobierno del Instituto Federal de Telecomunicaciones
+- Banco de México es nombrado "Emisor de Moneda del Año" por la Editorial Financiera Central Banking
+- Hoy presentaron sus exámenes las aspirantes a comisionadas de la COFECE y del IFT
+- El próximo sábado 1 de febrero 32 aspirantes a comisionadas de la COFECE y del IFT presentarán los exámenes indicados en la Constitución y en las convocatorias respectivas
+- Publicación de la TIIE de fondeo a un día hábil bancario y robustecimiento de las TIIE a plazos mayores a un día hábil bancario
+- Se publican las bases para la quinta edición del Reto Banxico, concurso académico dirigido a estudiantes de nivel licenciatura en México
+- Consulta pública sobre el proyecto de disposiciones del Banco de México: modificaciones a las Circulares 36/2010 y 13/2012 en materia de registro de comisiones
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- Se publicarán las convocatorias para seleccionar una nueva comisionada de la Comisión Federal de Competencia Económica y una nueva comisionada del Instituto Federal de Telecomunicaciones
+- Alumnos de bachillerato explican cómo las tecnologías digitales brindan una oportunidad única para avanzar en la inclusión financiera
+- Seminario sobre la importancia de la autonomía de la banca central: retos y perspectivas
+- Calendario de publicación para 2020 de la encuesta sobre las expectativas de los especialistas en economía del sector privado
+- Consulta pública sobre el proyecto de disposiciones del Banco de México: modificaciones a las Circulares 3/2012, 34/2010 y 22/2008 en materia de remuneraciones y prestaciones laborales como respaldo de servicios financieros contratados por trabajadores
+- Se dan a conocer los resultados de la Consulta del Artículo IV para 2019 llevada a cabo por el Fondo Monetario Internacional
+- Consulta pública sobre el proyecto de disposiciones del Banco de México: modificaciones a la Circular 3/2012 en materia de tasas de referencia
+- Seminario sobre Estabilidad financiera y banca central
+- El Grupo Consultivo Regional para las Américas del Consejo de Estabilidad Financiera (FSB) analizó las vulnerabilidades regionales, la intermediación financiera no bancaria, stablecoins y el riesgo cibernético
+- El Banco de México es reconocido con grado A por la edición de Global Finance y el Gobernador del Banco de México, Alejandro Díaz de León, recibe los premios "Banquero Central del Año para América Latina" por la publicación GlobalMarkets y "Banquero Central del Año" por la revista LatinFinance
+- Inicio de operación del esquema CoDi
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- Tercera convocatoria de Enlaces Universitarios Banxico, dirigida a los estudiantes de instituciones de educación superior en México
+- Estado del Sistema de Pagos Electrónicos Interbancarios (SPEI)
+- Cambio de fecha para la adopción del protocolo HTTPS en el sitio web del Banco de México al 7 de septiembre de 2019
+- El Sistema de Pagos Electrónicos Interbancarios (SPEI) opera con normalidad
+- Seminario sobre sistemas de pagos y nuevas tecnologías
+- Incidente operativo registrado en Promoción y Operación S.A. de C.V. (PROSA)
+- Próxima adopción del protocolo HTTPS en el sitio web del Banco de México
+- Consulta pública sobre los proyectos de disposiciones del Banco de México: modificaciones a las reglas aplicables a las sociedades de información crediticia en su operación, y a las disposiciones sobre la información que deben proporcionar las entidades financieras a las sociedades de información crediticia
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- Consulta pública sobre proyectos de disposiciones del Banco de México: incorporación de requerimientos de márgenes iniciales y de variación para operaciones derivadas sin compensación y liquidación centralizada
+- Consulta pública sobre los proyectos de disposiciones del Banco de México: modificaciones a las reglas de reportos y préstamo de valores
+- Estudiantes de licenciatura evalúan los riesgos de la inflación en la cuarta edición del certamen "Reto Banxico"
+- Christine Lagarde, Directora Gerente del Fondo Monetario Internacional, visita el Banco de México
+- Condiciones de operación del SPEI el 19 de marzo de 2019
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- Publicación de disposiciones del Banco de México a las que se refiere la Ley para Regular las Instituciones de Tecnología Financiera
+- Fe de erratas, minuta número 65 de la reunión de la Junta de Gobierno del Banco de México, con motivo de la decisión de política monetaria anunciada el 7 de febrero de 2019, en su versión en inglés
+- Consulta pública sobre proyectos de disposiciones del Banco de México: modificaciones a las "Disposiciones aplicables a las operaciones de las instituciones de crédito y de la Financiera Nacional de Desarrollo Agropecuario, Rural, Forestal y Pesquero", en materia de remuneraciones y prestaciones laborales como respaldo de servicios financieros contratados por trabajadores y a los lineamientos para la prestación del servicio de dispersión de nómina
+- La Comisión Permanente del H. Congreso de la Unión aprobó la designación de Jonathan Ernest Heath Constable como miembro de la Junta de Gobierno del Banco de México
+- La Comisión Permanente del H. Congreso de la Unión aprobó la designación de Gerardo Esquivel Hernández como miembro de la Junta de Gobierno del Banco de México
+- Banco de México es nombrado "Administrador de Reservas Internacionales del Año" por el Instituto Central Banking Publications
+- La Secretaría de Hacienda y Crédito Público (SHCP) y el Banco de México (Banxico) presentaron el día de hoy ocho acciones que se llevarán a cabo para impulsar el sector financiero
+- Se publican las bases para la cuarta edición del Reto Banxico, competencia académica dirigida a estudiantes de nivel licenciatura en México
+- Consideraciones del Banco de México sobre la aplicación de las disposiciones de la Ley Federal de Remuneraciones de los Servidores Públicos y algunos conceptos del Presupuesto de Egresos de la Federación para el Ejercicio Fiscal 2019
+- Alejandro Díaz de León, Gobernador del Banco de México, es nombrado el banquero central del año 2019 para América, por la publicación especializada The Banker
+- El Comité de Evaluación entregó al C. Presidente de los Estados Unidos Mexicanos las listas de aspirantes a Comisionados de la COFECE y del IFT
+- Comunicado de prensa de la Red de Bancos Centrales y Autoridades Supervisoras para Enverdecer el Sistema Financiero (NGFS, por sus siglas en inglés)
+- Consulta pública sobre proyectos de disposiciones del Banco de México: implementación del esquema de pagos electrónicos iniciados por el beneficiario denominado Cobro Digital
+- La Asamblea del CEMLA eligió por unanimidad al Doctor Manuel Ramos Francia como Director General de esa institución
+- Hoy presentaron sus exámenes los aspirantes a comisionados de la COFECE y del IFT
+- Alumnos de bachillerato explican la contribución de la autonomía del Banco de México en la estabilidad de precios
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- Calendario de publicación para 2019 de la encuesta sobre las expectativas de los especialistas en economía del sector privado
+- El próximo sábado 8 de diciembre 28 aspirantes a comisionados(as) de la COFECE y del IFT presentarán los exámenes indicados en la Constitución y en las convocatorias respectivas
+- El licenciado Roberto del Cueto Legaspi, presentó su renuncia al cargo de Subgobernador del Banco de México por motivos de salud
+- Se dan a conocer los resultados de la Consulta del Artículo IV para 2018 llevada a cabo por el Fondo Monetario Internacional
+- Incidente de seguridad de la información en un participante de los sistemas de pagos
+- Primer informe de actividades de la Red de Bancos Centrales y Autoridades Supervisoras para Enverdecer el Sistema Financiero
+- Reconocimiento de la publicación LatinFinance al Banco de México
+- Se publicarán las convocatorias para seleccionar un nuevo comisionado de la Comisión Federal de Competencia Económica y un nuevo comisionado del Instituto Federal de Telecomunicaciones.
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- Aviso conjunto a los usuarios de las estadísticas de viajeros internacionales
+- Segunda Convocatoria de Enlaces Universitarios Banxico, dirigida a los estudiantes de instituciones de educación superior en México
+- Segundo periodo de consulta pública a las reglas relativas a las operaciones con tarjetas de débito y crédito de instituciones de crédito y SOFOMES reguladas que mantengan vínculos patrimoniales con instituciones de crédito
+- Nuevo sitio del Banco de México en Internet
+- Consulta pública sobre proyectos de disposiciones del Banco de México: regulación aplicable a las instituciones de fondos de pago electrónico
+- Nuevos requerimientos a los participantes del SPEI para reforzar las políticas y controles en las transferencias de fondos
+- Segundo periodo de consulta pública sobre disposiciones de créditos asociados a la nómina
+- Las autoridades financieras solicitan fortalecer esquemas de seguridad y vigilancia
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- Evalúan estudiantes de licenciatura los riesgos de la inflación en la tercera edición del certamen "Reto Banxico"
+- Publicación de mandatos de los grupos de trabajo de la Red de Bancos Centrales y Autoridades Supervisoras para Enverdecer el Sistema Financiero (NGFS, por sus siglas en inglés) y ampliación de membresía de la NGFS
+- El Banco de México reconoce a GS1 México como Unidad Local establecida en territorio nacional susceptible de emitir Códigos LEI
+- Bases de coordinación en materia de seguridad de la información
+- Información sobre la situación del Sistema de Pagos Electrónicos Interbancarios (SPEI)
+- Acciones emprendidas por el Banco de México para mitigar los riesgos de ocurrencia de incidentes operativos en los participantes del Sistema de Pagos Electrónicos Interbancarios (SPEI)
+- El Consejo de Administración del Banco de Pagos Internacionales elige al Lic. Alejandro Díaz de León Carrillo como nuevo integrante
+- Consulta pública sobre proyectos de disposiciones del Banco de México: regulación aplicable a las obligaciones subordinadas que pretendan emitir las instituciones de crédito
+- El Banco de México modifica su estrategia de comunicación de política monetaria
+- Información adicional sobre los incidentes operativos registrados en algunos participantes del Sistema de Pagos Electrónicos Interbancarios (SPEI)
+- Incidentes operativos registrados en algunos participantes del Sistema de Pagos Electrónicos Interbancarios (SPEI)
+- Consulta pública sobre proyecto de disposiciones del Banco de México: regulación de los créditos a los que los trabajadores tienen acceso con el uso de su cuenta de nómina
+- Consulta pública sobre proyectos de disposiciones del Banco de México: regulación de operaciones cambiarias con tarjetas de crédito y débito
+- El Banco de México es el primer banco central en obtener la certificación global líder en igualdad de género en el ámbito laboral y ha sido reconocido con el nivel EDGE Assess de la Fundación EDGE
+- El Consejo de Estabilidad del Sistema Financiero actualiza su Balance de Riesgos
+- Segunda Jornada de Igualdad Laboral y No Discriminación del Banco de México
+- Políticas para la consulta pública de las disposiciones de carácter general que emita el Banco de México
+- Publicación de la encuesta sobre condiciones generales y estándares en el mercado de crédito bancario
+- Redefinición de los agregados monetarios y mejoras a la estadística sobre la actividad financiera en México
+- Banxico pone a disposición del público una herramienta de análisis del mercado de tarjetas de crédito
+- Primera reunión de la Red de Bancos Centrales y Supervisores para Enverdecer el Sistema Financiero, celebrada el 24 de enero en París
+- La Comisión Permanente del H. Congreso de la Unión aprobó la propuesta de designación de Irene Espinosa Cantellano como Subgobernadora del Banco de México
+- Se publican las bases para la tercera edición del Reto Banxico, competencia académica dirigida a los estudiantes de nivel licenciatura en México
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- Las autoridades financieras advierten de los riesgos asociados al uso de activos virtuales y a la participación en los esquemas de inversión conocidos como Oferta Inicial de Monedas o "Initial Coin Offerings"
+- Central Banks and Supervisors Network for Greening the Financial System: questions and answers (disponible solo en inglés)
+- Members of Central Bank and Supervisors Network for Greening the Financial System (disponible solo en inglés)
+- Joint statement by the founding members of the Central Banks and Supervisors Network for Greening the Financial System (disponible solo en inglés)
+- Se aprueba el paquete final de reformas a Basilea III, informan Banco de México y la CNBV
+- Estudiantes de preparatoria destacan las ventajas de la banca digital para los jóvenes de México
+- Primera reunión de trabajo
+- El Presidente Enrique Peña Nieto designó como Gobernador del Banco de México a Alejandro Díaz de León Carrillo
+- Calendario de publicación para 2018 de la encuesta sobre las expectativas de los especialistas en economía del sector privado
+- Se dan a conocer los resultados de la Consulta del Artículo IV para 2017 llevada a cabo por el Fondo Monetario Internacional
+- Se celebró la primera sesión del Nuevo Comité del Mercado Cambiario Mexicano
+- El Comité de Evaluación entregó hoy al C. Presidente de la República las listas de aspirantes a ser comisionados de la COFECE y del IFT que cumplieron los requisitos constitucionales y que, en los exámenes respectivos, obtuvieron las calificaciones aprobatorias más altas
+- Hoy presentaron sus exámenes los aspirantes a comisionados de la COFECE y del IFT
+- El próximo sábado 21 de octubre 36 aspirantes a comisionados de la COFECE y del IFT presentarán los exámenes indicados en la Constitución y en las convocatorias respectivas
+- Declaración de Compromiso del Código Global de Conducta del Mercado Cambiario por parte de Banco de México y creación del Comité del Mercado Cambiario Mexicano
+- Declaración de Compromiso del Código Global de Conducta del Mercado Cambiario por parte de Banco de México y creación del Comité del Mercado Cambiario Mexicano (presentación)
+- Términos de referencia del Comité del Mercado Cambiario Mexicano
+- El Banco de México opera con toda normalidad y sus procesos críticos jamás se interrumpieron con motivo del sismo del 19 de septiembre pasado
+- Las instituciones bancarias y mercados financieros operarán con normalidad
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- Se publica la primera Convocatoria de Enlaces Universitarios Banxico, dirigida a los estudiantes de nivel licenciatura en México
+- Se publicarán las convocatorias para seleccionar un nuevo comisionado de la Comisión Federal de Competencia Económica y un nuevo comisionado del Instituto Federal de Telecomunicaciones
+- Agustín Carstens, gobernador del Banco de México, ha sido invitado a formar parte del G30, grupo consultivo en asuntos monetarios y económicos internacionales
+- Aviso en materia de obsequios dirigido a los proveedores y contratistas del Banco de México y entidades sujetas a su regulación y supervisión
+- A partir de hoy también créditos automotrices podrán valorarse mediante la herramienta de análisis dinámico desarrollada por Banxico
+- Banco de México emite disposiciones para mejorar el servicio de transferencias de fondos a través del SPEI
+- Precisiones acerca de las estadísticas de viajeros internacionales que publica el Banco de México
+- Recomiendan cómo mantener la inflación baja y estable estudiantes de licenciatura en la segunda edición del Reto Banxico
+- Fe de erratas sobre el reporte de resultados correspondiente a la encuesta sobre las expectativas de los especialistas en economía del sector privado de mayo de 2017
+- Banco de México incorpora créditos de nómina a herramienta de análisis dinámico
+- El Banco de México celebra la publicación del Código Global de Conducta para los Mercados Cambiarios
+- Mejoras a la estadística de balanza de pagos de México derivadas de la implementación de la sexta edición del Manual de Balanza de Pagos del Fondo Monetario Internacional
+- Presentación de obligaciones de transparencia de Banco de México en el SIPOT de la PNT
+- Banco de México pone a disposición del público una herramienta de análisis dinámico de las condiciones del crédito personal
+- Banco de México publica el primer reporte de indicadores básicos de créditos a PYMES
+- Realiza Banco de México reporte sobre las condiciones de competencia en la provisión de los servicios bancarios asociados al pago de nómina
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance riesgos
+- Determinación del remanente de operación del Banco de México correspondiente al ejercicio 2016
+- Banco de México y el Consejo Nacional para Prevenir la Discriminación (CONAPRED) firman Convenio General de Colaboración para que a toda persona se le garantice el derecho a la no discriminación
+- Agustín Carstens permanecerá como Gobernador del Banco de México hasta el 30 de noviembre de 2017
+- Los bancos deberán ofrecer cuentas de depósito sin costo para quienes reciben subsidios de programas gubernamentales
+- Medidas de austeridad, ahorro y disciplina del gasto del Banco de México
+- Se publican las bases para la segunda edición del Reto Banxico, competencia académica dirigida a los estudiantes de nivel licenciatura en México
+- El Consejo de Estabilidad del Sistema Financiero sesionó para evaluar las perspectivas y riesgos
+- Acepta Agustín Carstens su designación como Gerente General del Banco de Pagos Internacionales (BIS) a partir de octubre de 2017
+- Estudiantes de preparatoria destacan la importancia de la inclusión financiera para los jóvenes de México
+- La Cámara de Senadores aprobó la designación de Alejandro Díaz de León Carrillo como Subgobernador del Banco de México
+- Aviso en materia de obsequios dirigido a los proveedores y contratistas del Banco de México y entidades sujetas a su regulación y supervisión
+- Calendario de publicación para 2017 de la encuesta sobre las expectativas de los especialistas en economía del sector privado
+- Se dan a conocer los resultados de la Consulta del Artículo IV para 2016 llevada a cabo por el Fondo Monetario Internacional
+- Se lanzan las convocatorias para seleccionar un nuevo comisionado de la Comisión Federal de Competencia Económica y un nuevo comisionado del Instituto Federal de Telecomunicaciones
+- Determinación del requerimiento de compensación y liquidación centralizada por parte de la U.S. Commodity Futures Trading Commission para los swaps TIIE denominados en pesos mexicanos
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- Banco de México pone a disposición de los usuarios del SPEI el servicio de Consulta por lotes de Comprobantes Electrónicos de Pago
+- Política y funciones del Banco de México respecto a las infraestructuras de los mercados financieros
+- Firma de acuerdo de cooperación e intercambio de información en relación con la supervisión de contrapartes centrales y registros centrales de información de operaciones derivadas
+- Invitación del Banco de México a las empresas interesadas en proporcionar servicios de Auditoría Externa a Instituciones de crédito, en términos de las reglas del SPID
+- Declaración de Agustín Carstens, Presidente de la Reunión de la Economía Mundial del Banco de Pagos Internacional (BIS) sobre las implicaciones del referéndum en el Reino Unido sobre su permanencia en la Unión Europea
+- Aprueban Política Nacional de Inclusión Financiera
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- Banco de México publica el primer Reporte de Indicadores Básicos de Créditos a la Vivienda
+- Estudiantes de licenciatura realizan un análisis de la economía de México y sustentan su recomendación de política monetaria en la primera edición del Reto Banxico
+- Reelección del doctor Agustín Carstens como Presidente del Comité Económico Consultivo (ECC) y de la Reunión de la Economía Mundial (GEM), ambos del BIS
+- Determinación del remanente de operación del Banco de México correspondiente al ejercicio 2015
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos
+- Firman Banco Central de Cuba y Banco de México Acuerdo de Cooperación Técnica en Materia de Banca Central, hoy en La Habana, Cuba
+- Banco de México publica las bases para la primera edición del premio Reto Banxico, dirigido a los estudiantes de nivel licenciatura en México
+- El Grupo de Gobernadores de Bancos Centrales y Jefes de Supervisión respalda el nuevo marco de riesgo de mercado para bancos así como el programa de trabajo del Comité de Basilea
+- El Consejo de Estabilidad del Sistema Financiero analizó la evolución reciente del entorno económico y actualizó su balance de riesgos
+- Calendario para 2016 de los anuncios de las decisiones de política monetaria, las minutas de las decisiones de política monetaria y los informes trimestrales del Banco de México
+- Estudiantes de preparatoria nos hablan sobre qué pasaría si Banco de México no controlara la inflación
+- Calendario de publicación para 2016 de la encuesta sobre las expectativas de los especialistas en economía del sector privado
+- Comunicado Consejo Nacional de Inclusión Financiera (CONAIF)
+- Se dan a conocer los resultados de la Consulta del Artículo IV para 2015 llevada a cabo por el Fondo Monetario Internacional
+- El Consejo de Estabilidad del Sistema Financiero analizó el entorno económico internacional y nacional y actualizó su balance de riesgos para el sistema financiero
+- La Cámara de Senadores aprobó la ratificación de Agustín Carstens como miembro de la Junta de Gobierno del Banco de México
+- Nuevo calendario de los anuncios de las decisiones de política monetaria para el segundo semestre de 2015
+- El Consejo de Estabilidad del Sistema Financiero analizó la evolución reciente de los mercados financieros internacionales y actualizó su balance de riesgos para el sistema financiero nacional
+- Octava Reunión del Grupo Consultivo Regional para las Américas del Consejo de Estabilidad Financiera (FSB)
+- A partir de hoy la información sobre remesas familiares que difunde el Banco de México se enriquecerá con nuevos datos
+- El Banco de México emite disposiciones para hacer más preciso y transparente el cálculo del Costo Anual Total (CAT)
+- Realiza Banco de México reporte sobre las condiciones de competencia en el crédito a micro, pequeñas y medianas empresas (PYMES)
+- Modificaciones a las Reglas para la realización de operaciones derivadas
+- El Banco de México cumple con las mejores normas internacionales en materia de auditoría interna de acuerdo con The Institute of Internal Auditors (The IIA)
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos y aprueba su quinto informe anual
+- La Junta de Gobierno del Banco de México recorta el gasto de la Institución durante 2015 en la misma proporción de la reducción del gasto público anunciada por el Gobierno Federal el 30 de enero
+- Agustín Carstens, Gobernador del Banco de México, presidirá el Comité Monetario y Financiero Internacional del Fondo Monetario Internacional a partir del próximo 23 de marzo
+- El Banco de México celebra el otorgamiento de la condecoración del Águila Azteca a Richard Fisher, presidente del Banco de la Reserva Federal de Dallas
+- Inicia operaciones el Fondo Mexicano del Petróleo para la Estabilización y el Desarrollo (FMP), cuya institución fiduciaria es el Banco de México
+- El Consejo de Estabilidad del Sistema Financiero analizó la evolución reciente de los mercados financieros
+- El Banco de México obtiene el Certificado de Industria Limpia Nivel de Desempeño 2
+- Aviso en materia de obsequios dirigido a las entidades que forman parte del sistema financiero mexicano
+- Segunda sesión del Comité Técnico del Fondo Mexicano del Petróleo para la Estabilización y el Desarrollo
+- Calendario de publicación para 2015 de la encuesta sobre las expectativas de los especialistas en economía del sector privado
+- Debaten estudiantes de preparatoria sobre los desafíos de la emisión de billetes y monedas
+- Se dan a conocer los resultados de la Consulta del Artículo IV para 2014 llevada a cabo por el Fondo Monetario Internacional
+- La Cámara de Senadores aprobó la ratificación de Roberto del Cueto Legaspi como Subgobernador del Banco de México
+- Primera sesión del Comité Técnico del Fondo Mexicano del Petróleo para la Estabilización y el Desarrollo
+- Se instaló hoy el Comité de Regulación de Liquidez Bancaria
+- SHCP, Banxico y CNBV dan a conocer acciones concretas respecto al caso de subsidiaria de Banamex que le proveía servicios de seguridad
+- Suscripción del contrato constitutivo del Fondo Mexicano del Petróleo para la Estabilización y el Desarrollo
+- El Consejo de Estabilidad del Sistema Financiero analizó la evolucion reciente de los mercados financieros y de la actividad economica global. Asimismo, evaluó el impacto sobre el sector asegurador de las pérdidas ocasionadas por el huracán Odile
+- Banco Bicentenario inicia proceso de liquidación
+- El Consejo de Estabilidad del Sistema Financiero analizó el entorno global de menor crecimiento económico y la baja volatilidad que ha prevalecido en los mercados financieros
+- El Banco de México, la Secretaría de Hacienda y Crédito Público y la Comisión Nacional Bancaria y de Valores emiten conjuntamente modificaciones a la regulación del mercado de derivados
+- Precisión del Secretario de la Junta de Gobierno
+- Publicación de las reglas aplicables a las cámaras de compensación para pagos con tarjetas y de las disposiciones de carácter general aplicables a las redes de medios de disposición
+- El Consejo de Estabilidad del Sistema Financiero actualiza su balance de riesgos y aprueba su cuarto informe anual
+- Advertencias sobre el uso de activos virtuales como sucedáneos de los medios de pago en moneda de curso legal
+- Proyecto de reglas aplicables a las cámaras de compensación para pagos con tarjetas
+- Firman el Banco de México y la Comisión Federal de Competencia Económica un acuerdo de colaboración
+- Aplicación para dispositivos móviles que permite consultar comisiones por retirar efectivo en cajeros automáticos
+- Firman acuerdo de colaboración el Banco de México y la Procuraduría Federal del Consumidor
+- El Banco de México emite nuevas disposiciones para fomentar y facilitar las transferencias a través de dispositivos móviles
+- Calendario de publicación para 2014 de la encuesta sobre las expectativas de los especialistas en economía del sector privado
+- Subrayan estudiantes de preparatoria los beneficios de la autonomía del Banco de México
+- Resultados de la consulta del artículo IV para 2013 llevada a cabo por el Fondo Monetario Internacional
+- Nombran "Banquero Central del Año 2013" al Gobernador del Banco de México, Agustín Carstens
+- Resultados de la encuesta realizada por el BIS sobre los volúmenes de operación en los mercados cambiarios y de derivados durante abril de 2013
+- Concluye la visita del Gobernador Carstens a Moscú con motivo de la reunión de Ministros de Finanzas y Gobernadores de Bancos Centrales del G-20
+- Entregaron 300 personas su documentación como aspirantes a los cargos de comisionados de la Comisión Federal de Competencia Económica y del Instituto Federal de Telecomunicaciones
+- Información adicional sobre los 667 aspirantes que se registraron en la primera etapa de las convocatorias para ocupar los cargos de Comisionados de la Comisión Federal de Competencia Económica y del Instituto Federal de Telecomunicaciones
+- Analiza el Consejo de Estabilidad del Sistema Financiero la volatilidad reciente en los mercados financieros
+- Agustín Carstens encabezará en el BIS el principal foro de consulta y coordinación de los bancos centrales
+- Debido a la presentación de la iniciativa de la reforma financiera, la conferencia de prensa sobre el reporte trimestral de inflación se hará a las 17:00 hrs.
+- Banco de México nombra nuevo Director General de FIRA
+- La Cámara de Senadores aprobó la designación de Javier Eduardo Guzmán Calafell como Subgobernador del Banco de México
+- Modificaciones a la encuesta sobre las expectativas de los especialistas en economía del sector privado
+- Tercera Reunión del Grupo Consultivo Regional para las Américas del Consejo de Estabilidad Financiera (FSB)
+- El Consejo de Estabilidad del Sistema Financiero analiza un ejercicio de proyecciones financieras para la banca múltiple bajo diferentes escenarios
+- Communiqué of the Meeting of G20 Finance Ministers and Central Bank Governors (disponible sólo en inglés)
+- El Consejo considera que la circular reciente del Banco de México complementa las medidas de las autoridades para proteger al sistema financiero frente a la crisis internacional
+- Inauguración de la sala "Las finanzas públicas en la sociedad" en el Museo Interactivo de Economía
+- Analiza el Consejo de Estabilidad la situación económica internacional y la evolución de la crisis europea
+- El Banco de México rechaza categóricamente las presunciones infundadas realizadas en contra de la Institución y de su Gobernador
+- Analiza el Consejo de Estabilidad la situación económica internacional y la agenda de regulación financiera
+- México colaborará en el esfuerzo internacional para fortalecer la capacidad de préstamo del FMI ante la crisis global
+- Conferencia sobre el fortalecimiento del Consejo de Estabilidad Financiera
+- Acciones y medidas de mejora como resultado de la encuesta sobre el sitio de Internet de Banco de México
+- Analiza el Consejo de Estabilidad el balance de riesgos del sistema financiero
+- Communiqué of the Meeting of G20 Finance Ministers and Central Bank Governors (disponible sólo en inglés)
+- Agustín Carstens es, de acuerdo con la revista The Banker, el banquero central del año 2012, tanto en América como en el ámbito global
+- Agustín Carstens fue nombrado Presidente del Consejo Consultivo para las Américas del Banco de Pagos Internacionales (BIS)
+- Encuesta sobre el sitio de Internet Banxico 2011
+- Subrayan estudiantes de preparatoria que el contar con un sistema financiero saludable es indispensable para el crecimiento de la economía
+- Renuevan convenio de colaboración el Banco de México y la PGR
+- El Gobernador Carstens en la reunión del G-20 en París
+- El Dr. Agustín Carstens Carstens, Gobernador del Banco de México, recibe premio como Banquero Central del Año del Continente Americano
+- Publicación del "Libro Rojo" de sistemas de pagos
+- Resultados de la consulta del artículo IV para 2011 llevada a cabo por el Fondo Monetario Internacional
+- Cambios en la página web y servicios relacionados a la diseminación de información de índices de precios
+- Declaraciones del doctor Agustín Carstens Carstens, sobre la elección del nuevo Director Gerente del FMI
+- Comunicado de Agustín Carstens, Gobernador de Banco de México, a la Junta de Gobernadores y al Directorio Ejecutivo del FMI
+- Otorgaron en Washington a Agustín Carstens y a Ben Bernanke el Galardón Buen Vecino 2011
+- Compras de oro realizadas por Banco de México
+- La Cámara de Senadores aprobó la designación de Manuel Ramos Francia como Subgobernador del Banco de México
+- Cotización de la TIIE a plazo de 182 días
+- El Consejo de Estabilidad destaca la fortaleza del sistema financiero
+- Designan al Gobernador del Banco de México como Copresidente del Consejo Directivo (Group of Trustees) de "Los Principios" del Instituto de Finanzas Internacionales (IIF)
+- Firman convenio de colaboración el Banco de México y el Colegio Nacional de Economistas, A. C.
+- El Consejo de Administración del Banco de Pagos Internacionales elige al Dr. Agustín Guillermo Carstens Carstens como nuevo integrante
+- Subrayan estudiantes de preparatoria que la estabilidad de precios es crucial para el crecimiento de la economía y del empleo
+- Indicadores básicos de tarjetas de crédito
+- Reglas de tarjetas de crédito
+- Sesionó hoy el Consejo de Estabilidad del Sistema Financiero
+- Acciones y medidas de mejora como resultado de la encuesta sobre el sitio de Internet de Banco de México
+- El Gobernador del Banco de México en gira de trabajo por Asia
+- Formalizan Banco de México e INEGI tres convenios para fortalecer la transferencia de las tareas de medición de precios
+- Colocación de Bondes D para regulación monetaria durante el cuarto trimestre de 2010
+- Financial Stability Board (FSB) elogia fortaleza del sistema financiero mexicano
+- Estableció hoy el Comité de Basilea para Supervisión Bancaria estándares más exigentes a nivel mundial
+- Se instaló hoy el Consejo de Estabilidad del Sistema Financiero
+- Banxico prohíbe y limita el cobro de diversas comisiones a bancos y otras entidades financieras
+- Modificaciones a la página principal del web de Banco de México
+- Resultados de la encuesta sobre el sitio de Internet de Banco de México
+- El Banco de México adecuará su regulación a las nuevas reglas de la SHCP aplicables a operaciones con dólares en efectivo
+- Versión en español del artículo escrito por el Dr. Agustín Carstens C., Gobernador del Banco de México, a solicitud del periódico Korea Economic Daily
+- Como consecuencia de la crisis global, los países del G-20 deben reforzar su marco macroeconómico y en particular sus finanzas públicas: Agustín Carstens
+- Se transparenta la comisión que cobrarán las instituciones de crédito por el uso de cajeros automáticos a tarjetahabientes de otros bancos
+- El Índice Nacional de Precios al Consumidor (INPC) refleja con toda confiabilidad la inflación en México
+- Resultados de la consulta del artículo IV para 2010 llevada a cabo por el Fondo Monetario Internacional
+- Concluye la "línea swap" con la Reserva Federal de Estados Unidos
+- El licenciado Felipe de Jesús Calderón Hinojosa, Presidente de los Estados Unidos Mexicanos, nombró al doctor Agustín Guillermo Carstens Carstens como Gobernador del Banco de México
+- La Cámara de Senadores del H. Congreso de la Unión aprobó la designación de Agustín Guillermo Carstens Carstens como miembro de la Junta de Gobierno
+- Errata en billete conmemorativo de 100 pesos
+- Disposiciones en materia de comisiones por retiros de efectivo y consultas de saldo en cajeros automáticos
+- Sanciones impuestas por el Banco de México a intermediarios financieros
+- Reporte de tasas de interés efectivas de tarjetas de crédito
+- Acciones y medidas de mejora como resultado de la encuesta sobre el sitio de Internet de Banco de México
+- Asignación de Derechos Especiales de Giro (DEG) a México
+- Rediseño de secciones en la página web de Banco de México
+- Nuevas disposiciones en materia de comisiones
+- Fe de erratas al comunicado de prensa: "Cuentas de expediente simplificado (cuentas móviles)"
+- Cuentas de expediente simplificado (cuentas móviles)
+- Resultados de la encuesta sobre el sitio de Internet de Banco de México
+- El Banco de México anuncia la ampliación del plazo del mecanismo de líneas "swap" con la Reserva Federal de Estados Unidos
+- Información estadística en XML y webservices
+- La Comisión Permanente aprobó la designación de Manuel Sánchez González como Subgobernador
+- El Banco de México ante la epidemia de influenza
+- Publicación del informe sobre la inflación, enero-marzo 2009
+- El Banco de México ante la epidemia de influenza porcina
+- Resultados de las subastas de crédito en dólares de los EE.UU.A
+- Primera disposición de la línea "swap" con la Reserva Federal de Estados Unidos y subasta de crédito en dólares
+- Nueva página principal
+- Cuarto Seminario de Alto Nivel de Bancos Centrales del Eurosistema y de América Latina, realizado en la Ciudad de México el día 23 de marzo de 2009
+- Resultados de la consulta del artículo IV para 2008 llevada a cabo por el Fondo Monetario Internacional
+- El Banco de México anuncia la ampliación del plazo del mecanismo de líneas "swap" con la Reserva Federal de Estados Unidos
+- Nueva fecha de difusión del informe trimestral de inflación
+- Nombramiento del Dr. Ortiz como Presidente del Consejo de Directores del Banco de Pagos Internacionales (BIS)
+- Cheques nominativos
+- Resultado de la subasta de swaps de tasas de interés
+- Convocatoria a subasta de swaps de tasa de interés
+- Reglas para la recompra de valores gubernamentales y swaps de tasas de interés
+- Fe de erratas al comunicado de prensa: "La inflación en octubre de 2008"
+- Nuevo monto máximo para los cheques al portador
+- El Banco de México anuncia el establecimiento de líneas "swap" con la Reserva Federal de Estados Unidos
+- La Secretaría de Hacienda y Crédito Público y el Banco de México anuncian medidas para mejorar el funcionamiento de los mercados financieros nacionales
+- Reunión de banqueros centrales en Santiago de Chile
+- Estadísticas relacionadas con tarjetas bancarias de crédito y débito
+- Presentación del libro del Banco de México: "La Casa Azul de Frida"
+- Resultados de la consulta del artículo IV para 2007 llevada a cabo por el Fondo Monetario Internacional
+- Recepción de billetes marcados por dispositivos antirrobo
+- Cuentas bancarias básicas sin comisiones
+- Reporte del CGFS sobre estabilidad financiera y los mercados de bonos en moneda local
+- La Comisión Permanente aprobó la designación de Roberto del Cueto Legaspi como Subgobernador del Banco de México
+- Nuevo horario para la publicación de indicadores económicos y financieros
+- Problemas para acceder a la página de Banco de México y consultar el anuncio de política monetaria
+- Fe de erratas al comunicado de prensa sobre la inflación de abril de 2007
+- Se establece una "pausa de declaraciones" previa a los comunicados de política monetaria
+- El Banco de México anuncia la venta de dólares al Gobierno Federal y el pago anticipado de Bonos de Regulación Monetaria (BREMS)

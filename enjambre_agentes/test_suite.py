@@ -2,6 +2,12 @@
 test_suite.py — Pruebas unitarias y de integración del Ecosistema Multiagente Comercial.
 """
 import json
+import os
+import tempfile
+
+# El Data Flywheel (HITL aprobado) escribe aquí en lugar de en datasets/ del repo
+os.environ.setdefault("NEMO_FLYWHEEL_BUFFER", os.path.join(tempfile.mkdtemp(prefix="suite_"), "hitl_feedback.jsonl"))
+
 from state import (
     OrchestratorState,
     ProductoDB,

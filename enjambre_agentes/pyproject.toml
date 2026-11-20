@@ -35,6 +35,13 @@ dependencies = [
     "python-multipart>=0.0.34",
 ]
 
+[project.optional-dependencies]
+# Capa declarativa NeMo Guardrails (opcional). Activar con NEMO_GUARDRAILS_ENABLED=true.
+# Instalar: uv sync --extra guardrails
+guardrails = [
+    "nemoguardrails>=0.25.0",
+]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

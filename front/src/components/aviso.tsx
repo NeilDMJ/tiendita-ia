@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useEffect, useRef, type ComponentRef, type Ref } from 'react';
 import {
   AccessibilityInfo,
-  findNodeHandle,
+
   Platform,
   StyleSheet,
   Text,
@@ -16,6 +16,7 @@ import { bordes, color, espacio, iconos, shape, tactil, type } from '@/theme';
 
 import { Boton, type VarianteBoton } from './boton';
 import { Tocable } from './tocable';
+import { nodoAccesible } from '@/utils/nodo-accesible';
 
 export type TipoAviso = 'error' | 'exito' | 'info' | 'sinConexion' | 'tiempo';
 
@@ -114,7 +115,7 @@ export function Aviso({
       AccessibilityInfo.announceForAccessibility(etiquetaLector);
     }
     if (enfocar && ref.current) {
-      const nodo = findNodeHandle(ref.current);
+      const nodo = nodoAccesible(ref.current);
       if (nodo) AccessibilityInfo.setAccessibilityFocus(nodo);
     }
   }, [enfocar, etiquetaLector, urgente]);

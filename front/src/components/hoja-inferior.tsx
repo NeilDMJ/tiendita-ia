@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useEffect, useRef, type ComponentRef, type ReactNode } from 'react';
 import {
   AccessibilityInfo,
-  findNodeHandle,
+
   KeyboardAvoidingView,
   Modal,
   Pressable,
@@ -19,6 +19,7 @@ import type { NombreIcono } from '@/constants';
 import { bordes, color, elevacion, espacio, iconos, medidas, motion, scrim, shape, tactil, type } from '@/theme';
 
 import { Boton } from './boton';
+import { nodoAccesible } from '@/utils/nodo-accesible';
 
 export interface HojaInferiorProps {
   visible: boolean;
@@ -73,7 +74,7 @@ export function HojaInferior({
   useEffect(() => {
     if (!visible || tipo !== 'modal') return;
     const t = setTimeout(() => {
-      const nodo = refTitulo.current ? findNodeHandle(refTitulo.current) : null;
+      const nodo = refTitulo.current ? nodoAccesible(refTitulo.current) : null;
       if (nodo) AccessibilityInfo.setAccessibilityFocus(nodo);
     }, motion.duration.medium4);
     return () => clearTimeout(t);

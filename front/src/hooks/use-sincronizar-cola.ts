@@ -21,7 +21,12 @@ export function useSincronizarCola() {
       let enviadas = 0;
       for (const pendiente of [...cola].reverse()) {
         try {
-          const r = await registrarVenta(pendiente.solicitud);
+          // La venta ya ocurrió sin conexión: el back no la rechaza por existencia (§4.2 del plan de BD).
+          const r = await registrarVenta({
+            ...pendiente.solicitud,
+            ocurrida_en: pendiente.solicitud.ocurrida_en ?? pendiente.creada_en,
+            fuera_de_linea: true,
+          });
           await marcarEnviada(pendiente.solicitud.id_local, r.venta_id);
           enviadas += 1;
         } catch (e) {

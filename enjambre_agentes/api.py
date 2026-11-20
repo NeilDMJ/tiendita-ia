@@ -36,7 +36,9 @@ from graph import (
     resume_orchestration,
     orchestrator_graph,
 )
-from tools_bridge import to_mcp_tool_definitions
+from models import NemoServiceError
+from tools_bridge import to_mcp_tool_definitions, vision_payload_from_image
+from response_formatter import formatear_respuesta, respuesta_json
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -50,6 +52,9 @@ class OrchestrationRequest(BaseModel):
     event_source:   Literal["chat", "vision_api", "ui_copilot", "cron_trigger"] = Field(default="chat")
     vision_payload: Optional[Dict[str, Any]]                                = Field(default=None, description="Payload de la API de Visión Artificial (/catalog-scan, /pos-checkout, /receipt-ocr)")
     ui_state:       Optional[Dict[str, Any]]                                = Field(default=None, description="Estado de la pantalla de la app móvil para el Tutor UI")
+    image_base64:   Optional[str]                                           = Field(default=None, description="Imagen cruda (base64, data URI o URL). Se convierte a vision_payload con NIM Vision antes de entrar al grafo; requiere image_endpoint y se ignora si ya viene vision_payload")
+    image_endpoint: Optional[Literal["/catalog-scan", "/pos-checkout", "/receipt-ocr"]] = Field(default=None, description="Flujo de visión al que pertenece image_base64")
+    image_mime_type: str                                                    = Field(default="image/jpeg", description="MIME de image_base64 cuando no es data URI")
     provider:       Optional[str]                                           = Field(default=None, description="Proveedor LLM: NVIDIA, Gemini, Groq, Ollama (usa variable de entorno si es None)")
     model_name:     Optional[str]                                           = Field(default=None, description="Nombre del modelo específico del proveedor")
 
@@ -134,11 +139,12 @@ app.add_middleware(
 )
 
 # ─── Visión (back/vision): /vision/pos-checkout, /catalog-scan, /receipt-ocr, /salud ──
-_RAIZ_REPO = os.path.dirname(_ROOT)
-if _RAIZ_REPO not in sys.path:
-    sys.path.insert(0, _RAIZ_REPO)
+# back/ no es paquete (back/tests importa `app` como módulo de primer nivel): se agrega back/ al path.
+_DIR_BACK = os.path.join(os.path.dirname(_ROOT), "back")
+if _DIR_BACK not in sys.path:
+    sys.path.insert(0, _DIR_BACK)
 try:
-    from back.vision import router as vision_router
+    from vision import router as vision_router
 
     app.include_router(vision_router)
 except ImportError as _e:  # sin onnxruntime/pillow la API de agentes sigue funcionando
@@ -160,6 +166,28 @@ def _extract_last_message(result: Dict[str, Any]) -> str:
 
 def _resolve_provider(requested: Optional[str]) -> str:
     return requested or os.getenv("DEFAULT_LLM_PROVIDER", "NVIDIA")
+
+
+def _resolve_vision_input(req: OrchestrationRequest) -> tuple[Optional[Dict[str, Any]], str]:
+    """
+    Si la app envió una imagen cruda en lugar de un vision_payload, la convierte con NIM Vision.
+    Devuelve (vision_payload, event_source). La percepción ocurre aquí; el grafo nunca ve píxeles.
+    """
+    if req.vision_payload is not None or not req.image_base64:
+        return req.vision_payload, req.event_source
+    if not req.image_endpoint:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="image_base64 requiere image_endpoint (/catalog-scan, /pos-checkout o /receipt-ocr).",
+        )
+    try:
+        payload = vision_payload_from_image(req.image_base64, req.image_endpoint, req.image_mime_type)
+    except (NemoServiceError, ValueError) as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"NIM Vision no pudo procesar la imagen: {exc}",
+        ) from exc
+    return payload, "vision_api"
 
 
 def _make_serializable(obj: Any) -> Any:
@@ -192,12 +220,13 @@ def orchestrate(req: OrchestrationRequest) -> OrchestrationResponse:
     - Llama luego a `POST /orchestrate/resume` con el `thread_id` para aprobar o rechazar.
     """
     provider = _resolve_provider(req.provider)
+    vision_payload, event_source = _resolve_vision_input(req)
     try:
         result = run_orchestration(
             query=req.query,
             thread_id=req.thread_id,
-            event_source=req.event_source,
-            vision_payload=req.vision_payload,
+            event_source=event_source,
+            vision_payload=vision_payload,
             ui_state=req.ui_state,
             provider=provider,
             model_name=req.model_name,
@@ -208,12 +237,13 @@ def orchestrate(req: OrchestrationRequest) -> OrchestrationResponse:
             detail=f"Error durante la orquestación: {exc}",
         ) from exc
 
+    formateada = formatear_respuesta(result)
     pending = result.get("pending_approval")
     return OrchestrationResponse(
         thread_id=req.thread_id,
         status="awaiting_approval" if pending else "completed",
-        response=_extract_last_message(result),
-        pending_approval=pending,
+        response=formateada["respuesta"],
+        pending_approval=formateada.get("pendiente_aprobacion"),
         strategic_report=result.get("strategic_report"),
         promo_assets=result.get("promo_assets"),
         db_evidence=_make_serializable(result.get("db_evidence", [])),
@@ -249,6 +279,7 @@ def orchestrate_stream(req: OrchestrationRequest) -> StreamingResponse:
     ```
     """
     provider = _resolve_provider(req.provider)
+    vision_payload, event_source = _resolve_vision_input(req)
 
     def _event_generator() -> Generator[str, None, None]:
         final_state: Dict[str, Any] = {}
@@ -256,8 +287,8 @@ def orchestrate_stream(req: OrchestrationRequest) -> StreamingResponse:
             for step in run_orchestration_stream(
                 query=req.query,
                 thread_id=req.thread_id,
-                event_source=req.event_source,
-                vision_payload=req.vision_payload,
+                event_source=event_source,
+                vision_payload=vision_payload,
                 ui_state=req.ui_state,
                 provider=provider,
                 model_name=req.model_name,
@@ -344,7 +375,7 @@ def orchestrate_resume(req: ResumeRequest) -> ResumeResponse:
         thread_id=req.thread_id,
         approved=req.approved,
         status="executed" if req.approved else "cancelled",
-        response=_extract_last_message(result),
+        response=formatear_respuesta(result)["respuesta"],
         db_evidence=_make_serializable(result.get("db_evidence", [])),
         pending_approval=result.get("pending_approval"),
     )

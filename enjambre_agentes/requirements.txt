@@ -22,6 +22,8 @@ tavily-python>=0.5.0
 python-dotenv>=1.0.0
 requests>=2.31.0
 
+# Opcional (NeMo Guardrails): uv sync --extra guardrails  |  pip install "nemoguardrails>=0.25.0"
+
 # API y CLI
 fastapi>=0.115.0
 uvicorn[standard]>=0.30.0

@@ -1,6 +1,8 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { esPagoDigital } from '@/api/esquemas';
+import { METODOS_PAGO } from '@/constants';
 import type { ResumenVenta } from '@/hooks/use-ventas-hoy';
 import { bordes, color, espacio, iconos, medidas, type } from '@/theme';
 import { hora } from '@/utils/fecha';
@@ -16,7 +18,9 @@ export interface FilaVentaProps {
 /** M3 List item de 2 líneas, tocable. "Pendiente de enviar" con icono + texto. */
 export function FilaVenta({ venta, onPress }: FilaVentaProps) {
   const productos = `${venta.productos} ${venta.productos === 1 ? 'producto' : 'productos'}`;
-  const metodo = venta.metodo === 'efectivo' ? 'Efectivo' : 'Pago digital (simulación)';
+  const metodo = esPagoDigital(venta.metodo)
+    ? `${METODOS_PAGO[venta.metodo].nombre} (simulación)`
+    : METODOS_PAGO[venta.metodo].nombre;
   return (
     <Tocable
       onPress={onPress}

@@ -16,6 +16,8 @@ from __future__ import annotations
 import os
 import json
 import re
+import logging
+from datetime import datetime
 from typing import Dict, Any, Generator, Optional, List, Literal
 
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage, AnyMessage
@@ -30,8 +32,16 @@ from state import (
     PendingApprovalModel,
     SupervisorDecision,
 )
-from models import get_llm
-from guards import enforce_db_grounding, validate_strategic_report
+from models import get_llm, get_llm_auto, _FALLBACK_PROVIDER_ORDER
+from guards import (
+    enforce_db_grounding,
+    validate_strategic_report,
+    scan_untrusted_inputs,
+    check_tutor_output,
+    check_cost_exposure,
+    redact_internal_costs,
+    is_public_event_source,
+)
 from few_shot_retriever import FewShotRetriever
 from tools_bridge import (
     parse_vision_catalog_item,
@@ -56,7 +66,41 @@ from tools_bridge import (
 )
 
 
+logger = logging.getLogger(__name__)
+
 retriever = FewShotRetriever()
+
+
+def _guardrail_errors(violations: List[str]) -> List[str]:
+    return [f"guardrail:{v}" for v in violations]
+
+
+def _record_flywheel(
+    state: OrchestratorState,
+    pending: Dict[str, Any],
+    payload_to_execute: Dict[str, Any],
+    edited_payload: Optional[Dict[str, Any]],
+) -> None:
+    """Data Flywheel: guarda la interacción HITL aprobada/corregida para el SFT en NeMo Customizer."""
+    role = state.get("sender") or ""
+    if not role:
+        return
+    candidate = {
+        "event_source": state.get("event_source"),
+        "query": state.get("query"),
+        "vision_payload": state.get("vision_payload"),
+    }
+    entrada = {k: v for k, v in candidate.items() if v}
+    salida = {
+        "action_type": pending.get("action_type"),
+        "summary": pending.get("summary"),
+        "payload": payload_to_execute,
+    }
+    edited = edited_payload is not None and edited_payload != pending.get("payload")
+    try:
+        retriever.record_hitl_feedback(role, entrada, salida, editado=edited)
+    except Exception as exc:  # el flywheel nunca debe romper el HITL
+        logger.warning("No se pudo registrar feedback HITL: %s", exc)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -83,6 +127,18 @@ def supervisor_node(state: OrchestratorState) -> Dict[str, Any]:
             "supervisor_notes": "Límite máximo de 6 iteraciones alcanzado. Finalizando ejecución."
         }
 
+    # Input rails: el contenido no confiable (chat, texto de OCR/visión) entra una sola vez, en la 1.ª pasada
+    if iteration == 1:
+        verdict = scan_untrusted_inputs(state.get("query", "") or "", state.get("vision_payload"))
+        if not verdict.allowed:
+            return {
+                "next_agent": "FIN",
+                "iteration_count": iteration,
+                "supervisor_notes": "Entrada bloqueada por guardrails (posible prompt injection).",
+                "validation_errors": _guardrail_errors(verdict.violations),
+                "messages": [AIMessage(content=verdict.text)],
+            }
+
     # Si hay una mutación pendiente de confirmación humana, derivar a HITL
     pending = state.get("pending_approval")
     if pending and pending.get("requires_confirmation", True):
@@ -92,8 +148,16 @@ def supervisor_node(state: OrchestratorState) -> Dict[str, Any]:
             "supervisor_notes": f"Acción '{pending.get('action_type')}' requiere aprobación del usuario."
         }
 
-    # Si el último nodo fue aprobación HITL o tutor_ui o reporte finalizado
+    # Si el último nodo fue un especialista y no deja mutación pendiente, terminar flujo (evita bucle infinito)
     sender = state.get("sender", "")
+    if sender in ("control", "vendedor", "analista", "investigador", "publicista", "tutor_ui", "aprobacion_hitl"):
+        if not state.get("pending_approval"):
+            return {
+                "next_agent": "FIN",
+                "iteration_count": iteration,
+                "supervisor_notes": f"Respuesta de '{sender}' entregada. Flujo finalizado sin mutación pendiente."
+            }
+        # Si hay pending_approval, dejar que el router siga a aprobacion_hitl (se maneja abajo)
     if sender == "aprobacion_hitl":
         return {
             "next_agent": "FIN",
@@ -137,11 +201,11 @@ def supervisor_node(state: OrchestratorState) -> Dict[str, Any]:
             "supervisor_notes": "Disparo programado (cron) para revisión de caducidades en almacén."
         }
 
-    # Canal CHAT: Enrutamiento semántico con inyección Few-Shot
+    # Canal CHAT: Enrutamiento semántico con LLM (razonamiento real, sin keywords hardcodeadas)
     query = state.get("query", "")
     query_lower = query.lower()
 
-    # Guard fuera_de_alcance: preguntas ajenas al negocio de tienda
+    # Guard fuera_de_alcance: preguntas ajenas al negocio de tienda (guardia rápida)
     _FUERA_ALCANCE_TRIGGERS = [
         "clima", "temperatura", "pronóstico", "pronostico",
         "chiste", "broma", "cuéntame un", "cuentame un",
@@ -159,58 +223,102 @@ def supervisor_node(state: OrchestratorState) -> Dict[str, Any]:
             "messages": [AIMessage(content="Esa consulta está fuera del alcance de mi función como asistente de la tienda. Puedo ayudarte con inventario, precios, ventas y pagos. ¿En qué te ayudo?")]
         }
 
-    # Heurística rápida y robusta para evitar timeouts de red si no hay API key
-    if any(k in query_lower for k in ["flujo de caja", "flujo", "margen", "rentabilidad", "utilidad", "ganancia", "egreso", "balance financiero", "ingresos"]):
-        next_step = "analista"
-        notes = "Consulta de métricas financieras de solo lectura."
-    elif any(k in query_lower for k in ["caducar", "vencer", "lote", "stock minimo", "inventario", "recibo", "factura", "precio", "sube", "cuesta", "stock", "llegaron", "merma", "alta", "dame de alta", "existencia", "catálogo", "catalogo"]):
-        next_step = "control"
-        notes = "Consulta u operación de catálogo, existencias, precios o comprobantes (asistente de tienda)."
-    elif any(k in query_lower for k in ["carrito", "vender", "cobrar", "pos", "checkout", "cross-sell", "recomendar"]):
-        next_step = "vendedor"
-        notes = "Consulta orientada a ventas o cobro en caja."
-    elif any(k in query_lower for k in ["reporte", "sector", "tendencia", "investigar", "mercado", "estrategico"]):
-        next_step = "investigador"
-        notes = "Consulta orientada a análisis e inteligencia de mercado (9 secciones)."
-    elif any(k in query_lower for k in ["video", "promo", "campana", "publicidad", "descuento"]):
-        next_step = "publicista"
-        notes = "Generación de video vertical y campaña promocional."
-    elif any(k in query_lower for k in ["pago", "spei", "tarjeta", "clabe", "qr", "boton", "pantalla"]):
-        next_step = "tutor_ui"
-        notes = "Asistencia sobre pasarelas de pago e interfaz móvil."
-    else:
-        # Fallback a LLM con Few-Shot retriever
-        provider = state.get("provider", os.getenv("DEFAULT_LLM_PROVIDER", "NVIDIA"))
-        model_name = state.get("model_name")
-        few_shots = retriever.format_few_shots_for_prompt("orquestador", query)
+    # Enrutamiento con LLM: razona sobre la intención del usuario y delega al agente idóneo
+    provider = state.get("provider", os.getenv("DEFAULT_LLM_PROVIDER", "Ollama"))
+    model_name = state.get("model_name")
+    few_shots = retriever.format_few_shots_for_prompt("orquestador", query)
 
+    sys_msg = (
+        "Eres el Supervisor Maestro del Ecosistema Multiagente Comercial.\n"
+        "Tu función es analizar la solicitud del usuario y decidir si delegar a un especialista o responder directamente.\n\n"
+        "Agentes disponibles y sus responsabilidades:\n"
+        "- 'control': Inventario, existencias, precios, caducidades, alta de productos, lecturas de facturas/tickets.\n"
+        "- 'vendedor': Armado de carritos POS, venta cruzada y cobro en caja.\n"
+        "- 'analista': Flujo de caja, egresos, ingresos, márgenes de ganancia (solo lectura).\n"
+        "- 'investigador': Inteligencia de mercado, clientes, reporte estratégico de 9 secciones.\n"
+        "- 'publicista': Promociones comerciales, video 9:16 y copys persuasivos.\n"
+        "- 'tutor_ui': Ayuda técnica con botones, errores o pagos en la app móvil.\n"
+        "- 'FIN': Si la solicitud no corresponde a ningún agente de la tienda o ya fue resuelta.\n\n"
+        f"{few_shots}\n"
+        "Responde ÚNICAMENTE en JSON con la clave: {\"next_step\": \"<agente>\", \"reasoning\": \"<motivo>\"}\n"
+        "Si la consulta no tiene relación con la tienda (ej. clima, chistes, recetas, política), usa 'FIN' y explica brevemente."
+    )
+    messages_llm = [SystemMessage(content=sys_msg), HumanMessage(content=query)]
+
+    # Intentar cada proveedor en orden hasta que uno responda correctamente
+    provider_order = [provider] if provider else list(_FALLBACK_PROVIDER_ORDER)
+    llm_response = None
+    last_err = None
+    used_provider = provider
+    for prov in provider_order:
         try:
-            llm = get_llm(provider=provider, model_name=model_name, temperature=0.0)
-            sys_msg = (
-                "Eres el Supervisor Maestro del Ecosistema Multiagente Comercial.\n"
-                "Tu función es analizar la solicitud y delegar al especialista idóneo:\n"
-                "- 'control': Inventario, caducidades, alta de productos o lectura de facturas/tickets.\n"
-                "- 'vendedor': Armado de carritos POS, venta cruzada y cobro.\n"
-                "- 'analista': Flujo de caja, egresos, ingresos y márgenes de ganancia (solo lectura).\n"
-                "- 'investigador': Inteligencia de mercado, clientes y reporte de 9 secciones.\n"
-                "- 'publicista': Promociones comerciales, video 9:16 y copys persuasivos.\n"
-                "- 'tutor_ui': Ayuda técnica con botones, errores o pagos en la app móvil.\n"
-                "- 'FIN': Si la solicitud ya fue completamente resuelta.\n\n"
-                f"{few_shots}\n"
-                "Responde ÚNICAMENTE en JSON con la clave: {\"next_step\": \"<agente>\", \"reasoning\": \"<motivo>\"}"
+            candidate_llm = get_llm(
+                provider=prov,
+                model_name=model_name,
+                temperature=0.0,
+                role="supervisor",
             )
-            response = llm.invoke([SystemMessage(content=sys_msg), HumanMessage(content=query)])
-            data = json.loads(re.search(r"\{.*\}", response.content, re.DOTALL).group(0))
-            next_step = data.get("next_step", "analista")
-            notes = data.get("reasoning", "Enrutamiento generado por LLM.")
+            llm_response = candidate_llm.invoke(messages_llm)
+            used_provider = prov
+            break
+        except Exception as exc:
+            last_err = exc
+            logger.warning(f"Proveedor LLM '{prov}' falló al enrutar ({exc}); probando siguiente...")
+
+    if llm_response is None:
+        # Ningún LLM disponible: responder que no se puede procesar
+        return {
+            "next_agent": "FIN",
+            "iteration_count": iteration,
+            "supervisor_notes": f"No hay proveedor LLM disponible para enrutar ({last_err}).",
+            "messages": [AIMessage(content="Lo siento, no hay ningún modelo de lenguaje disponible para procesar tu consulta. Configura al menos un proveedor (Ollama, NVIDIA, Gemini, Cohere).")]
+        }
+
+    try:
+        data = json.loads(re.search(r"\{.*\}", llm_response.content, re.DOTALL).group(0))
+        next_step = data.get("next_step", "FIN")
+        _reasoning = data.get("reasoning", "")
+    except Exception:
+        next_step = "FIN"
+        _reasoning = ""
+
+    # Validar que next_step sea un agente válido o FIN
+    valid_next = {"control", "vendedor", "analista", "investigador", "publicista", "tutor_ui", "FIN"}
+    if next_step not in valid_next:
+        next_step = "FIN"
+
+    # Si el LLM decide FIN, generar una respuesta natural en español (no devolver reasoning técnico)
+    if next_step == "FIN":
+        try:
+            resp_natural = candidate_llm.invoke([
+                SystemMessage(content=(
+                    "Eres el asistente de una tienda de abarrotes (tiendita). "
+                    "El usuario escribió algo que no corresponde a una acción de inventario, ventas, pagos o reportes. "
+                    "Responde de forma natural, amable y breve en español mexicano. "
+                    "Dile amablemente en qué puedes ayudarle: consultar existencias, cambiar precios, "
+                    "ajustar stock, dar de alta productos, consultar flujo de caja, generar reportes o "
+                    "asistir con pagos digitales. No uses JSON, no listes herramientas, solo habla como un asistente útil."
+                )),
+                HumanMessage(content=query),
+            ])
+            msg_natural = resp_natural.content.strip()
         except Exception:
-            next_step = "analista"
-            notes = "Enrutamiento fallback a Analista."
+            msg_natural = (
+                "No entiendo bien tu solicitud. Puedo ayudarte con tu tienda: "
+                "consultar existencias, cambiar precios, ajustar stock, dar de alta productos, "
+                "ver el flujo de caja o generar reportes. ¿En qué te ayudo?"
+            )
+        return {
+            "next_agent": "FIN",
+            "iteration_count": iteration,
+            "supervisor_notes": f"Consulta resuelta directamente por el supervisor: {_reasoning[:80] if _reasoning else 'sin agente'}",
+            "messages": [AIMessage(content=msg_natural)]
+        }
 
     return {
         "next_agent": next_step,
         "iteration_count": iteration,
-        "supervisor_notes": notes
+        "supervisor_notes": _reasoning if _reasoning else "Enrutamiento generado por LLM."
     }
 
 
@@ -271,116 +379,191 @@ def control_node(state: OrchestratorState) -> Dict[str, Any]:
         )
 
     else:
-        q_lower = query.lower()
-        # 1. Operación de precio: "Sube la Coca a $22", "Cambia el precio de...", "Ponle $30 a..."
-        if any(w in q_lower for w in ["precio", "sube", "cuesta", "ponle"]):
-            montos = re.findall(r"\$?\s*([0-9]+(?:\.[0-9]+)?)", query)
-            prod = None
-            for p in mock_db.productos.values():
-                if p["nombre"].lower() in q_lower or any(a in q_lower for a in p.get("alias", [])):
-                    prod = p
+        # ── RAZONAMIENTO DEL LLM: decide qué hacer con la consulta ──
+        # Construir catálogo resumido para el LLM
+        catalogo_lines = []
+        for p in mock_db.productos.values():
+            alias_str = ", ".join(p.get("alias", []))
+            catalogo_lines.append(
+                f"- {p['nombre']} (SKU: {p['sku']}, ${p['precio_venta']}, stock: {p['stock_actual']}, alias: {alias_str})"
+            )
+        catalogo_texto = "\n".join(catalogo_lines)
+
+        # Lotes próximos a vencer
+        hoy = datetime.now()
+        lotes_criticos = []
+        for lote in mock_db.lotes_inventario.values():
+            try:
+                f_cad = datetime.strptime(lote["fecha_caducidad"], "%Y-%m-%d")
+                dias = (f_cad - hoy).days
+                if dias <= 7 and lote["cantidad"] > 0:
+                    prod = mock_db.productos.get(lote["producto_id"], {})
+                    lotes_criticos.append(f"{prod.get('nombre', 'N/A')} vence en {dias} días")
+            except Exception:
+                pass
+        lotes_texto = "\n".join(lotes_criticos) if lotes_criticos else "Ningún lote próximo a vencer."
+
+        sys_msg = (
+            "Eres el Agente de Control de Inventario de una tienda de abarrotes.\n"
+            "Tu trabajo es entender lo que el usuario pide y decidir una acción.\n\n"
+            "CATÁLOGO DISPONIBLE:\n"
+            f"{catalogo_texto}\n\n"
+            "LOTES PRÓXIMOS A VENCER:\n"
+            f"{lotes_texto}\n\n"
+            "ACCIONES POSIBLES:\n"
+            "1. 'consultar' - El usuario pregunta por existencia, precio o stock de un producto.\n"
+            "2. 'actualizar_precio' - El usuario quiere cambiar el precio de un producto (requiere monto).\n"
+            "3. 'ajustar_stock' - El usuario reporta llegada, merma o salida de stock (requiere cantidad y tipo).\n"
+            "4. 'crear_producto' - El usuario quiere dar de alta un producto nuevo (requiere nombre, precio, stock).\n"
+            "5. 'responder_directo' - La consulta no requiere herramientas, responde tú mismo.\n"
+            "6. 'no_entendido' - No se entiende qué pide el usuario.\n\n"
+            "Responde ÚNICAMENTE en JSON con estas claves:\n"
+            "  {\"action\": \"<una de las 6 acciones>\", \"producto\": \"<nombre o alias o null>\", "
+            "\"precio\": <numero o null>, \"cantidad\": <numero o null>, "
+            "\"tipo\": \"<entrada|salida|merma o null>\", \"respuesta\": \"<texto para el usuario>\"}\n"
+            "Si la acción es 'consultar', 'actualizar_precio', 'ajustar_stock' o 'crear_producto', "
+            "rellena producto y los demás campos según corresponda. Si es 'responder_directo' o 'no_entendido', "
+            "rellena 'respuesta' con tu mensaje. Sé breve y habla en español mexicano."
+        )
+
+        provider = state.get("provider", os.getenv("DEFAULT_LLM_PROVIDER", "Ollama"))
+        model_name = state.get("model_name")
+
+        llm_decision = None
+        last_err = None
+        provider_order = [provider] if provider else list(_FALLBACK_PROVIDER_ORDER)
+        for prov in provider_order:
+            try:
+                llm = get_llm(
+                    provider=prov,
+                    model_name=model_name,
+                    temperature=0.1,
+                    role="control",
+                )
+                resp = llm.invoke([SystemMessage(content=sys_msg), HumanMessage(content=query)])
+                txt = resp.content
+                m = re.search(r"\{.*\}", txt, re.DOTALL)
+                if m:
+                    llm_decision = json.loads(m.group(0))
                     break
-            if prod and montos:
-                new_p = float(montos[-1])
-                raw_res = actualizar_precio.invoke({"nombre": prod["nombre"], "precio": new_p})
-                res_dict = json.loads(raw_res)
-                db_evidence_accum.append(res_dict)
-                pending = {
-                    "action_type": "inventory_mutation",
-                    "summary": res_dict.get("respuesta", f"Actualización de precio de {prod['nombre']} a ${new_p:,.2f}"),
-                    "payload": {"tool": "actualizar_precio", "args": {"nombre": prod["nombre"], "precio": new_p}},
-                    "requires_confirmation": True
-                }
-                msg = res_dict.get("respuesta")
-            elif not prod and montos:
-                pending = None
-                msg = "¿A qué producto le cambio el precio?"
-            elif prod and not montos:
-                pending = None
-                msg = f"¿A cuánto quieres dejar {prod['nombre']}?"
-            else:
-                pending = None
-                msg = "¿A qué producto le cambio el precio y cuál es el precio nuevo?"
+            except Exception as exc:
+                last_err = exc
+                logger.warning(f"Control LLM '{prov}' falló ({exc}); probando siguiente...")
 
-        # 2. Operación de stock: "Llegaron 5 de Bimbo", "Se echaron a perder 2 de Coca", "Descuenta 3 de..."
-        elif any(w in q_lower for w in ["llegaron", "entregaron", "merma", "echaron a perder", "descuenta", "quitar", "tira"]):
-            cantidades = [int(n) for n in re.findall(r"\b[0-9]+\b", query)]
-            tipo = "entrada"
-            if any(w in q_lower for w in ["merma", "echaron", "caducaron", "tira"]):
-                tipo = "merma"
-            elif any(w in q_lower for w in ["descuenta", "lleve", "regale", "salida"]):
-                tipo = "salida"
-
-            prod = None
-            for p in mock_db.productos.values():
-                if p["nombre"].lower() in q_lower or any(a in q_lower for a in p.get("alias", [])):
-                    prod = p
-                    break
-
-            if prod and cantidades:
-                cant = cantidades[0]
-                raw_res = ajustar_stock.invoke({"nombre": prod["nombre"], "cantidad": cant, "tipo": tipo})
-                res_dict = json.loads(raw_res)
-                db_evidence_accum.append(res_dict)
-                pending = {
-                    "action_type": "inventory_mutation",
-                    "summary": res_dict.get("respuesta", f"Ajuste de existencias de {prod['nombre']} ({tipo}): {cant} piezas."),
-                    "payload": {"tool": "ajustar_stock", "args": {"nombre": prod["nombre"], "cantidad": cant, "tipo": tipo}},
-                    "requires_confirmation": True
-                }
-                msg = res_dict.get("respuesta")
-            else:
-                pending = None
-                msg = "¿De qué producto y cuántas piezas llegaron o se ajustarán?"
-
-        # 3. Consulta de catálogo / existencias: "¿Cuánto me queda de Coca?", "¿Qué productos tengo?"
-        elif any(w in q_lower for w in ["cuanto hay", "cuánto hay", "cuántos me quedan", "cuantos me quedan", "stock de", "existencias", "qué vendo", "inventario", "catálogo", "catalogo", "lista de productos"]):
-            prod = None
-            for p in mock_db.productos.values():
-                if p["nombre"].lower() in q_lower or any(a in q_lower for a in p.get("alias", [])):
-                    prod = p
-                    break
-            raw_res = consultar_inventario.invoke({"nombre": prod["nombre"] if prod else None})
-            res_dict = json.loads(raw_res)
-            db_evidence_accum.append(res_dict)
-            pending = None
-            msg = res_dict.get("respuesta")
-
-        # 4. Alta de nuevo producto: "Dame de alta Mazapán a $10, 20 piezas"
-        elif any(w in q_lower for w in ["alta", "nuevo producto", "agrega", "registra", "guarda"]):
-            montos = [float(x) for x in re.findall(r"\$?\s*([0-9]+(?:\.[0-9]+)?)", query)]
-            nombre = "Nuevo Producto"
-            m = re.search(r"(?:alta|agrega|registra|guarda)\s+([a-zA-Z0-9\s]+?)(?:,|\sen\s|\sa\s|\$|\stengo)", query, re.IGNORECASE)
-            if m:
-                nombre = m.group(1).strip()
-
-            precio = montos[0] if montos else 15.0
-            stock = int(montos[1]) if len(montos) > 1 else 10
-
-            raw_res = crear_producto.invoke({"nombre": nombre, "precio": precio, "stock": stock})
-            res_dict = json.loads(raw_res)
-            db_evidence_accum.append(res_dict)
-            pending = {
-                "action_type": "inventory_mutation",
-                "summary": res_dict.get("respuesta"),
-                "payload": {"tool": "crear_producto", "args": {"nombre": nombre, "precio": precio, "stock": stock}},
-                "requires_confirmation": True
-            }
-            msg = res_dict.get("respuesta")
-
-        else:
-            # Consulta general de caducidades y stock crítico
-            raw_res = query_expiring_products.invoke({"dias_horizonte": 3})
-            res_dict = json.loads(raw_res)
-            db_evidence_accum.append(res_dict)
-
-            cad = res_dict.get("productos_por_caducar", [])
-            bajo_stock = res_dict.get("productos_bajo_stock_minimo", [])
+        if llm_decision is None:
             pending = None
             msg = (
-                f"Auditoría de inventario: {len(cad)} lotes próximos a vencer a 72h "
-                f"y {len(bajo_stock)} productos con stock crítico."
+                "No pude procesar tu solicitud de inventario ahora mismo. "
+                "Intenta de nuevo con una pregunta clara como: "
+                "'¿Cuánto me queda de la Coca?' o 'Sube la leche a $31.50'."
             )
+        else:
+            action = llm_decision.get("action", "no_entendido")
+            producto = llm_decision.get("producto")
+            precio = llm_decision.get("precio")
+            cantidad = llm_decision.get("cantidad")
+            tipo = llm_decision.get("tipo")
+            respuesta_llm = llm_decision.get("respuesta", "")
+
+            if action == "consultar":
+                prod = None
+                if producto:
+                    for p in mock_db.productos.values():
+                        if (producto.lower() in p["nombre"].lower()
+                                or any(producto.lower() in a.lower() for a in p.get("alias", []))):
+                            prod = p
+                            break
+                if prod:
+                    raw_res = consultar_inventario.invoke({"nombre": prod["nombre"]})
+                    res_dict = json.loads(raw_res)
+                    db_evidence_accum.append(res_dict)
+                    msg = res_dict.get("respuesta", respuesta_llm)
+                else:
+                    msg = (
+                        f"No encontré el producto '{producto}' en el catálogo. "
+                        f"¿De qué producto quieres saber?"
+                    )
+                pending = None
+
+            elif action == "actualizar_precio":
+                prod = None
+                if producto:
+                    for p in mock_db.productos.values():
+                        if (producto.lower() in p["nombre"].lower()
+                                or any(producto.lower() in a.lower() for a in p.get("alias", []))):
+                            prod = p
+                            break
+                if prod and precio is not None:
+                    raw_res = actualizar_precio.invoke({"nombre": prod["nombre"], "precio": float(precio)})
+                    res_dict = json.loads(raw_res)
+                    db_evidence_accum.append(res_dict)
+                    pending = {
+                        "action_type": "inventory_mutation",
+                        "summary": res_dict.get("respuesta", f"Actualización de precio de {prod['nombre']} a ${float(precio):,.2f}"),
+                        "payload": {"tool": "actualizar_precio", "args": {"nombre": prod["nombre"], "precio": float(precio)}},
+                        "requires_confirmation": True
+                    }
+                    msg = res_dict.get("respuesta")
+                elif prod and not precio:
+                    pending = None
+                    msg = f"¿A cuánto quieres dejar {prod['nombre']}?"
+                elif not prod and precio is not None:
+                    pending = None
+                    msg = "¿A qué producto le cambio el precio?"
+                else:
+                    pending = None
+                    msg = respuesta_llm or "¿A qué producto le cambio el precio y cuál es el precio nuevo?"
+
+            elif action == "ajustar_stock":
+                prod = None
+                if producto:
+                    for p in mock_db.productos.values():
+                        if (producto.lower() in p["nombre"].lower()
+                                or any(producto.lower() in a.lower() for a in p.get("alias", []))):
+                            prod = p
+                            break
+                if prod and cantidad is not None and tipo:
+                    raw_res = ajustar_stock.invoke({"nombre": prod["nombre"], "cantidad": int(cantidad), "tipo": tipo})
+                    res_dict = json.loads(raw_res)
+                    db_evidence_accum.append(res_dict)
+                    pending = {
+                        "action_type": "inventory_mutation",
+                        "summary": res_dict.get("respuesta", f"Ajuste de {prod['nombre']} ({tipo}): {int(cantidad)} piezas."),
+                        "payload": {"tool": "ajustar_stock", "args": {"nombre": prod["nombre"], "cantidad": int(cantidad), "tipo": tipo}},
+                        "requires_confirmation": True
+                    }
+                    msg = res_dict.get("respuesta")
+                else:
+                    pending = None
+                    msg = respuesta_llm or "¿De qué producto y cuántas piezas llegaron o se ajustarán?"
+
+            elif action == "crear_producto":
+                if producto and precio is not None:
+                    stock_val = int(cantidad) if cantidad is not None else 0
+                    raw_res = crear_producto.invoke({"nombre": producto, "precio": float(precio), "stock": stock_val})
+                    res_dict = json.loads(raw_res)
+                    db_evidence_accum.append(res_dict)
+                    pending = {
+                        "action_type": "inventory_mutation",
+                        "summary": res_dict.get("respuesta"),
+                        "payload": {"tool": "crear_producto", "args": {"nombre": producto, "precio": float(precio), "stock": stock_val}},
+                        "requires_confirmation": True
+                    }
+                    msg = res_dict.get("respuesta")
+                else:
+                    pending = None
+                    msg = respuesta_llm or "Para dar de alta un producto necesito su nombre, precio y stock inicial."
+
+            elif action == "responder_directo":
+                pending = None
+                msg = respuesta_llm or "¿En qué puedo ayudarte con tu inventario?"
+
+            else:  # no_entendido o cualquier otro
+                pending = None
+                msg = respuesta_llm or (
+                    "No entendí tu solicitud. Puedo ayudarte a consultar existencias, "
+                    "cambiar precios, ajustar stock o dar de alta productos. ¿En qué te ayudo?"
+                )
 
     # Validación determinista de Grounding
     grounded, errors = enforce_db_grounding(msg, db_evidence_accum)
@@ -433,6 +616,10 @@ def vendedor_node(state: OrchestratorState) -> Dict[str, Any]:
     summary = f"Cobro de {len(cart_data.get('items', []))} productos por un total de ${total_cobro:,.2f}."
     msg = f"Carrito armado exitosamente. Total a cobrar: ${total_cobro:,.2f}.{rec_text} ¿Confirmar pago y descontar existencias?"
 
+    event_source = state.get("event_source", "chat")
+    rail = check_cost_exposure("vendedor", msg, event_source, db_evidence_accum)
+    msg = rail.text
+
     pending = {
         "action_type": "sale_transaction",
         "summary": summary,
@@ -450,9 +637,9 @@ def vendedor_node(state: OrchestratorState) -> Dict[str, Any]:
     return {
         "sender": "vendedor",
         "messages": [AIMessage(content=msg)],
-        "db_evidence": db_evidence_accum,
+        "db_evidence": redact_internal_costs(db_evidence_accum) if is_public_event_source(event_source) else db_evidence_accum,
         "pending_approval": pending,
-        "validation_errors": errors if not grounded else [],
+        "validation_errors": _guardrail_errors(rail.violations) + (errors if not grounded else []),
         "next_agent": "supervisor"
     }
 
@@ -490,14 +677,19 @@ def analista_node(state: OrchestratorState) -> Dict[str, Any]:
         f"- Producto de mayor margen: {top_margen_sku} ({top_margen_pct}% de margen bruto)."
     )
 
-    # Validar grounding determinista (con reintento controlado si fallase)
+    # Output rail: sin costos/márgenes de proveedor en interacciones públicas de mostrador
+    event_source = state.get("event_source", "chat")
+    rail = check_cost_exposure("analista", msg, event_source, db_evidence_accum)
+    msg = rail.text
+
+    # Validar grounding determinista (barrera final, sobre el texto ya depurado)
     grounded, errors = enforce_db_grounding(msg, db_evidence_accum)
 
     return {
         "sender": "analista",
         "messages": [AIMessage(content=msg)],
-        "db_evidence": db_evidence_accum,
-        "validation_errors": errors if not grounded else [],
+        "db_evidence": redact_internal_costs(db_evidence_accum) if is_public_event_source(event_source) else db_evidence_accum,
+        "validation_errors": _guardrail_errors(rail.violations) + (errors if not grounded else []),
         "next_agent": "supervisor"
     }
 
@@ -644,9 +836,13 @@ def tutor_ui_node(state: OrchestratorState) -> Dict[str, Any]:
     sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", msg) if s.strip()]
     final_msg = " ".join(sentences[:2])
 
+    # Output rail: ≤ 2 oraciones y solo botones/campos presentes en ui_state
+    rail = check_tutor_output(final_msg, ui_state)
+
     return {
         "sender": "tutor_ui",
-        "messages": [AIMessage(content=final_msg)],
+        "messages": [AIMessage(content=rail.text)],
+        "validation_errors": _guardrail_errors(rail.violations),
         "next_agent": "supervisor"
     }
 
@@ -695,22 +891,33 @@ def aprobacion_hitl_node(state: OrchestratorState) -> Dict[str, Any]:
     if approved:
         if action_type == "inventory_mutation":
             res = commit_inventory_mutation.invoke({"mutation_payload": payload_to_execute})
-            msg = f"Mutación de inventario confirmada y ejecutada: {res}"
-            evidence_update.append(json.loads(res))
+            res_dict = json.loads(res)
+            tabla = res_dict.get("tabla", "inventario")
+            mensaje = res_dict.get("mensaje", "ejecutada exitosamente")
+            msg = f"✅ {mensaje}"
         elif action_type == "sale_transaction":
             res = commit_sale_transaction.invoke({"cart_payload": payload_to_execute})
-            msg = f"Venta confirmada y registrada en BD: {res}"
-            evidence_update.append(json.loads(res))
+            res_dict = json.loads(res)
+            venta_id = res_dict.get("venta_id", "N/A")
+            total = res_dict.get("total_cobrado", 0)
+            metodo = res_dict.get("metodo_pago", "efectivo")
+            msg = (
+                f"✅ Venta #{venta_id} confirmada y registrada. "
+                f"Total cobrado: ${total:,.2f} ({metodo}). Stock descontado exitosamente."
+            )
         elif action_type == "promo_campaign":
             res = generate_promo_video_job.invoke({
                 "producto": payload_to_execute.get("producto", "General"),
                 "descuento": payload_to_execute.get("descuento", "15%"),
                 "video_prompt": payload_to_execute.get("video_prompt", "")
             })
-            msg = f"Campaña promocional aprobada y activada: {res}"
-            evidence_update.append(json.loads(res))
+            res_dict = json.loads(res)
+            campana_id = res_dict.get("campana_id", "N/A")
+            msg = f"✅ Campaña promocional #{campana_id} activada y lista para compartir."
         else:
-            msg = f"Acción '{action_type}' aprobada exitosamente."
+            msg = f"✅ Acción '{action_type}' aprobada y ejecutada exitosamente."
+
+        _record_flywheel(state, pending, payload_to_execute, edited_payload)
 
         return {
             "sender": "aprobacion_hitl",
