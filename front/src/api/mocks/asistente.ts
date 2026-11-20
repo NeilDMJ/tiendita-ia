@@ -15,6 +15,7 @@ import type {
   Producto,
   SolicitudAsistente,
 } from '../esquemas';
+import { mockRespuestaBanco } from './banco';
 import { esperarCancelable } from './index';
 import {
   exigirConexion,
@@ -323,7 +324,7 @@ export async function mockRespuestaAsistente(
   const respuesta =
     solicitud.contexto?.pantalla === 'revision_cobro'
       ? respuestaCaja(solicitud.texto, solicitud.contexto)
-      : respuestaPestana(solicitud.texto);
+      : (mockRespuestaBanco(solicitud.texto) ?? respuestaPestana(solicitud.texto));
   respondidas.set(solicitud.id_mensaje, respuesta);
   return respuesta;
 }

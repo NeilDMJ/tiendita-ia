@@ -1,0 +1,37 @@
+# Rails Colang 1.0 del enjambre de agentes.
+# Cada flujo llama a una acción de Python (guards.py) que contiene la regla determinista;
+# aquí solo se declara CUÁNDO se aplica y qué ocurre al violarla.
+# Contexto disponible para las acciones: event_source, ui_state, db_evidence y rol del agente.
+
+# ── INPUT RAIL: prompt injection en chat o en texto extraído por OCR/visión ─────────────────
+
+define bot refuse prompt injection
+  "Detecté instrucciones sospechosas dentro del contenido recibido y lo bloqueé. Envía solo datos de la tienda."
+
+define subflow check prompt injection
+  $clean = execute check_prompt_injection(text=$user_message)
+  if not $clean
+    bot refuse prompt injection
+    stop
+
+# ── OUTPUT RAIL: Tutor UI (máx. 2 oraciones, solo botones/campos visibles en ui_state) ──────
+
+define bot refuse tutor output
+  "La guía del tutor incumple las reglas de la interfaz (máximo 2 oraciones y solo elementos visibles)."
+
+define subflow check tutor output
+  $ok = execute check_tutor_output(text=$bot_message)
+  if not $ok
+    bot refuse tutor output
+    stop
+
+# ── OUTPUT RAIL: costos internos de proveedor en interacciones públicas de mostrador ────────
+
+define bot refuse cost exposure
+  "Esa información es de uso interno del negocio y no se muestra en mostrador."
+
+define subflow check cost exposure
+  $ok = execute check_cost_exposure(text=$bot_message)
+  if not $ok
+    bot refuse cost exposure
+    stop

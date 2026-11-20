@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn, useReducedMotion } from 'react-native-reanimated';
 
-import type { RolAsistente } from '@/api/esquemas';
+import type { PasoGuia, RolAsistente } from '@/api/esquemas';
 import { Boton } from '@/components/boton';
 import { datosRol } from '@/constants';
 import { motivoFallo, type MensajeChat } from '@/estado/chat';
@@ -19,6 +19,40 @@ export function CabeceraRol({ rol }: { rol: RolAsistente }) {
     <View style={estilos.cabecera} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
       <MaterialCommunityIcons name={r.icono} size={iconos.linea} color={color.onSurfaceVariant} />
       <Text style={estilos.nombreRol}>{r.nombre}</Text>
+    </View>
+  );
+}
+
+/** Pasos de una guía bancaria: numerados, con el nombre de la pantalla y los avisos de seguridad. */
+function GuiaPasos({
+  pasos,
+  advertencias,
+  verificada,
+}: {
+  pasos: PasoGuia[];
+  advertencias?: string[];
+  verificada?: boolean;
+}) {
+  return (
+    <View style={estilos.guia}>
+      <Text style={estilos.guiaEstado}>
+        {verificada ? 'Guía verificada' : 'Pasos generales: tu app puede verse distinta'}
+      </Text>
+      {pasos.map((p) => (
+        <View key={p.n} style={estilos.paso} accessible accessibilityLabel={`Paso ${p.n}. ${p.texto}`}>
+          <Text style={estilos.pasoNumero}>{p.n}</Text>
+          <View style={estilos.pasoCuerpo}>
+            <Text style={estilos.pasoTexto}>{p.texto}</Text>
+            {p.pantalla ? <Text style={estilos.pasoPantalla}>Pantalla: {p.pantalla}</Text> : null}
+          </View>
+        </View>
+      ))}
+      {(advertencias ?? []).map((a) => (
+        <View key={a} style={estilos.aviso} accessible accessibilityLabel={`Aviso de seguridad. ${a}`}>
+          <MaterialCommunityIcons name="shield-alert-outline" size={iconos.linea} color={color.onSurfaceVariant} />
+          <Text style={estilos.avisoTexto}>{a}</Text>
+        </View>
+      ))}
     </View>
   );
 }
@@ -69,6 +103,9 @@ export function BurbujaMensaje({
       >
         <Text style={[estilos.texto, esTendero ? estilos.textoTendero : estilos.textoAsistente]}>{texto}</Text>
       </View>
+      {!esTendero && mensaje.pasos?.length ? (
+        <GuiaPasos pasos={mensaje.pasos} advertencias={mensaje.advertencias} verificada={mensaje.guia_verificada} />
+      ) : null}
       <Text
         style={[estilos.hora, esTendero && estilos.horaDerecha]}
         accessibilityElementsHidden
@@ -141,4 +178,13 @@ const estilos = StyleSheet.create({
   textoFallo: { ...type.labelLarge, color: color.error, flexShrink: 1 },
   accionesFallo: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-end', gap: tactil.separacion },
   botonDerecha: { alignSelf: 'flex-end' },
+  guia: { gap: espacio.s, alignSelf: 'stretch', backgroundColor: color.surfaceContainerLow, borderRadius: shape.large, padding: espacio.l },
+  guiaEstado: { ...type.labelLarge, color: color.onSurfaceVariant },
+  paso: { flexDirection: 'row', gap: espacio.m, alignItems: 'flex-start' },
+  pasoNumero: { ...type.titleSmall, color: color.onPrimaryContainer, backgroundColor: color.primaryContainer, borderRadius: shape.full, minWidth: 28, textAlign: 'center', paddingVertical: 2 },
+  pasoCuerpo: { flex: 1, gap: 2 },
+  pasoTexto: { ...type.bodyLarge, color: color.onSurface },
+  pasoPantalla: { ...type.labelLarge, color: color.onSurfaceVariant },
+  aviso: { flexDirection: 'row', gap: espacio.s, alignItems: 'flex-start' },
+  avisoTexto: { ...type.bodyLarge, color: color.onSurfaceVariant, flex: 1 },
 });

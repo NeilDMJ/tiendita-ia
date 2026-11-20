@@ -1,0 +1,45 @@
+{
+  "tarea": "clasificación de imágenes (un producto por foto)",
+  "sesiones": {
+    "s1": "train",
+    "s3": "train",
+    "s2": "test"
+  },
+  "validacion": "último 20% de cada video de las sesiones de train; 44 cuadros descartados como hueco (4 por video); 0 fotos de val quitadas por ser casi iguales a una de train",
+  "imagenes_por_conjunto": {
+    "train": 795,
+    "val": 208,
+    "test": 801
+  },
+  "imagenes_por_clase": {
+    "train": {
+      "agua_1l": 188,
+      "agua_bonafont": 133,
+      "agua_members_mark": 162,
+      "coca_cola": 93,
+      "doritos": 116,
+      "chokis": 93,
+      "fondo": 10
+    },
+    "val": {
+      "agua_1l": 48,
+      "agua_bonafont": 35,
+      "agua_members_mark": 43,
+      "coca_cola": 24,
+      "doritos": 31,
+      "chokis": 24,
+      "fondo": 3
+    },
+    "test": {
+      "agua_1l": 117,
+      "agua_bonafont": 110,
+      "agua_members_mark": 118,
+      "coca_cola": 95,
+      "doritos": 241,
+      "chokis": 120,
+      "fondo": 0
+    }
+  },
+  "duplicados_entre_conjuntos": 0,
+  "origen": "cuadros extraídos de videos grabados por el equipo (preparar_videos.py)"
+}

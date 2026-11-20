@@ -5,7 +5,7 @@
  * Al servidor solo se manda un historial resumido (12 turnos, sin tarjetas).
  */
 import type { TipoError } from '@/api/cliente';
-import type { AccionAsistente, RolAsistente, TurnoHistorial } from '@/api/esquemas';
+import type { AccionAsistente, PasoGuia, RolAsistente, TurnoHistorial } from '@/api/esquemas';
 import type { EstadoTarjeta } from '@/components/tarjeta-accion';
 import { CHAT, ROLES } from '@/constants';
 
@@ -50,6 +50,12 @@ export type MensajeDelAsistente = {
   no_resuelto?: boolean;
   sugerencias?: string[];
   acciones?: AccionChat[];
+  /** Guía bancaria (rol 'banco'): pasos y avisos vienen siempre de guías verificadas, nunca del modelo. */
+  pasos?: PasoGuia[];
+  advertencias?: string[];
+  guia_verificada?: boolean;
+  banco?: string;
+  operacion?: string;
 };
 
 export type MensajeChat = MensajeTendero | MensajeDelAsistente;
@@ -166,7 +172,7 @@ export function historialParaServidor(mensajes: MensajeChat[], hastaId: string):
     .slice(-CHAT.maxHistorial)
     .map((m) =>
       m.autor === 'asistente'
-        ? { autor: 'asistente' as const, rol: m.rol, texto: m.texto.slice(0, 2000) }
+        ? { autor: 'asistente' as const, rol: m.rol, texto: m.texto.slice(0, 2000), banco: m.banco, operacion: m.operacion }
         : { autor: 'tendero' as const, texto: m.texto.slice(0, 2000) },
     );
 }

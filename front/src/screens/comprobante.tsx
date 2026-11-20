@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { AccessibilityInfo, ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import type { Existencia, ItemVenta, MetodoPago } from '@/api/esquemas';
+import { esPagoDigital, type Existencia, type ItemVenta, type MetodoPago } from '@/api/esquemas';
 import { detalleVenta } from '@/api/negocio';
 import { Aviso } from '@/components/aviso';
 import { BarraPasos } from '@/components/barra-pasos';
@@ -13,7 +13,7 @@ import { Boton } from '@/components/boton';
 import { Encabezado } from '@/components/encabezado';
 import { EtiquetaSimulacion } from '@/components/etiqueta-simulacion';
 import { FilaProducto } from '@/components/fila-producto';
-import { SEGUNDOS_VENTA_MANUAL } from '@/constants';
+import { METODOS_PAGO, SEGUNDOS_VENTA_MANUAL } from '@/constants';
 import { useCarrito } from '@/estado/carrito';
 import { idEnviado, leerCola, PREFIJO_LOCAL } from '@/estado/cola-ventas';
 import { bordes, color, espacio, iconos, shape, tactil, type } from '@/theme';
@@ -136,7 +136,7 @@ export function PantallaComprobante({ id, desdeHistorial }: { id: string; desdeH
   }, [datos?.folio]);
 
   const titulo = datos?.pendiente ? 'Venta guardada' : desdeHistorial ? 'Venta' : 'Venta registrada';
-  const digital = datos?.metodo === 'digital_simulado';
+  const digital = datos ? esPagoDigital(datos.metodo) : false;
   const [desplazado, setDesplazado] = useState(false);
 
   return (
@@ -197,7 +197,7 @@ export function PantallaComprobante({ id, desdeHistorial }: { id: string; desdeH
             </Text>
             <Text style={[estilos.cuerpoCabecera, datos.pendiente ? null : estilos.sobreExito]}>
               {digital
-                ? 'Pago digital (simulación)'
+                ? `${METODOS_PAGO[datos.metodo].nombre} (simulación)`
                 : datos.recibido !== null
                   ? `Efectivo · Te dieron ${formatoMoneda(datos.recibido)} · Cambio ${formatoMoneda(datos.recibido - datos.total)}`
                   : 'Efectivo'}
