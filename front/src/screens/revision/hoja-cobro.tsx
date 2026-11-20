@@ -35,7 +35,7 @@ const MetodoPagoLista = MetodoPago.options;
 
 type EstadoPago = 'inactivo' | 'esperando' | 'recibido' | 'no_recibido';
 
-/** List item M3 con radio. Elegido = `secondaryContainer` + radio relleno + "Elegido" (no solo color). */
+/** List item M3 con radio. Elegido = `primaryContainer` + radio relleno + "Elegido" (no solo color). */
 function OpcionPago({
   elegida,
   icono,
@@ -49,7 +49,7 @@ function OpcionPago({
   simulacion?: boolean;
   onPress: () => void;
 }) {
-  const contenido = elegida ? color.onSecondaryContainer : color.onSurface;
+  const contenido = elegida ? color.onPrimaryContainer : color.onSurface;
   return (
     <Tocable
       onPress={onPress}
@@ -291,9 +291,9 @@ const estilos = StyleSheet.create({
     borderWidth: bordes.fino,
     borderColor: color.outlineVariant,
   },
-  opcionElegida: { backgroundColor: color.secondaryContainer, borderColor: color.secondaryContainer },
+  opcionElegida: { backgroundColor: color.primaryContainer, borderColor: color.primaryContainer },
   textoOpcion: { flex: 1, gap: espacio.xs },
-  elegido: { ...type.labelLarge, color: color.onSecondaryContainer, fontWeight: pesoActivo },
+  elegido: { ...type.labelLarge, color: color.onPrimaryContainer, ...pesoActivo },
   atajos: { flexDirection: 'row', flexWrap: 'wrap', gap: tactil.separacion },
   estadoPago: { flexDirection: 'row', alignItems: 'center', gap: espacio.s },
   textoExito: { color: color.onSurface },

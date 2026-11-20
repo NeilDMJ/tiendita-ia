@@ -1,5 +1,4 @@
 import type { Producto } from '@/api/esquemas';
-import type { NombreIcono } from '@/constants';
 
 export interface ProductoMasVendido {
   clave: string;

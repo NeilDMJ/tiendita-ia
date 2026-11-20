@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { RolAsistente } from '@/api/esquemas';
-import { ROLES } from '@/constants';
+import { datosRol } from '@/constants';
 import { bordes, color, elevacion, espacio, iconos, pesoActivo, shape, tactil, type } from '@/theme';
 import { formatoMoneda, montoParaLector } from '@/utils/formato-moneda';
 
@@ -78,7 +78,7 @@ export function TarjetaAccion({
   onRechazar,
   onVerResultado,
 }: TarjetaAccionProps) {
-  const r = ROLES[rol];
+  const r = datosRol(rol);
   const visibles = resumen.slice(0, MAX_FILAS);
   const ocultas = resumen.length - visibles.length;
   const activa = estado === 'pendiente' || estado === 'confirmando';
@@ -245,7 +245,7 @@ export function TarjetaAccion({
 
 const estilos = StyleSheet.create({
   tarjeta: {
-    borderRadius: shape.medium,
+    borderRadius: shape.large,
     padding: espacio.l,
     gap: espacio.m,
     backgroundColor: color.surfaceContainerLow,
@@ -265,7 +265,7 @@ const estilos = StyleSheet.create({
   filaResumen: { flexDirection: 'row', justifyContent: 'space-between', gap: espacio.m },
   textoResumen: { ...type.bodyLarge, color: color.onSurface, flexShrink: 1 },
   textoResumenSecundario: { color: color.onSurfaceVariant },
-  destacado: { fontWeight: pesoActivo },
+  destacado: { ...pesoActivo },
   total: { ...type.amount, color: color.onSurface },
   botones: { gap: tactil.separacion },
   resultado: { gap: espacio.xs },

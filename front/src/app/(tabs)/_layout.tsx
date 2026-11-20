@@ -38,13 +38,20 @@ export default function TabsLayout() {
         sceneStyle: { backgroundColor: color.surface },
       }}
     >
-      <Tabs.Screen name="index" options={{ title: 'Inicio', tabBarIcon: icono('home-outline', 'home') }} />
+      <Tabs.Screen
+        name="index"
+        options={{ title: 'Inicio', headerShown: false, tabBarIcon: icono('home-outline', 'home') }}
+      />
       <Tabs.Screen name="cobrar" options={{ title: 'Cobrar', tabBarIcon: icono('point-of-sale', 'cash-register') }} />
       <Tabs.Screen
         name="inventario"
-        options={{ title: 'Inventario', tabBarIcon: icono('package-variant-closed', 'package-variant') }}
+        options={{
+          title: 'Inventario',
+          headerShown: false,
+          tabBarIcon: icono('package-variant-closed', 'package-variant'),
+        }}
       />
-      <Tabs.Screen name="asistente" options={{ title: 'Asistente', tabBarIcon: icono('chat-outline', 'chat') }} />
+      <Tabs.Screen name="asistente" options={{ title: 'Asistente', headerShown: false, tabBarIcon: icono('chat-outline', 'chat') }} />
     </Tabs>
   );
 }

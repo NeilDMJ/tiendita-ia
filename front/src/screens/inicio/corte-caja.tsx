@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { Boton } from '@/components/boton';
 import { EtiquetaSimulacion } from '@/components/etiqueta-simulacion';
-import { bordes, color, elevacion, espacio, iconos, shape, tactil, type } from '@/theme';
+import { bordes, color, elevacion, espacio, fuente, iconos, shape, tactil, type } from '@/theme';
 import { plural } from '@/utils/carrito';
 import { formatoMoneda, montoParaLector } from '@/utils/formato-moneda';
 
@@ -310,7 +310,7 @@ const estilos = StyleSheet.create({
   tituloCard: {
     ...type.titleMedium,
     color: color.onSurface,
-    fontWeight: '700',
+    fontFamily: fuente.bold,
   },
   subtituloCard: {
     ...type.bodyLarge,
@@ -329,7 +329,7 @@ const estilos = StyleSheet.create({
   montoGrande: {
     ...type.headlineLarge,
     color: color.primary,
-    fontWeight: '700',
+    fontFamily: fuente.bold,
   },
   bloqueGrafica: {
     gap: espacio.s,
@@ -406,7 +406,7 @@ const estilos = StyleSheet.create({
   valorMetrica: {
     ...type.amount,
     color: color.onSurface,
-    fontWeight: '700',
+    fontFamily: fuente.bold,
   },
   contenedorGraficaBarras: {
     gap: espacio.l,
@@ -429,7 +429,7 @@ const estilos = StyleSheet.create({
   datoArribaBarra: {
     ...type.labelLarge,
     color: color.onSurface,
-    fontWeight: '700',
+    fontFamily: fuente.bold,
   },
   pistaColumna: {
     width: '70%',
@@ -474,7 +474,7 @@ const estilos = StyleSheet.create({
   cantidadLeyenda: {
     ...type.labelLarge,
     color: color.primary,
-    fontWeight: '700',
+    fontFamily: fuente.bold,
   },
   estadoVacioTop: {
     flexDirection: 'row',

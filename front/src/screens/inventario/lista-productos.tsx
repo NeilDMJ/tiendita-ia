@@ -43,7 +43,7 @@ export function ListaProductos({ productos, textoBusqueda, cargando }: ListaProd
           accessibilityElementsHidden
           importantForAccessibility="no"
         />
-        <Text style={estilos.tituloVacio}>No encontramos "{textoBusqueda}"</Text>
+        <Text style={estilos.tituloVacio}>No encontramos “{textoBusqueda}”</Text>
         <Text style={estilos.mensajeVacio}>
           Revisa que el nombre esté bien escrito o limpia la búsqueda para ver todo el inventario.
         </Text>

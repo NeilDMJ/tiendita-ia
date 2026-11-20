@@ -1,54 +1,155 @@
-import { Platform, type TextStyle, type ViewStyle } from 'react-native';
+import Storage from 'expo-sqlite/kv-store';
+import { Appearance, Platform, type TextStyle, type ViewStyle } from 'react-native';
 
 /**
- * Tokens de diseño — Material Design 3 (docs/diseno/00-sistema.md).
+ * Tokens de diseño — identidad "BookEase" aplicada a Tendero IA (docs/ui-ux/02-sistema-de-diseno.md).
  * ÚNICO archivo de la app con valores de color: los componentes piden ROLES (`color.primary`…).
- * Esquema claro SchemeTonalSpot, semilla #769CDF; `success*` = rol personalizado armonizado.
- * Salida verificada de material-color-utilities: docs/diseno/m3/esquema-generado.md.
- * Prohibido en toda la app: gradientes, blur, textShadow y sombras fuera de `elevacion`.
+ * Se conserva la estructura de roles de Material 3 (nombres, capas de estado, accesibilidad); cambian los valores.
+ * Todos los pares texto/fondo cumplen WCAG AA (tabla de contrastes en el doc de sistema).
+ * Prohibido en toda la app: blur, textShadow y sombras fuera de `elevacion`.
+ * Gradiente: SOLO `gradienteMarca`, y solo en el logotipo y en 1–2 palabras clave del titular.
  */
-export const color = {
-  primary: '#415F91',
+export const colorClaro = {
+  primary: '#1A56DB',
   onPrimary: '#FFFFFF',
-  primaryContainer: '#D6E3FF',
-  onPrimaryContainer: '#284777',
-  inversePrimary: '#AAC7FF',
-  secondary: '#565F71',
+  primaryContainer: '#E8F0FE',
+  onPrimaryContainer: '#1543B0',
+  inversePrimary: '#A9C4F9',
+  secondary: '#4B5563',
   onSecondary: '#FFFFFF',
-  secondaryContainer: '#DAE2F9',
-  onSecondaryContainer: '#3E4759',
-  tertiary: '#705575',
+  secondaryContainer: '#E3E8F4',
+  onSecondaryContainer: '#1F2937',
+  /** Acento violeta de la marca (final del gradiente). */
+  tertiary: '#5B3FD6',
   onTertiary: '#FFFFFF',
-  tertiaryContainer: '#FAD8FD',
-  onTertiaryContainer: '#573E5C',
-  error: '#BA1A1A',
+  tertiaryContainer: '#ECE7FD',
+  onTertiaryContainer: '#3B2A8C',
+  error: '#DC2626',
   onError: '#FFFFFF',
-  errorContainer: '#FFDAD6',
-  onErrorContainer: '#93000A',
-  surface: '#F9F9FF',
-  surfaceDim: '#D9D9E0',
-  surfaceBright: '#F9F9FF',
+  errorContainer: '#FEE2E2',
+  onErrorContainer: '#991B1B',
+  surface: '#F5F7FB',
+  surfaceDim: '#E5E9F2',
+  surfaceBright: '#FFFFFF',
   surfaceContainerLowest: '#FFFFFF',
-  surfaceContainerLow: '#F3F3FA',
-  surfaceContainer: '#EDEDF4',
-  surfaceContainerHigh: '#E7E8EE',
-  surfaceContainerHighest: '#E2E2E9',
-  onSurface: '#191C20',
-  surfaceVariant: '#E0E2EC',
-  onSurfaceVariant: '#44474E',
-  outline: '#74777F',
-  outlineVariant: '#C4C6D0',
-  inverseSurface: '#2E3036',
-  inverseOnSurface: '#F0F0F7',
-  shadow: '#000000',
+  surfaceContainerLow: '#FFFFFF',
+  surfaceContainer: '#EEF1F7',
+  surfaceContainerHigh: '#E8ECF4',
+  surfaceContainerHighest: '#E2E7F0',
+  onSurface: '#0F172A',
+  surfaceVariant: '#E5E9F2',
+  onSurfaceVariant: '#4B5563',
+  outline: '#6B7280',
+  outlineVariant: '#E5E7EB',
+  inverseSurface: '#0F172A',
+  inverseOnSurface: '#F5F7FB',
+  shadow: '#0F172A',
   scrim: '#000000',
-  success: '#006D43',
+  /** Semánticos personalizados. `success` es #15803D (no #16A34A): con texto blanco este último solo da 3.3:1. */
+  success: '#15803D',
   onSuccess: '#FFFFFF',
-  successContainer: '#92F7BC',
-  onSuccessContainer: '#005231',
+  successContainer: '#DCFCE7',
+  onSuccessContainer: '#14532D',
+  /** `warning` es #B45309 (no #D97706, 3.2:1 con blanco). Pendiente / por confirmar / poco stock. */
+  warning: '#B45309',
+  onWarning: '#FFFFFF',
+  warningContainer: '#FEF3C7',
+  onWarningContainer: '#78350F',
 } as const;
 
-export type RolColor = keyof typeof color;
+export type RolColor = keyof typeof colorClaro;
+
+/** Mismos roles, valores para modo oscuro. Todos los pares pasan WCAG AA (docs/ui-ux/contraste.mjs). */
+export const colorOscuro: Record<RolColor, string> = {
+  primary: '#7BA3F5',
+  onPrimary: '#0B1F55',
+  primaryContainer: '#16328A',
+  onPrimaryContainer: '#DCE7FD',
+  inversePrimary: '#1A56DB',
+  secondary: '#B6BECC',
+  onSecondary: '#1F2937',
+  secondaryContainer: '#2A3446',
+  onSecondaryContainer: '#E3E8F4',
+  tertiary: '#B9A8FA',
+  onTertiary: '#2A1B73',
+  tertiaryContainer: '#3B2A8C',
+  onTertiaryContainer: '#ECE7FD',
+  error: '#F87171',
+  onError: '#450A0A',
+  errorContainer: '#7F1D1D',
+  onErrorContainer: '#FEE2E2',
+  surface: '#0B1220',
+  surfaceDim: '#070C17',
+  surfaceBright: '#243251',
+  surfaceContainerLowest: '#111A2C',
+  surfaceContainerLow: '#111A2C',
+  surfaceContainer: '#17233A',
+  surfaceContainerHigh: '#1D2A45',
+  surfaceContainerHighest: '#243251',
+  onSurface: '#E5E9F2',
+  surfaceVariant: '#243251',
+  onSurfaceVariant: '#A7B0C0',
+  outline: '#7C879B',
+  outlineVariant: '#2A3650',
+  inverseSurface: '#E5E9F2',
+  inverseOnSurface: '#0F172A',
+  shadow: '#000000',
+  scrim: '#000000',
+  success: '#4ADE80',
+  onSuccess: '#052E16',
+  successContainer: '#14532D',
+  onSuccessContainer: '#DCFCE7',
+  warning: '#FBBF24',
+  onWarning: '#451A03',
+  warningContainer: '#78350F',
+  onWarningContainer: '#FEF3C7',
+};
+
+// ---------------------------------------------------------------------------------------------
+// Esquema activo (claro / oscuro)
+// ---------------------------------------------------------------------------------------------
+// `StyleSheet.create` congela los colores cuando se carga cada archivo, así que el esquema se decide UNA vez,
+// aquí, al abrir la app: la preferencia guardada por la persona o, si eligió "sistema", la del teléfono.
+// Cambiarla desde la app guarda la preferencia y reinicia la app (ver `utils/apariencia.ts`).
+
+export type PreferenciaApariencia = 'sistema' | 'claro' | 'oscuro';
+export const CLAVE_APARIENCIA = 'tendero-apariencia';
+
+function leerPreferencia(): PreferenciaApariencia {
+  try {
+    const valor =
+      Platform.OS === 'web'
+        ? globalThis.localStorage?.getItem(CLAVE_APARIENCIA)
+        : Storage.getItemSync(CLAVE_APARIENCIA);
+    return valor === 'claro' || valor === 'oscuro' ? valor : 'sistema';
+  } catch {
+    return 'sistema';
+  }
+}
+
+/** Lo que la persona eligió (para mostrarlo seleccionado en la hoja "Apariencia"). */
+export const preferenciaApariencia: PreferenciaApariencia = leerPreferencia();
+
+/** Lo que realmente se está usando ahora. */
+export const esquemaActivo: 'claro' | 'oscuro' =
+  preferenciaApariencia === 'sistema'
+    ? Appearance.getColorScheme() === 'dark'
+      ? 'oscuro'
+      : 'claro'
+    : preferenciaApariencia;
+
+/** Roles de color vigentes. Los componentes siempre piden roles (`color.primary`), nunca valores. */
+export const color: Record<RolColor, string> = esquemaActivo === 'oscuro' ? colorOscuro : colorClaro;
+
+/** Color fijo de lo que va sobre el degradado de marca (blanco en ambos esquemas: 6:1 sobre #1D4ED8 y #5B3FD6). */
+export const sobreMarca = '#FFFFFF';
+
+/** Degradado de marca (azul → violeta, 90°). Uso restringido: logotipo y 1–2 palabras clave del titular. */
+export const gradienteMarca = {
+  colores: ['#1D4ED8', '#5B3FD6'],
+  inicio: { x: 0, y: 0.5 },
+  fin: { x: 1, y: 0.5 },
+} as const;
 
 /** Hex `#RRGGBB` + alfa 0–1 → `rgba()`. Para capas de estado, ripple y scrim. */
 export function conAlfa(hex: string, alfa: number): string {
@@ -59,60 +160,75 @@ export function conAlfa(hex: string, alfa: number): string {
   return `rgba(${r},${g},${b},${alfa})`;
 }
 
-/** Velo de bottom sheet modal y diálogo (M3: scrim al 32 %). */
+/** Velo de bottom sheet modal y diálogo (scrim al 32 %). */
 export const scrim = conAlfa(color.scrim, 0.32);
 
-/** Colores fijos de la cámara (excepción documentada en 01-cobrar §2.2: disparador y guía de encuadre). */
+/**
+ * Colores FIJOS de la cámara (excepción documentada en 01-cobrar §2.2). La cámara es oscura en ambos esquemas,
+ * por eso no usa los roles `inverse*` (que en modo oscuro se vuelven claros).
+ */
 export const camara = {
-  claro: color.surfaceContainerLowest,
-  oscuro: color.inverseSurface,
+  claro: '#FFFFFF',
+  oscuro: '#0F172A',
+  /** Acento claro para anillos y enlaces sobre fondo oscuro. */
+  acento: '#A9C4F9',
 } as const;
 
-type Estilo = Pick<TextStyle, 'fontSize' | 'lineHeight' | 'fontWeight' | 'letterSpacing' | 'fontVariant'>;
+/** Familias Inter (una por peso: en RN el peso va en el nombre de la fuente, no en `fontWeight`). */
+export const fuente = {
+  regular: 'Inter_400Regular',
+  medium: 'Inter_500Medium',
+  semibold: 'Inter_600SemiBold',
+  bold: 'Inter_700Bold',
+  extrabold: 'Inter_800ExtraBold',
+} as const;
+
+type Estilo = Pick<TextStyle, 'fontFamily' | 'fontSize' | 'lineHeight' | 'letterSpacing' | 'fontVariant'>;
 
 /**
- * Escala tipográfica M3 con EXC-1: ningún texto < 16 sp.
- * Fuente del sistema (Roboto en Android, SF en iOS); siempre escalable.
+ * Escala tipográfica con EXC-1: ningún texto < 16 sp (usuario con baja visión, una mano, poca práctica).
+ * Titulares: peso 700–800 y tracking negativo (identidad). Cuerpo: Inter 400/500. Siempre escalable.
+ * La jerarquía sale del TAMAÑO (16 · 18 · 20 · 22 · 24 · 32 · 40) y del peso, no solo del peso.
  */
 export const type = {
-  displaySmall: { fontSize: 36, lineHeight: 44, fontWeight: '400' },
-  headlineLarge: { fontSize: 32, lineHeight: 40, fontWeight: '500', fontVariant: ['tabular-nums'] },
-  headlineSmall: { fontSize: 24, lineHeight: 32, fontWeight: '400' },
-  titleLarge: { fontSize: 22, lineHeight: 28, fontWeight: '400' },
-  titleMedium: { fontSize: 18, lineHeight: 26, fontWeight: '500' },
-  titleSmall: { fontSize: 16, lineHeight: 24, fontWeight: '500' },
-  bodyLarge: { fontSize: 16, lineHeight: 24, fontWeight: '400' },
-  bodyLargePlus: { fontSize: 18, lineHeight: 26, fontWeight: '400' },
-  bodyMedium: { fontSize: 16, lineHeight: 24, fontWeight: '400' },
-  bodySmall: { fontSize: 16, lineHeight: 24, fontWeight: '400' },
-  labelLarge: { fontSize: 16, lineHeight: 24, fontWeight: '500' },
-  labelMedium: { fontSize: 16, lineHeight: 24, fontWeight: '500' },
-  labelSmall: { fontSize: 16, lineHeight: 24, fontWeight: '500' },
-  amount: { fontSize: 20, lineHeight: 28, fontWeight: '500', fontVariant: ['tabular-nums'] },
+  displaySmall: { fontFamily: fuente.extrabold, fontSize: 40, lineHeight: 46, letterSpacing: -1.2 },
+  headlineLarge: { fontFamily: fuente.bold, fontSize: 32, lineHeight: 38, letterSpacing: -0.64, fontVariant: ['tabular-nums'] },
+  headlineSmall: { fontFamily: fuente.bold, fontSize: 24, lineHeight: 30, letterSpacing: -0.24 },
+  titleLarge: { fontFamily: fuente.semibold, fontSize: 22, lineHeight: 28 },
+  titleMedium: { fontFamily: fuente.semibold, fontSize: 18, lineHeight: 26 },
+  titleSmall: { fontFamily: fuente.semibold, fontSize: 16, lineHeight: 24 },
+  bodyLarge: { fontFamily: fuente.regular, fontSize: 16, lineHeight: 26 },
+  bodyLargePlus: { fontFamily: fuente.regular, fontSize: 20, lineHeight: 30 },
+  bodyMedium: { fontFamily: fuente.regular, fontSize: 16, lineHeight: 24 },
+  bodySmall: { fontFamily: fuente.regular, fontSize: 16, lineHeight: 24 },
+  labelLarge: { fontFamily: fuente.semibold, fontSize: 16, lineHeight: 24 },
+  labelMedium: { fontFamily: fuente.medium, fontSize: 16, lineHeight: 24 },
+  labelSmall: { fontFamily: fuente.medium, fontSize: 16, lineHeight: 24 },
+  amount: { fontFamily: fuente.bold, fontSize: 20, lineHeight: 28, fontVariant: ['tabular-nums'] },
 } as const satisfies Record<string, Estilo>;
 
-/** Peso usado como señal no cromática de "activo / seleccionado". */
-export const pesoActivo = '700' as const;
+/** Peso usado como señal no cromática de "activo / seleccionado". Se esparce: `{ ...pesoActivo }`. */
+export const pesoActivo = { fontFamily: fuente.bold } as const;
 
-/** Escala de esquinas M3. */
+/** Escala de esquinas de la identidad: 6 (badges) · 10 (botones, inputs) · 16 (tarjetas) · full (píldoras). */
 export const shape = {
   none: 0,
   extraSmall: 4,
-  small: 8,
-  medium: 12,
+  small: 6,
+  medium: 10,
   large: 16,
-  extraLarge: 28,
+  extraLarge: 20,
   full: 9999,
 } as const;
 
 export type NivelElevacion = 'level0' | 'level1' | 'level2' | 'level3' | 'level4' | 'level5';
 
 const SOMBRAS: Record<Exclude<NivelElevacion, 'level0'>, { dp: number; css: string }> = {
-  level1: { dp: 1, css: '0px 1px 2px 0px rgba(0,0,0,0.30), 0px 1px 3px 1px rgba(0,0,0,0.15)' },
-  level2: { dp: 3, css: '0px 1px 2px 0px rgba(0,0,0,0.30), 0px 2px 6px 2px rgba(0,0,0,0.15)' },
-  level3: { dp: 6, css: '0px 1px 3px 0px rgba(0,0,0,0.30), 0px 4px 8px 3px rgba(0,0,0,0.15)' },
-  level4: { dp: 8, css: '0px 2px 3px 0px rgba(0,0,0,0.30), 0px 6px 10px 4px rgba(0,0,0,0.15)' },
-  level5: { dp: 12, css: '0px 4px 4px 0px rgba(0,0,0,0.30), 0px 8px 12px 6px rgba(0,0,0,0.15)' },
+  level1: { dp: 1, css: '0px 1px 2px 0px rgba(15,23,42,0.06)' },
+  level2: { dp: 3, css: '0px 4px 12px 0px rgba(15,23,42,0.07)' },
+  level3: { dp: 6, css: '0px 8px 24px 0px rgba(15,23,42,0.08)' },
+  level4: { dp: 8, css: '0px 12px 28px 0px rgba(15,23,42,0.10)' },
+  level5: { dp: 12, css: '0px 16px 40px 0px rgba(15,23,42,0.12)' },
 };
 
 function sombra(nivel: Exclude<NivelElevacion, 'level0'>): ViewStyle {
@@ -124,8 +240,8 @@ function sombra(nivel: Exclude<NivelElevacion, 'level0'>): ViewStyle {
 }
 
 /**
- * ÚNICA fuente de sombras (M3 niveles 0–5). Android: `elevation` nativa; iOS/web: `boxShadow`
- * (key + ambient). Solo sobre vistas con `backgroundColor` opaco. Nunca como adorno.
+ * ÚNICA fuente de sombras (niveles 0–5, suaves y difusas). Android: `elevation` nativa; iOS/web: `boxShadow`.
+ * Solo sobre vistas con `backgroundColor` opaco. Nunca como adorno.
  */
 export const elevacion: Record<NivelElevacion, ViewStyle> = {
   level0: Platform.select<ViewStyle>({ android: { elevation: 0 }, default: {} }),
@@ -136,7 +252,7 @@ export const elevacion: Record<NivelElevacion, ViewStyle> = {
   level5: sombra('level5'),
 };
 
-/** Opacidad de las capas de estado M3 (color del contenido del componente). */
+/** Opacidad de las capas de estado (color del contenido del componente). */
 export const estado = {
   hover: 0.08,
   focus: 0.1,
@@ -144,7 +260,7 @@ export const estado = {
   dragged: 0.16,
 } as const;
 
-/** Movimiento M3. Con movimiento reducido las duraciones pasan a 0. */
+/** Movimiento. Con movimiento reducido las duraciones pasan a 0. */
 export const motion = {
   easing: {
     emphasized: [0.2, 0, 0, 1],
@@ -193,7 +309,7 @@ export const iconos = {
   grande: 48, // ilustrativo en estados vacíos / comprobante
 } as const;
 
-/** Medidas fijas de piezas M3 (no tocables salvo indicación). */
+/** Medidas fijas de piezas (no tocables salvo indicación). */
 export const medidas = {
   barraSuperior: 64,
   barraNavegacion: 80,
@@ -217,9 +333,11 @@ export const medidas = {
   dialogoAnchoMinimo: 280,
   dialogoAnchoMaximo: 560,
   puntoEscribiendo: 8, // puntos del indicador "Escribiendo…" del chat
+  /** Ancho máximo del contenido de una pantalla (web/tablet): evita tarjetas de 1400 px. */
+  contenidoAnchoMaximo: 640,
 } as const;
 
-/** Anillo de foco M3: 3 dp `secondary`, separado 2 dp. */
+/** Anillo de foco: 3 dp `secondary`, separado 2 dp. */
 export const anilloFoco: ViewStyle = {
   outlineColor: color.secondary,
   outlineWidth: 3,

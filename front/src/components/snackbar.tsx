@@ -137,7 +137,7 @@ const estilos = StyleSheet.create({
     paddingLeft: espacio.l,
     paddingRight: espacio.xs,
     paddingVertical: espacio.xs,
-    borderRadius: shape.extraSmall,
+    borderRadius: shape.small,
     backgroundColor: color.inverseSurface,
   },
   texto: { ...type.bodyMedium, color: color.inverseOnSurface, flexGrow: 1, flexShrink: 1, flexBasis: 160 },

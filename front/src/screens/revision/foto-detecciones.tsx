@@ -2,7 +2,7 @@ import { Image } from 'expo-image';
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { bordes, color, espacio, medidas, shape, type } from '@/theme';
+import { bordes, camara, color, espacio, medidas, shape, type } from '@/theme';
 import { nivelDeItem, type ItemEditable } from '@/utils/carrito';
 
 export interface FotoDeteccionesProps {
@@ -52,7 +52,7 @@ export function FotoDetecciones({ uri, items }: FotoDeteccionesProps) {
             .map((i) => {
               const [x, y, w, h] = i.caja!;
               const nivel = nivelDeItem(i);
-              const borde = nivel === 'falta' ? color.error : nivel === 'baja' ? color.tertiary : color.primary;
+              const borde = nivel === 'falta' ? color.error : nivel === 'baja' ? color.warning : color.primary;
               return (
                 <View
                   key={i.clave}
@@ -92,7 +92,7 @@ const estilos = StyleSheet.create({
     alignSelf: 'flex-start',
     paddingHorizontal: espacio.xs,
     borderBottomRightRadius: shape.small,
-    backgroundColor: color.inverseSurface,
-    color: color.inverseOnSurface,
+    backgroundColor: camara.oscuro,
+    color: camara.claro,
   },
 });

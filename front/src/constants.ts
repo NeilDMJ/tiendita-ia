@@ -47,6 +47,11 @@ export const ROLES: Record<RolAsistente, { nombre: string; icono: NombreIcono }>
   banco: { nombre: 'Guía del banco', icono: 'bank-outline' },
 };
 
+/** Datos de un oficio; un rol que esta versión no conoce (chat guardado por otra versión) cae a `general`. */
+export function datosRol(rol: string | undefined) {
+  return (rol && rol in ROLES ? ROLES[rol as RolAsistente] : ROLES.general);
+}
+
 /** "Te contestan" del estado vacío del chat (02-asistente §2.4). `general` no aparece. */
 export const TE_CONTESTAN: { rol: RolAsistente; texto: string }[] = [
   { rol: 'caja', texto: 'ventas y precios' },
@@ -83,5 +88,3 @@ export const CHAT = {
   cargaVisibleMs: 300,
 } as const;
 
-/** Número de soporte por WhatsApp (de .env; vacío = se oculta el botón). Nunca datos reales en el código. */
-export const SOPORTE_WHATSAPP = process.env.EXPO_PUBLIC_SOPORTE_WHATSAPP ?? '';

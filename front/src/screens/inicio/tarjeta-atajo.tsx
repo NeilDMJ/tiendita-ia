@@ -3,7 +3,7 @@ import { StyleSheet, Text } from 'react-native';
 
 import { Tocable } from '@/components/tocable';
 import type { NombreIcono } from '@/constants';
-import { bordes, color, espacio, iconos, medidas, shape, type } from '@/theme';
+import { bordes, color, espacio, fuente, iconos, medidas, shape, type } from '@/theme';
 
 export interface TarjetaAtajoProps {
   icono: NombreIcono;
@@ -73,7 +73,7 @@ const estilos = StyleSheet.create({
   },
   tituloDestacado: {
     color: color.primary,
-    fontWeight: '700',
+    fontFamily: fuente.bold,
   },
   atajoDetalle: {
     ...type.bodyLarge,

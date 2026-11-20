@@ -11,7 +11,7 @@ export interface EtiquetaSimulacionProps {
 
 /**
  * Marca visible de todo lo que no es real (pagos digitales, datos de demo).
- * `chip` = badge grande M3 en `inverseSurface` (EXC-1: 16 sp); `franja` = banner ancho completo.
+ * `chip` = badge en píldora ámbar (EXC-1: 16 sp); `franja` = banner ancho completo. Ámbar suave (8.15:1), nunca se oculta.
  */
 export function EtiquetaSimulacion({ modo = 'chip', detalle }: EtiquetaSimulacionProps) {
   const texto = modo === 'franja' ? `Simulación: ${detalle ?? 'esto no mueve dinero real'}` : 'SIMULACIÓN';
@@ -25,7 +25,7 @@ export function EtiquetaSimulacion({ modo = 'chip', detalle }: EtiquetaSimulacio
       <MaterialCommunityIcons
         name="flask-outline"
         size={iconos.chico}
-        color={color.inverseOnSurface}
+        color={color.onWarningContainer}
         accessibilityElementsHidden
         importantForAccessibility="no"
       />
@@ -43,8 +43,8 @@ const estilos = StyleSheet.create({
     minHeight: medidas.chip,
     paddingHorizontal: espacio.s,
     paddingVertical: espacio.xs,
-    borderRadius: shape.small,
-    backgroundColor: color.inverseSurface,
+    borderRadius: shape.full,
+    backgroundColor: color.warningContainer,
   },
   franja: {
     flexDirection: 'row',
@@ -53,7 +53,7 @@ const estilos = StyleSheet.create({
     minHeight: medidas.franjaSimulacion,
     paddingHorizontal: espacio.l,
     paddingVertical: espacio.s,
-    backgroundColor: color.inverseSurface,
+    backgroundColor: color.warningContainer,
   },
-  texto: { ...type.labelSmall, color: color.inverseOnSurface, flexShrink: 1 },
+  texto: { ...type.labelMedium, color: color.onWarningContainer, flexShrink: 1 },
 });

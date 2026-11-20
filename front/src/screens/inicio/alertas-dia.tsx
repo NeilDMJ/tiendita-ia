@@ -6,7 +6,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Aviso } from '@/components/aviso';
 import { Boton } from '@/components/boton';
 import { EXISTENCIA_BAJA } from '@/constants';
-import { bordes, color, espacio, iconos, shape, tactil, type } from '@/theme';
+import { bordes, color, espacio, fuente, iconos, shape, tactil, type } from '@/theme';
 import { plural } from '@/utils/carrito';
 import { formatoMoneda } from '@/utils/formato-moneda';
 
@@ -145,14 +145,14 @@ export function AlertasDia({
                     <MaterialCommunityIcons
                       name={agotado ? 'close-circle' : 'alert-circle'}
                       size={iconos.chico}
-                      color={agotado ? color.onErrorContainer : color.onTertiaryContainer}
+                      color={agotado ? color.onErrorContainer : color.onWarningContainer}
                       accessibilityElementsHidden
                       importantForAccessibility="no"
                     />
                     <Text
                       style={[
                         estilos.textoChip,
-                        { color: agotado ? color.onErrorContainer : color.onTertiaryContainer },
+                        { color: agotado ? color.onErrorContainer : color.onWarningContainer },
                       ]}
                     >
                       {agotado ? 'Agotado' : `Bajo (≤ ${EXISTENCIA_BAJA})`}
@@ -197,7 +197,7 @@ const estilos = StyleSheet.create({
   encabezadoSeccion: {
     ...type.titleMedium,
     color: color.onSurface,
-    fontWeight: '700',
+    fontFamily: fuente.bold,
   },
   flex: {
     flex: 1,
@@ -226,7 +226,7 @@ const estilos = StyleSheet.create({
   tituloStock: {
     ...type.titleMedium,
     color: color.error,
-    fontWeight: '700',
+    fontFamily: fuente.bold,
   },
   cuerpoStock: {
     ...type.bodyLarge,
@@ -265,7 +265,7 @@ const estilos = StyleSheet.create({
     borderRadius: shape.small,
   },
   chipPoco: {
-    backgroundColor: color.tertiaryContainer,
+    backgroundColor: color.warningContainer,
   },
   chipAgotado: {
     backgroundColor: color.errorContainer,

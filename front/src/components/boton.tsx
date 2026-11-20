@@ -32,6 +32,11 @@ export interface BotonProps {
   cargando?: boolean;
   textoCargando?: string;
   anchoCompleto?: boolean;
+  /**
+   * Muestra solo el icono (botón cuadrado). `texto` sigue siendo la etiqueta para el lector de pantalla,
+   * así que debe seguir describiendo la acción. Requiere `icono`. Ignora `anchoCompleto`.
+   */
+  soloIcono?: boolean;
   accessibilityHint?: string;
   testID?: string;
   style?: StyleProp<ViewStyle>;
@@ -43,8 +48,8 @@ type Apariencia = { contenedor: string; contenido: string; borde?: string; nivel
 
 const VARIANTES: Record<VarianteM3, Apariencia> = {
   filled: { contenedor: color.primary, contenido: color.onPrimary, nivel: 0 },
-  tonal: { contenedor: color.secondaryContainer, contenido: color.onSecondaryContainer, nivel: 0 },
-  outlined: { contenedor: 'transparent', contenido: color.primary, borde: color.outline, nivel: 0 },
+  tonal: { contenedor: color.primaryContainer, contenido: color.onPrimaryContainer, nivel: 0 },
+  outlined: { contenedor: 'transparent', contenido: color.primary, borde: color.primary, nivel: 0 },
   text: { contenedor: 'transparent', contenido: color.primary, nivel: 0 },
   elevated: { contenedor: color.surfaceContainerLow, contenido: color.primary, nivel: 1 },
   outlinedError: { contenedor: 'transparent', contenido: color.error, borde: color.error, nivel: 0 },
@@ -52,7 +57,7 @@ const VARIANTES: Record<VarianteM3, Apariencia> = {
   textError: { contenedor: 'transparent', contenido: color.error, nivel: 0 },
 };
 
-/** M3 Buttons (00-sistema §9.1). Alto 48 / 56 (EXC-2), forma píldora, capa de estado 10 %. */
+/** Botones de la identidad (02-sistema-de-diseno). Alto 48 / 56 (EXC-2), radio 10, capa de estado 10 %. Solo UN `filled` por sección. */
 export function Boton({
   texto,
   onPress,
@@ -64,6 +69,7 @@ export function Boton({
   cargando = false,
   textoCargando,
   anchoCompleto = true,
+  soloIcono = false,
   accessibilityHint,
   testID,
   style,
@@ -79,6 +85,7 @@ export function Boton({
   const fondo = deshabilitado ? (transparente ? 'transparent' : color.surfaceContainerHighest) : v.contenedor;
   const borde = deshabilitado ? color.outlineVariant : v.borde;
   const etiqueta = cargando && textoCargando ? textoCargando : texto;
+  const cuadrado = soloIcono && icono !== undefined;
 
   return (
     <Tocable
@@ -86,7 +93,7 @@ export function Boton({
       testID={testID}
       onPress={inactivo ? undefined : onPress}
       colorContenido={colorContenido}
-      radio={shape.full}
+      radio={shape.medium}
       sinCapa={inactivo}
       accessibilityRole="button"
       accessibilityLabel={etiqueta}
@@ -95,8 +102,10 @@ export function Boton({
       style={({ hover, enfocado }) => [
         estilos.base,
         tamano === 'principal' && estilos.principal,
-        anchoCompleto ? estilos.anchoCompleto : estilos.anchoAjustado,
+        anchoCompleto && !cuadrado ? estilos.anchoCompleto : estilos.anchoAjustado,
         icono || cargando ? estilos.conIcono : null,
+        cuadrado ? estilos.soloIcono : null,
+        cuadrado ? { width: tamano === 'principal' ? tactil.principal : tactil.minimo } : null,
         nombre === 'text' || nombre === 'textError' ? estilos.textoSolo : null,
         { backgroundColor: fondo },
         conBorde ? { borderWidth: bordes.fino, borderColor: borde } : null,
@@ -118,7 +127,7 @@ export function Boton({
             importantForAccessibility="no"
           />
         ) : null}
-        <Text style={[estilos.texto, { color: colorContenido }]}>{etiqueta}</Text>
+        {cuadrado ? null : <Text style={[estilos.texto, { color: colorContenido }]}>{etiqueta}</Text>}
       </View>
     </Tocable>
   );
@@ -130,11 +139,14 @@ const estilos = StyleSheet.create({
     minWidth: tactil.minimo,
     paddingHorizontal: espacio.xl,
     paddingVertical: espacio.s,
-    borderRadius: shape.full,
+    borderRadius: shape.medium,
     justifyContent: 'center',
   },
   principal: { minHeight: tactil.principal },
   conIcono: { paddingLeft: espacio.l },
+  // paddingLeft/Right explícitos: `conIcono` fija paddingLeft y, al ser más específico que paddingHorizontal,
+  // lo ganaba y empujaba el icono a la derecha del cuadrado.
+  soloIcono: { paddingHorizontal: 0, paddingLeft: 0, paddingRight: 0 },
   textoSolo: { paddingHorizontal: espacio.m },
   anchoCompleto: { alignSelf: 'stretch' },
   anchoAjustado: { alignSelf: 'flex-start' },

@@ -4,7 +4,7 @@ import Animated, { FadeIn, useReducedMotion } from 'react-native-reanimated';
 
 import type { PasoGuia, RolAsistente } from '@/api/esquemas';
 import { Boton } from '@/components/boton';
-import { ROLES } from '@/constants';
+import { datosRol } from '@/constants';
 import { motivoFallo, type MensajeChat } from '@/estado/chat';
 import { color, espacio, iconos, motion, shape, tactil, type } from '@/theme';
 import { hora } from '@/utils/fecha';
@@ -14,7 +14,7 @@ const ENTRADA = FadeIn.duration(motion.duration.short4);
 
 /** Icono + nombre del oficio sobre la burbuja (rol = icono + nombre, nunca color). */
 export function CabeceraRol({ rol }: { rol: RolAsistente }) {
-  const r = ROLES[rol];
+  const r = datosRol(rol);
   return (
     <View style={estilos.cabecera} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
       <MaterialCommunityIcons name={r.icono} size={iconos.linea} color={color.onSurfaceVariant} />
@@ -83,7 +83,7 @@ export function BurbujaMensaje({
   const reducido = useReducedMotion();
   const esTendero = mensaje.autor === 'tendero';
   const texto = esTendero ? mensaje.texto : limpiarFormato(mensaje.texto);
-  const quien = esTendero ? 'Tú' : ROLES[mensaje.rol].nombre;
+  const quien = esTendero ? 'Tú' : datosRol(mensaje.rol).nombre;
   const estadoTendero = esTendero ? mensaje.estado : null;
   const fallo = esTendero && mensaje.estado === 'fallido' ? motivoFallo(mensaje.error) : null;
   const etiquetaEstado =

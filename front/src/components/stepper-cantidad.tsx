@@ -67,8 +67,8 @@ export function StepperCantidad({
   }
 
   const menosInactivo = enMinimo && !modoQuitar;
-  const colorMenos = modoQuitar ? color.error : menosInactivo ? color.onSurfaceVariant : color.onSecondaryContainer;
-  const colorMas = enMaximo ? color.onSurfaceVariant : color.onSecondaryContainer;
+  const colorMenos = modoQuitar ? color.error : menosInactivo ? color.onSurfaceVariant : color.onPrimaryContainer;
+  const colorMas = enMaximo ? color.onSurfaceVariant : color.onPrimaryContainer;
 
   return (
     <View style={[estilos.contenedor, style]} testID={testID}>
@@ -118,7 +118,7 @@ export function StepperCantidad({
               setEditando(true);
             }}
             colorContenido={color.onSurface}
-            radio={shape.extraSmall}
+            radio={shape.medium}
             accessibilityRole="adjustable"
             accessibilityLabel={`Cantidad de ${nombreProducto}`}
             accessibilityValue={{ now: valor, min: minimo, max: maximo, text: textoValor }}
@@ -183,7 +183,7 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  botonTonal: { backgroundColor: color.secondaryContainer },
+  botonTonal: { backgroundColor: color.primaryContainer },
   // icon button outlined error (modo "Quitar")
   botonQuitar: { borderWidth: bordes.fino, borderColor: color.error },
   // EXC-4

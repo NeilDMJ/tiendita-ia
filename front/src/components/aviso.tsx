@@ -192,7 +192,7 @@ export function Aviso({
 
 const estilos = StyleSheet.create({
   base: { gap: espacio.m },
-  tarjeta: { borderRadius: shape.medium, padding: espacio.l },
+  tarjeta: { borderRadius: shape.large, padding: espacio.l },
   franja: {
     borderRadius: shape.none,
     paddingHorizontal: espacio.l,
