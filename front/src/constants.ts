@@ -35,5 +35,44 @@ export const ROLES: Record<RolAsistente, { nombre: string; icono: NombreIcono }>
   cuentas: { nombre: 'Cuentas', icono: 'calculator-variant' },
   promociones: { nombre: 'Promociones', icono: 'bullhorn-outline' },
   tutor: { nombre: 'Ayuda de pagos', icono: 'school-outline' },
-  general: { nombre: 'Asistente', icono: 'chat-outline' },
+  general: { nombre: 'Tu asistente', icono: 'chat-outline' },
 };
+
+/** "Te contestan" del estado vacío del chat (02-asistente §2.4). `general` no aparece. */
+export const TE_CONTESTAN: { rol: RolAsistente; texto: string }[] = [
+  { rol: 'caja', texto: 'ventas y precios' },
+  { rol: 'bodega', texto: 'lo que tienes' },
+  { rol: 'cuentas', texto: 'ganancias, gastos' },
+  { rol: 'promociones', texto: 'ofertas' },
+  { rol: 'tutor', texto: 'cobro digital' },
+];
+
+/** Chips "Prueba con:" de la pestaña Asistente (envían el texto de inmediato). */
+export const SUGERENCIAS_INICIO: { texto: string; icono: NombreIcono }[] = [
+  { texto: '¿Cuánto vendí hoy?', icono: 'trending-up' },
+  { texto: '¿Qué se me está acabando?', icono: 'package-down' },
+  { texto: 'Registrar una venta', icono: 'cash-register' },
+  { texto: '¿Cómo cobro con transferencia?', icono: 'bank-transfer' },
+];
+
+/** Chips de la hoja "Pregúntale a Caja" en la revisión del cobro. */
+export const SUGERENCIAS_CAJA = ['¿Qué producto no reconoció?', '¿Cuánto cuesta este producto?', '¿Me alcanza el stock?'];
+
+/** Chat del asistente (02-asistente §7). */
+export const CHAT = {
+  /** Aviso "Está tardando más de lo normal…" */
+  avisoTardandoMs: 8_000,
+  /** Tarjetas pendientes caducan pasado este tiempo. */
+  caducidadMs: 30 * 60 * 1000,
+  maxMensajes: 100,
+  /** Turnos que se mandan al servidor como historial. */
+  maxHistorial: 12,
+  maxCaracteres: 500,
+  /** El contador aparece desde aquí. */
+  avisoCaracteres: 450,
+  /** El indicador "Cargando tu conversación…" solo aparece si tarda más de esto. */
+  cargaVisibleMs: 300,
+} as const;
+
+/** Número de soporte por WhatsApp (de .env; vacío = se oculta el botón). Nunca datos reales en el código. */
+export const SOPORTE_WHATSAPP = process.env.EXPO_PUBLIC_SOPORTE_WHATSAPP ?? '';

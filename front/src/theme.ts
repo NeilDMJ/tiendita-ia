@@ -216,6 +216,7 @@ export const medidas = {
   hojaAnchoMaximo: 640,
   dialogoAnchoMinimo: 280,
   dialogoAnchoMaximo: 560,
+  puntoEscribiendo: 8, // puntos del indicador "Escribiendo…" del chat
 } as const;
 
 /** Anillo de foco M3: 3 dp `secondary`, separado 2 dp. */

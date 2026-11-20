@@ -1,10 +1,10 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useEffect, useRef, type ComponentRef, type ReactNode } from 'react';
 import {
   AccessibilityInfo,
   findNodeHandle,
   KeyboardAvoidingView,
   Modal,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -15,7 +15,8 @@ import {
 import Animated, { Easing, FadeIn, SlideInDown, useReducedMotion } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { bordes, color, elevacion, espacio, medidas, motion, scrim, shape, tactil, type } from '@/theme';
+import type { NombreIcono } from '@/constants';
+import { bordes, color, elevacion, espacio, iconos, medidas, motion, scrim, shape, tactil, type } from '@/theme';
 
 import { Boton } from './boton';
 
@@ -32,6 +33,13 @@ export interface HojaInferiorProps {
   tipo?: 'modal' | 'estandar';
   /** Fracción 0–1 del alto de la pantalla. Default 0.9. */
   altoMaximo?: number;
+  /**
+   * El hijo maneja su propio scroll (p. ej. una `FlatList` de chat): sin `ScrollView` envolvente
+   * (evita lista virtual dentro de otra) y la hoja toma el alto completo de `altoMaximo`.
+   */
+  sinScroll?: boolean;
+  /** Icono decorativo junto al título (p. ej. `cash-register` en "Pregúntale a Caja"). */
+  icono?: NombreIcono;
 }
 
 /** Distancia de arrastre hacia abajo del asa que cierra la hoja. */
@@ -54,6 +62,8 @@ export function HojaInferior({
   sinCerrar,
   tipo = 'modal',
   altoMaximo = 0.9,
+  sinScroll = false,
+  icono,
 }: HojaInferiorProps) {
   const reducido = useReducedMotion();
   const refTitulo = useRef<ComponentRef<typeof Text>>(null);
@@ -76,10 +86,10 @@ export function HojaInferior({
   const hoja = (
     <Animated.View
       entering={reducido ? undefined : ENTRADA}
-      style={[estilos.hoja, elevacion.level1, { maxHeight: alto }]}
+      style={[estilos.hoja, elevacion.level1, sinScroll ? { height: alto } : { maxHeight: alto }]}
       accessibilityViewIsModal={tipo === 'modal'}
     >
-      <SafeAreaView edges={tipo === 'modal' ? ['bottom'] : []} style={estilos.interior}>
+      <SafeAreaView edges={tipo === 'modal' ? ['bottom'] : []} style={[estilos.interior, sinScroll && estilos.flex]}>
         <View
           onTouchStart={(e) => {
             inicioArrastre.current = e.nativeEvent.pageY;
@@ -96,6 +106,15 @@ export function HojaInferior({
           <View style={estilos.asa} />
         </View>
         <View style={estilos.cabecera}>
+          {icono ? (
+            <MaterialCommunityIcons
+              name={icono}
+              size={iconos.linea}
+              color={color.onSurfaceVariant}
+              accessibilityElementsHidden
+              importantForAccessibility="no"
+            />
+          ) : null}
           <Text ref={refTitulo} style={estilos.titulo} accessibilityRole="header">
             {titulo}
           </Text>
@@ -103,9 +122,13 @@ export function HojaInferior({
             <Boton texto="Cerrar" icono="close" variante="text" anchoCompleto={false} onPress={onCerrar} />
           )}
         </View>
-        <ScrollView style={estilos.cuerpo} contentContainerStyle={estilos.contenido} keyboardShouldPersistTaps="handled">
-          {children}
-        </ScrollView>
+        {sinScroll ? (
+          <View style={estilos.flex}>{children}</View>
+        ) : (
+          <ScrollView style={estilos.cuerpo} contentContainerStyle={estilos.contenido} keyboardShouldPersistTaps="handled">
+            {children}
+          </ScrollView>
+        )}
         {pie ? <View style={estilos.pie}>{pie}</View> : null}
       </SafeAreaView>
     </Animated.View>
@@ -115,7 +138,9 @@ export function HojaInferior({
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onCerrar} statusBarTranslucent>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={estilos.raiz}>
+      {/* Android con edge-to-edge (Expo SDK 58): la ventana ya no se redimensiona con el teclado,
+          así que `padding` en ambas plataformas (docs.expo.dev/guides/keyboard-handling). */}
+      <KeyboardAvoidingView behavior="padding" style={estilos.raiz}>
         <Animated.View entering={reducido ? undefined : VELO} style={[StyleSheet.absoluteFill, estilos.velo]}>
           <Pressable
             style={StyleSheet.absoluteFill}
@@ -142,6 +167,7 @@ const estilos = StyleSheet.create({
     borderTopRightRadius: shape.extraLarge,
   },
   interior: { flexShrink: 1 },
+  flex: { flex: 1 },
   zonaAsa: { height: tactil.minimo, alignItems: 'center', justifyContent: 'center' },
   asa: {
     width: medidas.asaAncho,

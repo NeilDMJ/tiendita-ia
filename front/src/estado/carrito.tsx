@@ -6,8 +6,10 @@ import { createContext, use, useEffect, useState, type ReactNode } from 'react';
 
 import type { RespuestaPosCheckout, RespuestaVenta, SolicitudVenta } from '@/api/esquemas';
 import { desdeDetectado, type ItemEditable } from '@/utils/carrito';
+import { crearIdLocal } from '@/utils/id';
 
 import { guardarJson, leerJson } from './almacen';
+import { borrarChatCaja } from './chat';
 
 const CLAVE_BORRADOR = 'carrito-borrador';
 
@@ -17,6 +19,8 @@ export type DatosCarrito = {
   imagenUri: string | null;
   /** Date.now() al abrir la cámara, para el indicador "Antes vs. ahora". */
   inicio: number | null;
+  /** id de la venta en curso: liga la conversación de "Pregúntale a Caja" a esta venta. */
+  sesion?: string;
 };
 
 export type UltimaVenta = {
@@ -68,14 +72,20 @@ export function ProveedorCarrito({ children }: { children: ReactNode }) {
     cargado,
     carrito,
     iniciarCronometro: () => setCarrito((c) => (c.items.length > 0 && c.inicio ? c : { ...c, inicio: Date.now() })),
-    cargarDeFoto: (respuesta, uri) =>
+    cargarDeFoto: (respuesta, uri) => {
+      borrarChatCaja();
       setCarrito((c) => ({
         items: respuesta.items.map(desdeDetectado),
         imagenId: respuesta.imagen_id,
         imagenUri: uri,
         inicio: c.inicio ?? Date.now(),
-      })),
-    cargarItems: (items) => setCarrito({ items, imagenId: null, imagenUri: null, inicio: Date.now() }),
+        sesion: crearIdLocal(),
+      }));
+    },
+    cargarItems: (items) => {
+      borrarChatCaja();
+      setCarrito({ items, imagenId: null, imagenUri: null, inicio: Date.now(), sesion: crearIdLocal() });
+    },
     actualizarItem: (clave, cambios) =>
       setCarrito((c) => ({ ...c, items: c.items.map((i) => (i.clave === clave ? { ...i, ...cambios } : i)) })),
     quitarItem: (clave) => {
@@ -92,8 +102,17 @@ export function ProveedorCarrito({ children }: { children: ReactNode }) {
         return { ...c, items };
       }),
     agregarItem: (item) =>
-      setCarrito((c) => ({ ...c, items: [...c.items, item], inicio: c.inicio ?? Date.now() })),
-    vaciar: () => setCarrito(VACIO),
+      setCarrito((c) => ({
+        ...c,
+        items: [...c.items, item],
+        inicio: c.inicio ?? Date.now(),
+        sesion: c.sesion ?? crearIdLocal(),
+      })),
+    vaciar: () => {
+      // La conversación de "Pregúntale a Caja" se descarta junto con la venta (cobrada o descartada).
+      borrarChatCaja();
+      setCarrito(VACIO);
+    },
     ultimaVenta,
     setUltimaVenta,
   };

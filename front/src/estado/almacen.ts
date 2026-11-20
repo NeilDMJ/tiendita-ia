@@ -20,3 +20,13 @@ export async function guardarJson(clave: string, valor: unknown): Promise<void> 
     // Si el almacenamiento falla, la app sigue funcionando en memoria.
   }
 }
+
+/** Igual que `leerJson`, pero dice si la lectura falló (para avisar "No pudimos abrir…"). */
+export async function leerJsonConError<T>(clave: string): Promise<{ valor: T | null; error: boolean }> {
+  try {
+    const texto = await Storage.getItemAsync(clave);
+    return { valor: texto ? (JSON.parse(texto) as T) : null, error: false };
+  } catch {
+    return { valor: null, error: true };
+  }
+}

@@ -4,7 +4,6 @@
  */
 import { ErrorApi } from '../cliente';
 import type {
-  MensajeAsistente,
   RespuestaCatalogScan,
   RespuestaPosCheckout,
   RespuestaReceiptOcr,
@@ -71,10 +70,3 @@ export const mockReceiptOcr: RespuestaReceiptOcr = {
   tipo: 'compra',
   confianza: 0.83,
 };
-
-export const mockRespuestaAsistente = (texto: string): MensajeAsistente =>
-  /vend/i.test(texto)
-    ? { rol: 'cuentas', texto: 'Hoy llevas $1,245 en 23 ventas. Lo que más salió fue refresco de 600 ml.' }
-    : /acab|stock|falta/i.test(texto)
-      ? { rol: 'bodega', texto: 'Te quedan 3 litros de leche y 2 paquetes de tortillas. ¿Los agrego al pedido del proveedor?' }
-      : { rol: 'general', texto: 'No entendí bien. ¿Quieres cobrar, revisar tu inventario o ver tus ventas?', no_resuelto: true };

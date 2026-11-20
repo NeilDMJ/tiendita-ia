@@ -33,6 +33,8 @@ export default function TabsLayout() {
         headerTitleStyle: { ...type.titleLarge, color: color.onSurface },
         headerTintColor: color.onSurface,
         tabBarAllowFontScaling: true,
+        // La barra se oculta con el teclado (chat del asistente: el compositor queda pegado al teclado).
+        tabBarHideOnKeyboard: true,
         sceneStyle: { backgroundColor: color.surface },
       }}
     >

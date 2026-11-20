@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import type { RolAsistente } from '@/api/esquemas';
 import { ROLES } from '@/constants';
-import { bordes, color, elevacion, espacio, iconos, shape, tactil, type } from '@/theme';
+import { bordes, color, elevacion, espacio, iconos, pesoActivo, shape, tactil, type } from '@/theme';
 import { formatoMoneda, montoParaLector } from '@/utils/formato-moneda';
 
 import { Aviso } from './aviso';
@@ -15,13 +15,33 @@ export type EstadoTarjeta = 'pendiente' | 'confirmando' | 'hecha' | 'rechazada' 
 export interface TarjetaAccionProps {
   rol: RolAsistente;
   titulo: string;
-  resumen?: { izquierda: string; derecha?: string }[];
+  /** `destacado` = lo que cambia (peso 700, señal no cromática). */
+  resumen?: { izquierda: string; derecha?: string; destacado?: boolean; secundario?: boolean }[];
   total?: number;
   textoConfirmar: string;
   estado: EstadoTarjeta;
   simulacion?: boolean;
-  /** 'Folio V-0042' */
+  /** 'Venta registrada · Folio V-0042' */
   resultado?: string;
+  /** Texto del botón filled mientras confirma ("Cobrando…", "Guardando…"). Default "Confirmando…". */
+  textoCargando?: string;
+  /** Por qué ya no está vigente ("Hay una más nueva abajo"). */
+  motivoCaducada?: string;
+  /** Botón del estado `hecha`. Default "Ver comprobante". */
+  textoVerResultado?: string;
+  /** Default "Revisar y editar". */
+  textoEditar?: string;
+  /** Faltan datos: no hay Confirmar; "Revisar y editar" pasa a ser el botón filled (no se cobra incompleto). */
+  soloRevisar?: boolean;
+  /** Motivo visible por el que Confirmar no se puede usar ahora ("Necesita internet", EXC-4). */
+  motivoNoDisponible?: string;
+  /** Estado `error`: título y mensaje humanos. */
+  tituloError?: string;
+  mensajeError?: string;
+  /** Acción de recuperación del error. Default "Reintentar" → onConfirmar. */
+  accionError?: { texto: string; onPress: () => void };
+  /** Dentro de un bottom sheet (`surfaceContainerLow`): contenedor `surfaceContainer` y, sin elevación, borde `outlineVariant`. */
+  enHoja?: boolean;
   onConfirmar: () => void;
   onEditar?: () => void;
   onRechazar?: () => void;
@@ -43,6 +63,16 @@ export function TarjetaAccion({
   estado,
   simulacion,
   resultado,
+  textoCargando = 'Confirmando…',
+  motivoCaducada,
+  textoVerResultado = 'Ver comprobante',
+  textoEditar = 'Revisar y editar',
+  soloRevisar = false,
+  motivoNoDisponible,
+  tituloError = 'No se pudo completar',
+  mensajeError = 'Tus datos siguen aquí.',
+  accionError,
+  enHoja = false,
   onConfirmar,
   onEditar,
   onRechazar,
@@ -55,7 +85,11 @@ export function TarjetaAccion({
 
   return (
     <View
-      style={[estilos.tarjeta, activa || estado === 'error' ? elevacion.level1 : elevacion.level0]}
+      style={[
+        estilos.tarjeta,
+        enHoja && estilos.tarjetaEnHoja,
+        activa || estado === 'error' ? elevacion.level1 : [elevacion.level0, enHoja && estilos.bordeEnHoja],
+      ]}
       accessibilityRole="summary"
       accessibilityLabel={`${r.nombre} propone: ${titulo}${total !== undefined ? `, total ${montoParaLector(total)}` : ''}`}
     >
@@ -76,8 +110,14 @@ export function TarjetaAccion({
         <View style={estilos.resumen}>
           {visibles.map((f, i) => (
             <View key={`${f.izquierda}-${i}`} style={estilos.filaResumen}>
-              <Text style={estilos.textoResumen}>{f.izquierda}</Text>
-              {f.derecha ? <Text style={estilos.textoResumen}>{f.derecha}</Text> : null}
+              <Text style={[estilos.textoResumen, f.secundario && estilos.textoResumenSecundario]}>{f.izquierda}</Text>
+              {f.derecha ? (
+                <Text
+                  style={[estilos.textoResumen, f.secundario && estilos.textoResumenSecundario, f.destacado && estilos.destacado]}
+                >
+                  {f.derecha}
+                </Text>
+              ) : null}
             </View>
           ))}
           {ocultas > 0 ? <Text style={estilos.textoSecundario}>y {ocultas} más</Text> : null}
@@ -93,24 +133,60 @@ export function TarjetaAccion({
       {activa || estado === 'caducada' ? (
         <View style={estilos.botones}>
           {estado === 'caducada' ? (
-            <Text style={estilos.textoSecundario}>Esta propuesta ya no está vigente</Text>
+            <View style={estilos.filaIcono}>
+              <MaterialCommunityIcons
+                name="clock-alert-outline"
+                size={iconos.linea}
+                color={color.onSurfaceVariant}
+                accessibilityElementsHidden
+                importantForAccessibility="no"
+              />
+              <Text style={estilos.textoSecundario}>
+                Esta propuesta ya no está vigente.{motivoCaducada ? ` ${motivoCaducada}` : ''}
+              </Text>
+            </View>
           ) : null}
-          <Boton
-            texto={textoConfirmar}
-            onPress={onConfirmar}
-            cargando={estado === 'confirmando'}
-            textoCargando="Confirmando…"
-            deshabilitado={estado === 'caducada'}
-            motivoDeshabilitado="Esta propuesta ya no está vigente"
-          />
-          {onEditar ? (
+          {motivoNoDisponible && estado === 'pendiente' && !soloRevisar ? (
+            <View style={estilos.filaIcono}>
+              <MaterialCommunityIcons
+                name="wifi-off"
+                size={iconos.linea}
+                color={color.onSurfaceVariant}
+                accessibilityElementsHidden
+                importantForAccessibility="no"
+              />
+              <Text style={estilos.textoSecundario}>{motivoNoDisponible}</Text>
+            </View>
+          ) : null}
+          {soloRevisar && onEditar ? (
             <Boton
-              texto="Revisar y editar"
-              variante="outlined"
+              texto={textoEditar}
+              icono="pencil"
               onPress={onEditar}
               deshabilitado={estado !== 'pendiente'}
+              motivoDeshabilitado="Esta propuesta ya no está vigente"
             />
-          ) : null}
+          ) : (
+            <>
+              <Boton
+                texto={textoConfirmar}
+                onPress={onConfirmar}
+                cargando={estado === 'confirmando'}
+                textoCargando={textoCargando}
+                deshabilitado={estado === 'caducada' || motivoNoDisponible !== undefined}
+                motivoDeshabilitado={motivoNoDisponible ?? 'Esta propuesta ya no está vigente'}
+              />
+              {onEditar ? (
+                <Boton
+                  texto={textoEditar}
+                  variante="outlined"
+                  onPress={onEditar}
+                  deshabilitado={estado !== 'pendiente'}
+                  motivoDeshabilitado="Esta propuesta ya no está vigente"
+                />
+              ) : null}
+            </>
+          )}
           {onRechazar && estado === 'pendiente' ? (
             <Boton texto="No, gracias" variante="text" onPress={onRechazar} />
           ) : null}
@@ -129,7 +205,9 @@ export function TarjetaAccion({
             />
             <Text style={estilos.textoExito}>Listo{resultado ? ` · ${resultado}` : ''}</Text>
           </View>
-          {onVerResultado ? <Boton texto="Ver comprobante" variante="text" anchoCompleto={false} onPress={onVerResultado} /> : null}
+          {onVerResultado ? (
+            <Boton texto={textoVerResultado} variante="text" anchoCompleto={false} onPress={onVerResultado} />
+          ) : null}
         </View>
       ) : null}
 
@@ -147,12 +225,19 @@ export function TarjetaAccion({
       ) : null}
 
       {estado === 'error' ? (
-        <Aviso
-          tipo="error"
-          titulo="No se pudo completar"
-          mensaje="Tus datos siguen aquí."
-          accion={{ texto: 'Reintentar', icono: 'refresh', onPress: onConfirmar }}
-        />
+        <View style={estilos.botones}>
+          <Aviso
+            tipo="error"
+            titulo={tituloError}
+            mensaje={mensajeError}
+            accion={
+              accionError
+                ? { texto: accionError.texto, onPress: accionError.onPress }
+                : { texto: 'Reintentar', icono: 'refresh', onPress: onConfirmar }
+            }
+          />
+          {onEditar && !accionError ? <Boton texto={textoEditar} variante="outlined" onPress={onEditar} /> : null}
+        </View>
       ) : null}
     </View>
   );
@@ -165,6 +250,8 @@ const estilos = StyleSheet.create({
     gap: espacio.m,
     backgroundColor: color.surfaceContainerLow,
   },
+  tarjetaEnHoja: { backgroundColor: color.surfaceContainer },
+  bordeEnHoja: { borderWidth: bordes.fino, borderColor: color.outlineVariant },
   cabecera: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: espacio.s },
   quien: { ...type.labelLarge, color: color.onSurfaceVariant, flex: 1 },
   titulo: { ...type.titleLarge, color: color.onSurface },
@@ -177,6 +264,8 @@ const estilos = StyleSheet.create({
   },
   filaResumen: { flexDirection: 'row', justifyContent: 'space-between', gap: espacio.m },
   textoResumen: { ...type.bodyLarge, color: color.onSurface, flexShrink: 1 },
+  textoResumenSecundario: { color: color.onSurfaceVariant },
+  destacado: { fontWeight: pesoActivo },
   total: { ...type.amount, color: color.onSurface },
   botones: { gap: tactil.separacion },
   resultado: { gap: espacio.xs },
