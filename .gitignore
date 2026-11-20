@@ -37,61 +37,20 @@ MANIFEST
 # Virtual Environments
 .venv/
 venv/
-ENV/
-env/
+*.pyc
 
-# Jupyter Notebook checkpoints
-.ipynb_checkpoints
+# Pesos y datasets pesados (documentar dónde viven en el servidor NVIDIA)
+*.pt
+*.pth
+*.safetensors
+*.onnx
+*.engine
+*.ckpt
+datasets/
 
-# pytest / coverage
+# Claude Code local
+.claude/settings.local.json
+
+__pycache__/
 .pytest_cache/
-.coverage
-htmlcov/
-
-# ==============================================================================
-# Node.js / Frontend
-# ==============================================================================
-node_modules/
-**/node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-store/
-.next/
-out/
-.turbo/
-
-# ==============================================================================
-# Archivos de Claves, Entornos y Secretos
-# ==============================================================================
 .env
-.env.*
-!.env.example
-my_keys.py
-keys.py
-*.pem
-*.key
-
-# ==============================================================================
-# Bases de datos y archivos de runtime
-# ==============================================================================
-*.db
-*.sqlite
-*.sqlite3
-pipeline_states/
-ask_states/
-embedding_work/
-vectorstore/
-*.faiss
-*.pkl
-
-# ==============================================================================
-# Archivos del Sistema Operativo e IDEs
-# ==============================================================================
-.DS_Store
-Thumbs.db
-*:Zone.Identifier
-.idea/
-.vscode/
-*.swp
-*.swo
