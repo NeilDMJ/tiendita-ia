@@ -2,6 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { ChipSugerencia } from '@/components/chip-sugerencia';
+import { DesplegableAcciones } from '@/components/desplegable-acciones';
 import { ROLES, SUGERENCIAS_INICIO, TE_CONTESTAN } from '@/constants';
 import { color, espacio, iconos, tactil, type } from '@/theme';
 
@@ -50,11 +51,11 @@ export function EstadoVacioChat() {
   );
 }
 
-/** "Prueba con:" — chips apilados a ancho completo, anclados arriba del compositor. Tocar = enviar. */
+/** Acciones rápidas (antes "Prueba con:"): desplegable cerrado, anclado arriba del compositor. Tocar un chip = enviar. */
 export function SugerenciasIniciales({ onEnviar }: { onEnviar: (texto: string) => void }) {
   return (
     <View style={estilos.chips}>
-      <Text style={estilos.subtitulo}>Prueba con:</Text>
+      <DesplegableAcciones>
       {SUGERENCIAS_INICIO.map((s) => (
         <ChipSugerencia
           key={s.texto}
@@ -65,6 +66,7 @@ export function SugerenciasIniciales({ onEnviar }: { onEnviar: (texto: string) =
           onPress={() => onEnviar(s.texto)}
         />
       ))}
+      </DesplegableAcciones>
     </View>
   );
 }

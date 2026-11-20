@@ -7,6 +7,7 @@ import { USAR_MOCKS } from '@/api/cliente';
 import type { DatosConfirmarAlta } from '@/api/esquemas';
 import { Aviso } from '@/components/aviso';
 import { ChipSugerencia } from '@/components/chip-sugerencia';
+import { DesplegableAcciones } from '@/components/desplegable-acciones';
 import { Dialogo } from '@/components/dialogo';
 import { Encabezado } from '@/components/encabezado';
 import { EtiquetaSimulacion } from '@/components/etiqueta-simulacion';
@@ -107,7 +108,8 @@ export function PantallaAsistente() {
           />
         ))}
         {m.no_resuelto ? <AlternativasNoResuelto acciones={m.acciones} onAbrir={acciones.abrir} /> : null}
-        {ultimo ? (
+        {ultimo && ((m.sugerencias?.length ?? 0) > 0 || m.no_resuelto) ? (
+          <DesplegableAcciones>
           <View style={estilos.sugerencias}>
             {(m.sugerencias ?? []).map((s) => (
               <ChipSugerencia key={s} texto={s} anchoCompleto={letraGrande} onPress={() => enviarSugerencia(s)} />
@@ -121,6 +123,7 @@ export function PantallaAsistente() {
               />
             ) : null}
           </View>
+          </DesplegableAcciones>
         ) : null}
       </View>
     );
