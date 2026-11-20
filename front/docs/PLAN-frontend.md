@@ -2,7 +2,7 @@
 
 > Hackathon NVIDIA Oaxaca 2026 · Digitalización en procesos de negocios
 > Fuentes: `informacion/idea.txt` (producto) y `informacion/Bases del hackathon…pdf` (reglas).
-> Agentes: `ui-ux-movil` (diseño) → `frontend-implementador` (código) → `revisor-ui-flat` + `revisor-accesibilidad-hci` (auditoría).
+> Agentes: `ui-ux-movil` (diseño) → `frontend-implementador` (código) → `revisor-ui-m3` + `revisor-accesibilidad-hci` (auditoría).
 
 ---
 
@@ -13,7 +13,7 @@
 | Base | `npx create-expo-app@latest` (Expo SDK 58, TypeScript, Expo Router) directamente en `front/` (si ya tiene `docs/`, generar en carpeta temporal y mover) | Plantilla estándar, rutas por archivos |
 | Ejecución en demo | **Expo Go** en teléfono físico (sin build nativo) | Cero tiempo en compilación; cámara funciona en Expo Go |
 | Navegación | Expo Router: `Tabs` (4 pestañas) + `Stack` con modales | Barra inferior ≤ 4 opciones (Nielsen #4) |
-| Estilos | `StyleSheet` + `src/theme.ts` con tokens; **sin NativeWind, sin librerías de UI con sombras** (Paper, NativeBase, etc.) | Control total para cumplir la regla flat (sin sombra/elevation/gradiente) |
+| Estilos | **Material Design 3** con componentes propios: `StyleSheet` + `src/theme.ts` con tokens M3 (roles de color, tipografía, forma, elevación, capas de estado); sin react-native-paper ni NativeWind | Control total de accesibilidad y elevación sin reescribir lo existente |
 | Componentes nativos | Revisar `@expo/ui` caso por caso; solo usarlo si se puede quitar toda elevación/sombra. Por defecto, componentes propios | Las primitivas Material/SwiftUI traen elevación por defecto |
 | Iconos | `@expo/vector-icons` (MaterialCommunityIcons), siempre con etiqueta de texto | Ya viene en la plantilla |
 | Cámara / imágenes | `expo-camera`, `expo-image-picker` (galería), `expo-image-manipulator` (redimensionar/comprimir antes de subir) | 3 modos de visión |
@@ -67,7 +67,7 @@ front/
     ├── hooks/                    # use-conexion.ts, use-cola-offline.ts, use-tutor.ts
     ├── utils/                    # formato-moneda.ts (+ .test.ts), imagen.ts
     ├── constants.ts
-    └── theme.ts                  # tokens flat (colores, bordes, radios, tipografía, espaciado)
+    └── theme.ts                  # tokens M3 (roles de color, tipografía, forma, elevación, estados, espaciado)
 ```
 
 ---
@@ -106,7 +106,7 @@ Errores HTTP esperados: `422` imagen no procesable · `400` datos faltantes · `
 
 ## 3. Fases de trabajo (24 h)
 
-Cada fase sigue el mismo ciclo: **diseño (`ui-ux-movil`) → código (`frontend-implementador`) → auditoría (`revisor-ui-flat` + `revisor-accesibilidad-hci`) → corregir bloqueantes**.
+Cada fase sigue el mismo ciclo: **diseño (`ui-ux-movil`) → código (`frontend-implementador`) → auditoría (`revisor-ui-m3` + `revisor-accesibilidad-hci`) → corregir bloqueantes**.
 
 ### Fase 0 · Arranque (h 0–1)
 - [ ] `npx create-expo-app@latest` → contenido a `front/`, `npm run reset-project` para limpiar la plantilla, confirmar que usa `src/app`.
@@ -118,7 +118,7 @@ Cada fase sigue el mismo ciclo: **diseño (`ui-ux-movil`) → código (`frontend
 ### Fase 1 · Sistema de diseño (h 1–3)
 - [ ] `ui-ux-movil`: spec de tokens y componentes base → `docs/diseno/00-sistema.md`.
 - [ ] `theme.ts` + componentes: `Boton` (primario/secundario/peligro, ≥48 px), `Campo` (con error en línea), `StepperCantidad` (+/−), `Aviso` (error/éxito/sin conexión, icono + texto), `IndicadorConfianza`, `EtiquetaSimulacion`, `BarraEstado` (pasos), `FilaProducto`, `TarjetaAccion`.
-- [ ] Revisión flat + accesibilidad (tabla de contraste).
+- [ ] Revisión M3 + accesibilidad (tabla de contraste).
 - **Listo cuando:** cero `shadow*`/`elevation>0`/gradientes; todos los pares de color ≥ 4.5:1.
 
 ### Fase 2 · Recorrido principal: Cobrar con foto (h 3–9) ⭐ prioridad máxima
@@ -180,5 +180,5 @@ Front trabaja con `EXPO_PUBLIC_USE_MOCKS=1` hasta que back publique cada endpoin
 - [ ] Diseño en `docs/diseno/` aprobado.
 - [ ] Estados: vacío, cargando, error, éxito, sin conexión.
 - [ ] Lo interpretado por IA es editable antes de guardar.
-- [ ] `revisor-ui-flat` ✅ y `revisor-accesibilidad-hci` sin bloqueantes.
+- [ ] `revisor-ui-m3` ✅ y `revisor-accesibilidad-hci` sin bloqueantes.
 - [ ] Lint y `tsc` pasan; probado en teléfono con Expo Go.

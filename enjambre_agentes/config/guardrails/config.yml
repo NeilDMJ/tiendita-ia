@@ -1,0 +1,14 @@
+# Configuración de NeMo Guardrails para Tiendita IA
+models:
+  - type: main
+    engine: nvidia-ai-endpoints
+    model: nvidia/nemotron-3-super-120b-a12b
+
+rails:
+  input:
+    flows:
+      - check prompt injection
+  output:
+    flows:
+      - prevent cost leakage
+      - enforce concise ui sentences

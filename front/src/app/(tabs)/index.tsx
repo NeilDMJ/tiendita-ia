@@ -1,5 +1,10 @@
-import { PantallaPendiente } from '@/components/pantalla-pendiente';
+import { ContenedorPantalla } from '@/components/contenedor-pantalla';
+import { PantallaInicio } from '@/screens/inicio';
 
 export default function Inicio() {
-  return <PantallaPendiente titulo="Inicio" descripcion="Ventas del día, alertas y accesos rápidos a la cámara." />;
+  return (
+    <ContenedorPantalla>
+      <PantallaInicio />
+    </ContenedorPantalla>
+  );
 }

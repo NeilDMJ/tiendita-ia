@@ -7,7 +7,10 @@ export function useConexion() {
   useEffect(
     () =>
       NetInfo.addEventListener((estado) => {
-        setConectado(estado.isConnected !== false && estado.isInternetReachable !== false);
+        // Solo isConnected: isInternetReachable da falsos negativos (prueba contra un servidor externo
+        // que puede estar bloqueado o lento) aunque el back sí responda. Si de verdad no hay salida,
+        // la petición falla y cliente.ts lo reporta como 'sin_conexion'.
+        setConectado(estado.isConnected !== false);
       }),
     [],
   );

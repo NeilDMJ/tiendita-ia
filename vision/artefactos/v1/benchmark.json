@@ -1,0 +1,39 @@
+{
+  "fecha": "2026-11-20T11:31:59+00:00",
+  "herramienta_nvidia": "TensorRT — compila el grafo ONNX a un motor optimizado para la GPU (fusión de capas, precisión FP16 con Tensor Cores, selección de kernels)",
+  "entorno": {
+    "python": "3.10.12",
+    "so": "Linux-6.5.0-1014-aws-x86_64-with-glibc2.35",
+    "torch": "2.5.1+cu121",
+    "cudnn": "desactivado (SIN_CUDNN)",
+    "cuda": "12.1",
+    "gpu": "Tesla T4",
+    "ultralytics": "8.3.253",
+    "tensorrt": "10.7.0.post1",
+    "nvidia_smi": "Tesla T4, 545.23.08, 15360 MiB"
+  },
+  "resultados": {
+    "PyTorch FP32 (best.pt)": {
+      "inferencia_ms_media": 8.76,
+      "inferencia_ms_p95": 9.07,
+      "total_ms_media": 12.29,
+      "fps_inferencia": 114.1,
+      "exactitud_top1": 0.9551,
+      "fotos": 401
+    },
+    "TensorRT FP16 (best.engine)": {
+      "inferencia_ms_media": 1.04,
+      "inferencia_ms_p95": 1.05,
+      "total_ms_media": 4.83,
+      "fps_inferencia": 964.1,
+      "exactitud_top1": 0.9551,
+      "fotos": 401
+    }
+  },
+  "aceleracion_inferencia_x": 8.42,
+  "artefactos": {
+    "best.pt": "9ce20a977c1bb6d98e53c5d54927a8c5219844d359a19ca14909a8115112987e",
+    "best.onnx": "7d49bbfc380e94d5a009e2cb13dceba46e8e8c204eacda4e4f31dfaa63336d36",
+    "best.engine": "8557107f287c4e21cdee8d1fbe60471538d44f62b20f736c58f5de1dbe172a9b"
+  }
+}

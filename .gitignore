@@ -1,10 +1,46 @@
 # Secretos
+API_nvidia
 .env
 .env.*
 !.env.example
 
-# Python (back)
+# ==============================================================================
+# Repositorios Subyacentes Ignorados
+# ==============================================================================
+enjambre_agentes/agripoli/
+enjambre_agentes/OptiAgent/
+enjambre_agentes/Research-Knowledge-Backend/
+**/agripoli/
+**/OptiAgent/
+**/Research-Knowledge-Backend/
+
+# ==============================================================================
+# Python & Bytecode
+# ==============================================================================
 __pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
 .venv/
 venv/
 *.pyc
@@ -13,6 +49,7 @@ venv/
 *.pt
 *.pth
 *.safetensors
+*.gguf
 *.onnx
 *.engine
 *.ckpt
@@ -20,3 +57,16 @@ datasets/
 
 # Claude Code local
 .claude/settings.local.json
+
+__pycache__/
+.pytest_cache/
+.env
+wheels_dli/
+/raw.zip
+/vision.zip
+/wheels_dli.zip
+wheels_torch/
+
+# Pesos del modelo de visión oficial (los usa back/vision; el .engine solo corre en la T4 del DLI)
+!vision/artefactos/v1/best.onnx
+!vision/artefactos/v1/best.pt

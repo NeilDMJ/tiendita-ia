@@ -1,0 +1,31 @@
+# Base de datos de la Tiendita IA (PostgreSQL 16 + pgvector).
+# Uso:  cp .env.example .env  &&  docker compose up -d db
+# Los scripts de db/init/ solo corren la PRIMERA vez (volumen vacío).
+# Para reiniciar desde cero:  docker compose down -v && docker compose up -d db
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: tiendita-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-tiendita}
+      POSTGRES_USER: ${DB_USER:-tiendita}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD en back/.env (copia .env.example)}
+      CARGAR_SEMILLA: ${CARGAR_SEMILLA:-1}
+      TZ: America/Mexico_City
+      PGTZ: America/Mexico_City
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+      - ./db/semilla:/semilla:ro
+      - ./datos:/datos:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  pgdata: {}

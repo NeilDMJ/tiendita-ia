@@ -1,0 +1,102 @@
+{
+  "before": [
+    {
+      "role": "tutor_ui",
+      "tag": "codi_error",
+      "user": "Método: CODI | Pantalla: cobro_qr | Paso: 2 | Error: QR_EXPIRADO",
+      "expected": "El mensaje de cobro QR caducó por tiempo de espera en pantalla. Genera un nuevo código QR desde la opción Cobrar con CoDi y solicita al cliente escanearlo de inmediato.",
+      "predicted": "Por favor, inténtelo nuevamente o comuníquese con soporte técnico para resolver este problema.",
+      "sentences": 1
+    },
+    {
+      "role": "tutor_ui",
+      "tag": "guias_bbva_guia",
+      "user": "Guía rápida para cajero -> Método: SPEI | Pantalla: Resumen | Paso: 6 | Error: Ninguno | Banco: BBVA",
+      "expected": "Revisa el resumen: nombre del beneficiario, monto y cuenta. Verifica el beneficiario y el monto antes de autorizar en tu app.",
+      "predicted": "Para resolver este problema, verifica si has ingresado correctamente tu cuenta bancaria y contraseña en la aplicación. Si aún no lo has hecho, hazlo nuevamente siguiendo los pasos del resumen.",
+      "sentences": 2
+    },
+    {
+      "role": "tutor_ui",
+      "tag": "dimo_resumen",
+      "user": "Método: DIMO | Pantalla: confirmacion | Paso: 3 | Error: BANCO_INCORRECTO",
+      "expected": "Pide al cliente revisar en el resumen que aparezca el nombre correcto del titular y banco antes de confirmar. Una transferencia confirmada no siempre puede deshacerse.",
+      "predicted": "Por favor, verifique los datos del banco ingresados. Si es necesario, contacte al banco para corregirlos.",
+      "sentences": 2
+    },
+    {
+      "role": "tutor_ui",
+      "tag": "dimo_flujo",
+      "user": "Método: DIMO | Pantalla: transferir | Paso: 1 | Error: Ninguno",
+      "expected": "Comparte tu número de teléfono celular a 10 dígitos vinculado a DiMo y confirma el banco receptor. Pide al cliente capturar el monto exacto y confirmar en su app.",
+      "predicted": "Continúa con la operación siguiendo los pasos del sistema.",
+      "sentences": 1
+    },
+    {
+      "role": "tutor_ui",
+      "tag": "codi_horario",
+      "user": "Método: CODI | Pantalla: cobro_qr | Paso: 1 | Error: HORARIO_NOCTURNO",
+      "expected": "CoDi opera las 24 horas todos los días del año en cuestión de segundos. Genera el QR normalmente y valida el abono inmediato en los movimientos de tu cuenta.",
+      "predicted": "Por favor, compruebe su horario de operaciones. La transacción se realizará durante los horarios diurnos.",
+      "sentences": 2
+    },
+    {
+      "role": "tutor_ui",
+      "tag": "codi_qr",
+      "user": "Método: CODI | Pantalla: cobro_qr | Paso: 2 | Error: CAMARA_NO_LEE_QR",
+      "expected": "Aumenta el brillo de tu pantalla y evita reflejos directos sobre el código QR. Si la cámara sigue sin leerlo, envía el cobro CoDi usando el número de teléfono del cliente.",
+      "predicted": "Por favor, asegúrate de que la cámara del dispositivo esté bien configurada para leer QR codes. Si sigue sin funcionar, intenta reiniciar el teléfono o contacta al soporte técnico.",
+      "sentences": 2
+    }
+  ],
+  "after": [
+    {
+      "role": "tutor_ui",
+      "tag": "codi_error",
+      "user": "Método: CODI | Pantalla: cobro_qr | Paso: 2 | Error: QR_EXPIRADO",
+      "expected": "El mensaje de cobro QR caducó por tiempo de espera en pantalla. Genera un nuevo código QR desde la opción Cobrar con CoDi y solicita al cliente escanearlo de inmediato.",
+      "predicted": "El código QR ha expirado. Genera uno nuevo o pide al cliente capturar el monto directamente en su app.",
+      "sentences": 2
+    },
+    {
+      "role": "tutor_ui",
+      "tag": "guias_bbva_guia",
+      "user": "Guía rápida para cajero -> Método: SPEI | Pantalla: Resumen | Paso: 6 | Error: Ninguno | Banco: BBVA",
+      "expected": "Revisa el resumen: nombre del beneficiario, monto y cuenta. Verifica el beneficiario y el monto antes de autorizar en tu app.",
+      "predicted": "En la pantalla Resumen, muestra al cliente su saldo disponible y el monto exacto del depósito SPEI que le solicitaron registrar. Pide confirmación del beneficiario antes de autorizar en tu app.",
+      "sentences": 2
+    },
+    {
+      "role": "tutor_ui",
+      "tag": "dimo_resumen",
+      "user": "Método: DIMO | Pantalla: confirmacion | Paso: 3 | Error: BANCO_INCORRECTO",
+      "expected": "Pide al cliente revisar en el resumen que aparezca el nombre correcto del titular y banco antes de confirmar. Una transferencia confirmada no siempre puede deshacerse.",
+      "predicted": "Si el banco no se encuentra en la lista, prueba con otro método de seguridad o pídele a tu cliente activar Movimientos Diarios en su app bancaria.",
+      "sentences": 1
+    },
+    {
+      "role": "tutor_ui",
+      "tag": "dimo_flujo",
+      "user": "Método: DIMO | Pantalla: transferir | Paso: 1 | Error: Ninguno",
+      "expected": "Comparte tu número de teléfono celular a 10 dígitos vinculado a DiMo y confirma el banco receptor. Pide al cliente capturar el monto exacto y confirmar en su app.",
+      "predicted": "Proporciona al cliente tu CLABE interbancaria de 18 dígitos y el nombre exacto del titular. Pide capturar el monto exacto antes de autorizar en tu app.",
+      "sentences": 2
+    },
+    {
+      "role": "tutor_ui",
+      "tag": "codi_horario",
+      "user": "Método: CODI | Pantalla: cobro_qr | Paso: 1 | Error: HORARIO_NOCTURNO",
+      "expected": "CoDi opera las 24 horas todos los días del año en cuestión de segundos. Genera el QR normalmente y valida el abono inmediato en los movimientos de tu cuenta.",
+      "predicted": "El horario nocturno es de 00:00 a 06:00 horas. Pide al cliente entregar la mercancía antes de esa hora o retrasar la entrega.",
+      "sentences": 2
+    },
+    {
+      "role": "tutor_ui",
+      "tag": "codi_qr",
+      "user": "Método: CODI | Pantalla: cobro_qr | Paso: 2 | Error: CAMARA_NO_LEE_QR",
+      "expected": "Aumenta el brillo de tu pantalla y evita reflejos directos sobre el código QR. Si la cámara sigue sin leerlo, envía el cobro CoDi usando el número de teléfono del cliente.",
+      "predicted": "El cliente no lee QRs capturados por su cámara. Proporciona la clabe directa o transferencia SPEI para abonar.",
+      "sentences": 2
+    }
+  ]
+}

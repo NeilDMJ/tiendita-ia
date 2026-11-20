@@ -1,0 +1,9 @@
+# Entorno DLI: Tesla T4, driver 545 (CUDA <= 12.3), Ubuntu 22.04, Python 3.10.
+# PyTorch se instala aparte desde el índice cu121 (ver notebook): el de PyPI pide un driver más nuevo.
+#   pip install torch==2.5.1 torchvision==0.20.1 --index-url https://download.pytorch.org/whl/cu121
+ultralytics>=8.3,<8.4
+onnx>=1.16
+onnxslim
+onnxruntime
+tensorrt-cu12>=10.0,<10.8
+pyyaml

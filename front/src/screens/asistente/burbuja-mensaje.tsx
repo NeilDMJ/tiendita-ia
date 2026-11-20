@@ -1,0 +1,356 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import Animated, { FadeIn, useReducedMotion } from 'react-native-reanimated';
+
+import type { PasoAgente, PasoGuia, RolAsistente } from '@/api/esquemas';
+import { Boton } from '@/components/boton';
+import { datosRol } from '@/constants';
+import { motivoFallo, type MensajeChat } from '@/estado/chat';
+import { color, espacio, iconos, motion, shape, tactil, type } from '@/theme';
+import { hora } from '@/utils/fecha';
+import { limpiarFormato } from '@/utils/texto-chat';
+
+const ENTRADA = FadeIn.duration(motion.duration.short4);
+
+type IconoMci = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
+
+function iconoParaAgente(rol?: string): IconoMci {
+  switch ((rol ?? '').toLowerCase()) {
+    case 'supervisor':
+      return 'compass-outline';
+    case 'control':
+      return 'package-variant-closed';
+    case 'vendedor':
+      return 'cash-register';
+    case 'analista':
+      return 'chart-line';
+    case 'investigador':
+      return 'magnify';
+    case 'publicista':
+      return 'bullhorn-outline';
+    case 'tutor_ui':
+      return 'cellphone-check';
+    case 'hitl':
+      return 'shield-check-outline';
+    default:
+      return 'robot-outline';
+  }
+}
+
+/** Icono + nombre del oficio sobre la burbuja (rol = icono + nombre, nunca color). */
+export function CabeceraRol({ rol }: { rol: RolAsistente }) {
+  const r = datosRol(rol);
+  return (
+    <View style={estilos.cabecera} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      <MaterialCommunityIcons name={r.icono} size={iconos.linea} color={color.onSurfaceVariant} />
+      <Text style={estilos.nombreRol}>{r.nombre}</Text>
+    </View>
+  );
+}
+
+/**
+ * Modo Thinking del enjambre: muestra paso a paso cómo interactuaron los agentes
+ * (Supervisor -> Especialistas -> HITL) igual que en el CLI, colapsable con un toque.
+ */
+function TrazaAgentes({ pasos }: { pasos: PasoAgente[] }) {
+  const [abierto, setAbierto] = useState(true);
+  const nombresFlujo = pasos
+    .map((p) => p.agente.split(' ')[0])
+    .filter((v, i, arr) => arr[i - 1] !== v)
+    .join(' → ');
+
+  return (
+    <View style={estilos.thinkingCard}>
+      <Pressable
+        onPress={() => setAbierto((v) => !v)}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: abierto }}
+        accessibilityLabel={`Pensamiento del enjambre: ${nombresFlujo}. Toca para ${abierto ? 'ocultar' : 'ver'} pasos.`}
+        style={estilos.thinkingHeader}
+      >
+        <View style={estilos.thinkingTitleRow}>
+          <MaterialCommunityIcons name="head-cog-outline" size={iconos.chico} color={color.primary} />
+          <Text style={estilos.thinkingTitle} numberOfLines={1}>
+            Thinking · {nombresFlujo}
+          </Text>
+        </View>
+        <MaterialCommunityIcons
+          name={abierto ? 'chevron-up' : 'chevron-down'}
+          size={iconos.linea}
+          color={color.onSurfaceVariant}
+        />
+      </Pressable>
+
+      {abierto ? (
+        <View style={estilos.thinkingBody}>
+          {pasos.map((paso, idx) => (
+            <View
+              key={`${paso.agente}-${idx}`}
+              style={estilos.thinkingStep}
+              accessible
+              accessibilityLabel={`${paso.agente}: ${paso.resumen}`}
+            >
+              <View style={estilos.thinkingRailCol}>
+                <View style={estilos.thinkingBadgeIcon}>
+                  <MaterialCommunityIcons
+                    name={iconoParaAgente(paso.rol)}
+                    size={14}
+                    color={color.primary}
+                  />
+                </View>
+                {idx < pasos.length - 1 ? <View style={estilos.thinkingConnector} /> : null}
+              </View>
+              <View style={estilos.thinkingStepContent}>
+                <Text style={estilos.thinkingAgentName}>{paso.agente}</Text>
+                <Text style={estilos.thinkingStepText}>{paso.resumen}</Text>
+              </View>
+            </View>
+          ))}
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+/** Pasos de una guía bancaria: numerados, con el nombre de la pantalla y los avisos de seguridad. */
+function GuiaPasos({
+  pasos,
+  advertencias,
+  verificada,
+}: {
+  pasos: PasoGuia[];
+  advertencias?: string[];
+  verificada?: boolean;
+}) {
+  return (
+    <View style={estilos.guia}>
+      <Text style={estilos.guiaEstado}>
+        {verificada ? 'Guía verificada' : 'Pasos generales: tu app puede verse distinta'}
+      </Text>
+      {pasos.map((p) => (
+        <View key={p.n} style={estilos.paso} accessible accessibilityLabel={`Paso ${p.n}. ${p.texto}`}>
+          <Text style={estilos.pasoNumero}>{p.n}</Text>
+          <View style={estilos.pasoCuerpo}>
+            <Text style={estilos.pasoTexto}>{p.texto}</Text>
+            {p.pantalla ? <Text style={estilos.pasoPantalla}>Pantalla: {p.pantalla}</Text> : null}
+          </View>
+        </View>
+      ))}
+      {(advertencias ?? []).map((a) => (
+        <View key={a} style={estilos.aviso} accessible accessibilityLabel={`Aviso de seguridad. ${a}`}>
+          <MaterialCommunityIcons name="shield-alert-outline" size={iconos.linea} color={color.onSurfaceVariant} />
+          <Text style={estilos.avisoTexto}>{a}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+export interface BurbujaMensajeProps {
+  mensaje: MensajeChat;
+  /** Primer mensaje de un bloque del mismo autor/rol. */
+  cabecera: boolean;
+  letraGrande: boolean;
+  onReintentar?: () => void;
+  onBorrar?: () => void;
+  onCancelarEspera?: () => void;
+}
+
+/**
+ * Burbuja de chat armada con tokens M3 (02-asistente §2.2): tendero a la derecha en `primaryContainer`,
+ * asistente a la izquierda en `surfaceContainerHigh`; esquina del autor recortada (`extraSmall`).
+ * Incluye panel colapsable de "Modo Thinking" cuando el enjambre multiagente reporta su traza.
+ */
+export function BurbujaMensaje({
+  mensaje,
+  cabecera,
+  letraGrande,
+  onReintentar,
+  onBorrar,
+  onCancelarEspera,
+}: BurbujaMensajeProps) {
+  const reducido = useReducedMotion();
+  const esTendero = mensaje.autor === 'tendero';
+  const texto = esTendero ? mensaje.texto : limpiarFormato(mensaje.texto);
+  const quien = esTendero ? 'Tú' : datosRol(mensaje.rol).nombre;
+  const estadoTendero = esTendero ? mensaje.estado : null;
+  const fallo = esTendero && mensaje.estado === 'fallido' ? motivoFallo(mensaje.error) : null;
+  const etiquetaEstado =
+    estadoTendero === 'en_espera' ? ' Se enviará al volver el internet.' : fallo ? ` ${fallo}` : '';
+
+  return (
+    <Animated.View
+      entering={reducido ? undefined : ENTRADA}
+      style={[estilos.bloque, esTendero ? estilos.derecha : estilos.izquierda, letraGrande && estilos.anchoCompleto]}
+    >
+      {!esTendero && cabecera ? <CabeceraRol rol={mensaje.rol} /> : null}
+      {esTendero && cabecera && letraGrande ? <Text style={estilos.tu}>Tú</Text> : null}
+
+      {!esTendero && mensaje.traza_agentes?.length ? <TrazaAgentes pasos={mensaje.traza_agentes} /> : null}
+
+      <View
+        accessible
+        accessibilityLabel={`${quien}: ${texto}. ${hora(mensaje.creado_en)}.${etiquetaEstado}`}
+        style={[estilos.burbuja, esTendero ? estilos.burbujaTendero : estilos.burbujaAsistente]}
+      >
+        <Text style={[estilos.texto, esTendero ? estilos.textoTendero : estilos.textoAsistente]}>{texto}</Text>
+      </View>
+      {!esTendero && mensaje.pasos?.length ? (
+        <GuiaPasos pasos={mensaje.pasos} advertencias={mensaje.advertencias} verificada={mensaje.guia_verificada} />
+      ) : null}
+      <Text
+        style={[estilos.hora, esTendero && estilos.horaDerecha]}
+        accessibilityElementsHidden
+        importantForAccessibility="no"
+      >
+        {hora(mensaje.creado_en)}
+      </Text>
+
+      {estadoTendero === 'en_espera' ? (
+        <View style={estilos.estado}>
+          <View style={estilos.filaEstado}>
+            <MaterialCommunityIcons
+              name="clock-outline"
+              size={iconos.chico}
+              color={color.onSurfaceVariant}
+              accessibilityElementsHidden
+              importantForAccessibility="no"
+            />
+            <Text style={estilos.textoEspera}>Se enviará al volver el internet</Text>
+          </View>
+          {onCancelarEspera ? (
+            <Boton texto="Cancelar envío" variante="text" anchoCompleto={false} onPress={onCancelarEspera} style={estilos.botonDerecha} />
+          ) : null}
+        </View>
+      ) : null}
+
+      {fallo ? (
+        <View style={estilos.estado}>
+          <View style={estilos.filaEstado}>
+            <MaterialCommunityIcons
+              name="alert-circle"
+              size={iconos.chico}
+              color={color.error}
+              accessibilityElementsHidden
+              importantForAccessibility="no"
+            />
+            <Text style={estilos.textoFallo}>{fallo}</Text>
+          </View>
+          <View style={estilos.accionesFallo}>
+            {onBorrar ? <Boton texto="Borrar" variante="text" anchoCompleto={false} onPress={onBorrar} /> : null}
+            {onReintentar ? (
+              <Boton texto="Reintentar" icono="refresh" variante="text" anchoCompleto={false} onPress={onReintentar} />
+            ) : null}
+          </View>
+        </View>
+      ) : null}
+    </Animated.View>
+  );
+}
+
+const estilos = StyleSheet.create({
+  bloque: { maxWidth: '88%', gap: espacio.xs },
+  derecha: { alignSelf: 'flex-end', alignItems: 'flex-end', marginLeft: tactil.minimo },
+  izquierda: { alignSelf: 'flex-start', alignItems: 'flex-start', marginRight: tactil.minimo },
+  anchoCompleto: { maxWidth: '100%', marginLeft: 0, marginRight: 0, alignSelf: 'stretch' },
+  cabecera: { flexDirection: 'row', alignItems: 'center', gap: espacio.s },
+  nombreRol: { ...type.titleSmall, color: color.onSurface },
+  tu: { ...type.titleSmall, color: color.onSurfaceVariant },
+  burbuja: { paddingHorizontal: espacio.l, paddingVertical: espacio.m, borderRadius: shape.large },
+  burbujaTendero: { backgroundColor: color.primaryContainer, borderBottomRightRadius: shape.extraSmall },
+  burbujaAsistente: { backgroundColor: color.surfaceContainerHigh, borderTopLeftRadius: shape.extraSmall },
+  texto: { ...type.bodyLargePlus },
+  textoTendero: { color: color.onPrimaryContainer },
+  textoAsistente: { color: color.onSurface },
+  hora: { ...type.labelLarge, color: color.onSurfaceVariant },
+  horaDerecha: { textAlign: 'right' },
+  estado: { alignItems: 'flex-end', gap: espacio.xs },
+  filaEstado: { flexDirection: 'row', alignItems: 'center', gap: espacio.xs, flexWrap: 'wrap', justifyContent: 'flex-end' },
+  textoEspera: { ...type.bodyLarge, color: color.onSurfaceVariant, flexShrink: 1 },
+  textoFallo: { ...type.labelLarge, color: color.error, flexShrink: 1 },
+  accionesFallo: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-end', gap: tactil.separacion },
+  botonDerecha: { alignSelf: 'flex-end' },
+  // Modo Thinking (traza de interacción de agentes)
+  thinkingCard: {
+    alignSelf: 'stretch',
+    backgroundColor: color.surfaceContainerLow,
+    borderRadius: shape.medium,
+    borderLeftWidth: 3,
+    borderLeftColor: color.primary,
+    paddingHorizontal: espacio.m,
+    paddingVertical: espacio.s,
+    gap: espacio.s,
+  },
+  thinkingHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: espacio.s,
+    minHeight: 32,
+  },
+  thinkingTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: espacio.xs,
+    flex: 1,
+  },
+  thinkingTitle: {
+    ...type.labelLarge,
+    color: color.primary,
+    flexShrink: 1,
+  },
+  thinkingBody: {
+    gap: espacio.s,
+    paddingTop: espacio.xs,
+  },
+  thinkingStep: {
+    flexDirection: 'row',
+    gap: espacio.s,
+    alignItems: 'stretch',
+  },
+  thinkingRailCol: {
+    alignItems: 'center',
+    width: 22,
+  },
+  thinkingBadgeIcon: {
+    width: 22,
+    height: 22,
+    borderRadius: shape.full,
+    backgroundColor: color.primaryContainer,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  thinkingConnector: {
+    flex: 1,
+    width: 2,
+    minHeight: 10,
+    backgroundColor: color.outlineVariant,
+    marginTop: 2,
+  },
+  thinkingStepContent: {
+    flex: 1,
+    gap: 2,
+    paddingBottom: 2,
+  },
+  thinkingAgentName: {
+    ...type.labelLarge,
+    color: color.onSurface,
+  },
+  thinkingStepText: {
+    ...type.bodyLarge,
+    fontSize: 13,
+    lineHeight: 18,
+    color: color.onSurfaceVariant,
+  },
+  // Guía bancaria
+  guia: { gap: espacio.s, alignSelf: 'stretch', backgroundColor: color.surfaceContainerLow, borderRadius: shape.large, padding: espacio.l },
+  guiaEstado: { ...type.labelLarge, color: color.onSurfaceVariant },
+  paso: { flexDirection: 'row', gap: espacio.m, alignItems: 'flex-start' },
+  pasoNumero: { ...type.titleSmall, color: color.onPrimaryContainer, backgroundColor: color.primaryContainer, borderRadius: shape.full, minWidth: 28, textAlign: 'center', paddingVertical: 2 },
+  pasoCuerpo: { flex: 1, gap: 2 },
+  pasoTexto: { ...type.bodyLarge, color: color.onSurface },
+  pasoPantalla: { ...type.labelLarge, color: color.onSurfaceVariant },
+  aviso: { flexDirection: 'row', gap: espacio.s, alignItems: 'flex-start' },
+  avisoTexto: { ...type.bodyLarge, color: color.onSurfaceVariant, flex: 1 },
+});

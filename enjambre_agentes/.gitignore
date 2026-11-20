@@ -1,0 +1,25 @@
+.env
+__pycache__/
+*.pyc
+output/*.json
+vectorstore_temp/
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+data/*.zip
+
+# Artefactos binarios pesados de LoRA (se conservan métricas, configs, Modelfile y datasets JSONL)
+data/loras/**/*.gguf
+data/loras/**/*.safetensors
+data/loras/**/*.bin
+data/loras/**/*.pt
+data/loras/**/*.pth
+data/loras/**/tokenizer.json
+data/loras/**/*_merged/
+
+# Índices vectoriales binarios y matrices pesadas regenerables (se conservan guias.json, conocimiento.jsonl y manifiestos)
+data/vectorstores/faiss/*.faiss
+data/vectorstores/faiss/*.pkl
+data/Embeddings/datos/embeddings.npz

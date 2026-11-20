@@ -1,0 +1,45 @@
+# ==============================================================================
+# Configuración de Modelos por Rol para Tiendita IA
+# NVIDIA NIM / NeMo + Modelos de Contingencia Multicapa
+# ==============================================================================
+
+modelos:
+  supervisor:
+    proveedor: NVIDIA
+    modelo: nvidia/nemotron-3-super-120b-a12b
+    temperatura: 0.1
+  control:
+    proveedor: NVIDIA
+    modelo: nvidia/llama-3.1-nemotron-nano-8b-v1
+    temperatura: 0.1
+    adaptador_lora: control_inventory_v1
+  vendedor:
+    proveedor: NVIDIA
+    modelo: nvidia/llama-3.1-nemotron-nano-8b-v1
+    temperatura: 0.2
+    adaptador_lora: pos_upsell_v1
+  analista:
+    proveedor: NVIDIA
+    modelo: nvidia/nemotron-3-super-120b-a12b
+    temperatura: 0.1
+  investigador:
+    proveedor: NVIDIA
+    modelo: nvidia/nemotron-3-super-120b-a12b
+    temperatura: 0.2
+  publicista:
+    proveedor: NVIDIA
+    modelo: nvidia/llama-3.1-nemotron-nano-8b-v1
+    temperatura: 0.4
+    adaptador_lora: promo_copy_v1
+  tutor_ui:
+    proveedor: NVIDIA
+    modelo: nvidia/llama-3.1-nemotron-nano-8b-v1
+    temperatura: 0.0
+    adaptador_lora: tutor_ui_concise_v1
+
+configuracion:
+  max_iteraciones_supervisor: 6
+  confirmacion_hitl: manual
+  flow_type: Multimodal_Orquestado
+  guardar_feedback_local: true
+  nemo_guardrails_activo: true

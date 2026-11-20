@@ -1,0 +1,53 @@
+{
+  "_nota": "Los textos de botones de BBVA son SUPUESTOS: verificar a mano en la app vigente y actualizar version_app/verificado_en antes de presentarlos como verificados.",
+  "verificadas": {
+    "BBVA:transferencia": {
+      "version_app": null,
+      "verificado_en": null,
+      "pasos": [
+        {"texto": "Abre tu app de BBVA e inicia sesión como lo haces normalmente.", "pantalla": "Inicio de sesión"},
+        {"texto": "En la pantalla principal, busca la opción “Transferir” (o “Enviar dinero”) y tócala.", "pantalla": "Pantalla principal"},
+        {"texto": "Elige a quién le vas a enviar: un contacto guardado o agregar una cuenta nueva.", "pantalla": "Transferir"},
+        {"texto": "Si es cuenta nueva, captura la CLABE, tarjeta o celular del destinatario directamente en tu app.", "pantalla": "Transferir"},
+        {"texto": "Escribe el monto y un concepto (por ejemplo, “pago de mercancía”).", "pantalla": "Monto y concepto"},
+        {"texto": "Revisa el resumen: nombre del beneficiario, monto y cuenta.", "pantalla": "Resumen"},
+        {"texto": "Si todo está bien, toca “Confirmar” y autoriza con tu método de seguridad.", "pantalla": "Confirmación"},
+        {"texto": "Guarda el comprobante que te muestra la app.", "pantalla": "Comprobante"}
+      ]
+    }
+  },
+  "genericas": {
+    "transferencia": [
+      {"texto": "Abre la app de tu banco e inicia sesión."},
+      {"texto": "Busca la opción de transferencias o enviar dinero."},
+      {"texto": "Elige o agrega al destinatario."},
+      {"texto": "Captura el monto y el concepto."},
+      {"texto": "Revisa el resumen y confirma con tu método de seguridad."}
+    ],
+    "pago_servicio": [
+      {"texto": "Abre la app de tu banco e inicia sesión."},
+      {"texto": "Busca “Pagar servicios” o “Pago de servicios”."},
+      {"texto": "Elige el servicio (luz, agua, teléfono…) y captura la referencia de tu recibo."},
+      {"texto": "Revisa el importe y la cuenta de cargo, y confirma."}
+    ],
+    "saldo": [
+      {"texto": "Abre la app de tu banco e inicia sesión."},
+      {"texto": "En la pantalla principal verás tus cuentas; toca la que quieras revisar."},
+      {"texto": "Entra a “Movimientos” para ver los últimos depósitos y cargos."}
+    ],
+    "cobro": [
+      {"texto": "Abre la app de tu banco e inicia sesión."},
+      {"texto": "Entra a tu cuenta y busca “Movimientos”."},
+      {"texto": "Revisa los depósitos recientes y compara el monto y la hora con tu venta."}
+    ]
+  },
+  "advertencias": {
+    "_claves": "Aquí nunca compartas tu NIP, token, CVV ni contraseñas. Yo nunca te los pediré.",
+    "transferencia": [
+      "Antes de confirmar, revisa en tu app el nombre del beneficiario y el monto. Una transferencia no siempre se puede deshacer."
+    ],
+    "pago_servicio": ["Verifica que la referencia coincida con tu recibo antes de confirmar."],
+    "saldo": [],
+    "cobro": ["Confirma el depósito en tu app antes de entregar la mercancía."]
+  }
+}

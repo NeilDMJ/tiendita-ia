@@ -1,0 +1,60 @@
+[project]
+name = "tiendita-ia"
+version = "0.1.0"
+description = "Tiendita IA: Ecosistema Comercial Multimodal con Visión Artificial, Orquestación Multiagente en LangGraph y Tecnología NVIDIA (NIM / NeMo)"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    # Ecosistema LangChain, LangGraph y Proveedores LLM (NVIDIA, Gemini, OpenAI, Groq, Cohere, Ollama)
+    "langchain",
+    "langchain-core",
+    "langchain-community",
+    "langgraph",
+    "langchain-nvidia-ai-endpoints",
+    "nemoguardrails",
+    "langchain-google-genai",
+    "google-generativeai>=0.8.6",
+    "langchain-openai",
+    "openai",
+    "langchain-groq>=0.1.5",
+    "langchain-cohere>=0.1.7",
+    "langchain-ollama",
+    # Búsqueda Web, Scraping y Procesamiento Documental (Agente Investigador)
+    "tavily-python",
+    "langchain-tavily",
+    "beautifulsoup4",
+    "lxml",
+    "pypdf",
+    "pandas",
+    "httpx",
+    # RAG Local, FAISS y Embeddings Abiertos
+    "faiss-cpu",
+    "langchain-huggingface",
+    "huggingface-hub",
+    "sentence-transformers",
+    # Base de Datos y RAG Vectorial Persistente
+    "psycopg[binary]",
+    "asyncpg",
+    "sqlalchemy[asyncio]>=2.0.0",
+    "pgvector",
+    # API, Servidor HTTP, CLI y Formato
+    "fastapi",
+    "uvicorn[standard]",
+    "pydantic>=2.0",
+    "pyyaml",
+    "rich",
+    "python-dotenv",
+    "aiofiles",
+    "requests",
+    # Visión: back/vision sirve best.onnx en /vision/*
+    "onnxruntime",
+    "pillow",
+    "numpy",
+    "python-multipart",
+    # Asistente bancario: back/app sirve /asistente/mensaje
+    "pydantic-settings",
+    "httpx",
+]
+
+[tool.uv]
+managed = true

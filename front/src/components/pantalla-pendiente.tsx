@@ -1,8 +1,8 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colores, espacio, tipografia } from '@/theme';
+import { color, espacio, type } from '@/theme';
 
-/** Marcador temporal de pantallas aún no implementadas (Fase 0). */
+/** Marcador temporal de pantallas aún no implementadas (estado vacío M3). */
 export function PantallaPendiente({ titulo, descripcion }: { titulo: string; descripcion: string }) {
   return (
     <View style={estilos.contenedor}>
@@ -15,7 +15,7 @@ export function PantallaPendiente({ titulo, descripcion }: { titulo: string; des
 }
 
 const estilos = StyleSheet.create({
-  contenedor: { flex: 1, backgroundColor: colores.fondo, padding: espacio.l, gap: espacio.s },
-  titulo: { ...tipografia.titulo, color: colores.texto },
-  texto: { ...tipografia.cuerpo, color: colores.textoSecundario },
+  contenedor: { flex: 1, backgroundColor: color.surface, padding: espacio.l, gap: espacio.s },
+  titulo: { ...type.headlineSmall, color: color.onSurface },
+  texto: { ...type.bodyLarge, color: color.onSurfaceVariant },
 });

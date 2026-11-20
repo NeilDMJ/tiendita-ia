@@ -1,0 +1,155 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import type { ComponentRef, Ref } from 'react';
+import { ActivityIndicator, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+
+import type { NombreIcono } from '@/constants';
+import { bordes, color, elevacion, espacio, iconos, shape, tactil, type } from '@/theme';
+
+import { Tocable } from './tocable';
+
+export type VarianteM3 =
+  | 'filled'
+  | 'tonal'
+  | 'outlined'
+  | 'text'
+  | 'elevated'
+  | 'outlinedError'
+  | 'filledError'
+  /** Botón text en color `error` (acción destructiva secundaria: "Descartar venta", "Empezar de nuevo"). */
+  | 'textError';
+
+export type VarianteBoton = VarianteM3;
+
+export interface BotonProps {
+  texto: string;
+  onPress: () => void;
+  variante?: VarianteBoton;
+  icono?: NombreIcono;
+  tamano?: 'normal' | 'principal';
+  deshabilitado?: boolean;
+  /** Se lee como hint: el usuario sabe por qué no puede continuar. */
+  motivoDeshabilitado?: string;
+  cargando?: boolean;
+  textoCargando?: string;
+  anchoCompleto?: boolean;
+  /**
+   * Muestra solo el icono (botón cuadrado). `texto` sigue siendo la etiqueta para el lector de pantalla,
+   * así que debe seguir describiendo la acción. Requiere `icono`. Ignora `anchoCompleto`.
+   */
+  soloIcono?: boolean;
+  accessibilityHint?: string;
+  testID?: string;
+  style?: StyleProp<ViewStyle>;
+  /** Para devolver el foco del lector a este botón (p. ej. al cerrar un diálogo). */
+  ref?: Ref<ComponentRef<typeof View>>;
+}
+
+type Apariencia = { contenedor: string; contenido: string; borde?: string; nivel: 0 | 1 };
+
+const VARIANTES: Record<VarianteM3, Apariencia> = {
+  filled: { contenedor: color.primary, contenido: color.onPrimary, nivel: 0 },
+  tonal: { contenedor: color.primaryContainer, contenido: color.onPrimaryContainer, nivel: 0 },
+  outlined: { contenedor: 'transparent', contenido: color.primary, borde: color.primary, nivel: 0 },
+  text: { contenedor: 'transparent', contenido: color.primary, nivel: 0 },
+  elevated: { contenedor: color.surfaceContainerLow, contenido: color.primary, nivel: 1 },
+  outlinedError: { contenedor: 'transparent', contenido: color.error, borde: color.error, nivel: 0 },
+  filledError: { contenedor: color.error, contenido: color.onError, nivel: 0 },
+  textError: { contenedor: 'transparent', contenido: color.error, nivel: 0 },
+};
+
+/** Botones de la identidad (02-sistema-de-diseno). Alto 48 / 56 (EXC-2), radio 10, capa de estado 10 %. Solo UN `filled` por sección. */
+export function Boton({
+  texto,
+  onPress,
+  variante = 'filled',
+  icono,
+  tamano = 'normal',
+  deshabilitado = false,
+  motivoDeshabilitado,
+  cargando = false,
+  textoCargando,
+  anchoCompleto = true,
+  soloIcono = false,
+  accessibilityHint,
+  testID,
+  style,
+  ref,
+}: BotonProps) {
+  const nombre = variante;
+  const v = VARIANTES[nombre];
+  const inactivo = deshabilitado || cargando;
+  const conBorde = v.borde !== undefined;
+  const transparente = v.contenedor === 'transparent';
+  // EXC-4: deshabilitado legible (onSurfaceVariant sobre surfaceContainerHighest, 7.24:1)
+  const colorContenido = deshabilitado ? color.onSurfaceVariant : v.contenido;
+  const fondo = deshabilitado ? (transparente ? 'transparent' : color.surfaceContainerHighest) : v.contenedor;
+  const borde = deshabilitado ? color.outlineVariant : v.borde;
+  const etiqueta = cargando && textoCargando ? textoCargando : texto;
+  const cuadrado = soloIcono && icono !== undefined;
+
+  return (
+    <Tocable
+      ref={ref}
+      testID={testID}
+      onPress={inactivo ? undefined : onPress}
+      colorContenido={colorContenido}
+      radio={shape.medium}
+      sinCapa={inactivo}
+      accessibilityRole="button"
+      accessibilityLabel={etiqueta}
+      accessibilityHint={deshabilitado ? motivoDeshabilitado : accessibilityHint}
+      accessibilityState={{ disabled: deshabilitado, busy: cargando }}
+      style={({ hover, enfocado }) => [
+        estilos.base,
+        tamano === 'principal' && estilos.principal,
+        anchoCompleto && !cuadrado ? estilos.anchoCompleto : estilos.anchoAjustado,
+        icono || cargando ? estilos.conIcono : null,
+        cuadrado ? estilos.soloIcono : null,
+        cuadrado ? { width: tamano === 'principal' ? tactil.principal : tactil.minimo } : null,
+        nombre === 'text' || nombre === 'textError' ? estilos.textoSolo : null,
+        { backgroundColor: fondo },
+        conBorde ? { borderWidth: bordes.fino, borderColor: borde } : null,
+        !deshabilitado && v.nivel === 1 ? (hover ? elevacion.level2 : elevacion.level1) : null,
+        !deshabilitado && nombre === 'tonal' && hover ? elevacion.level1 : null,
+        !deshabilitado && nombre === 'filled' && (hover || enfocado) ? elevacion.level1 : null,
+        style,
+      ]}
+    >
+      <View style={estilos.contenido}>
+        {cargando ? (
+          <ActivityIndicator color={colorContenido} />
+        ) : icono ? (
+          <MaterialCommunityIcons
+            name={icono}
+            size={iconos.linea}
+            color={colorContenido}
+            accessibilityElementsHidden
+            importantForAccessibility="no"
+          />
+        ) : null}
+        {cuadrado ? null : <Text style={[estilos.texto, { color: colorContenido }]}>{etiqueta}</Text>}
+      </View>
+    </Tocable>
+  );
+}
+
+const estilos = StyleSheet.create({
+  base: {
+    minHeight: tactil.minimo,
+    minWidth: tactil.minimo,
+    paddingHorizontal: espacio.xl,
+    paddingVertical: espacio.s,
+    borderRadius: shape.medium,
+    justifyContent: 'center',
+  },
+  principal: { minHeight: tactil.principal },
+  conIcono: { paddingLeft: espacio.l },
+  // paddingLeft/Right explícitos: `conIcono` fija paddingLeft y, al ser más específico que paddingHorizontal,
+  // lo ganaba y empujaba el icono a la derecha del cuadrado.
+  soloIcono: { paddingHorizontal: 0, paddingLeft: 0, paddingRight: 0 },
+  textoSolo: { paddingHorizontal: espacio.m },
+  anchoCompleto: { alignSelf: 'stretch' },
+  anchoAjustado: { alignSelf: 'flex-start' },
+  contenido: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: espacio.s },
+  texto: { ...type.labelLarge, textAlign: 'center', flexShrink: 1 },
+});

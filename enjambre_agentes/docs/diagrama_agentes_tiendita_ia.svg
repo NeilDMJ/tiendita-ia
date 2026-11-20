@@ -1,0 +1,279 @@
+<svg id="swarm-svg" viewBox="0 0 1040 720" class="w-full h-auto min-w-[740px]" xmlns="http://www.w3.org/2000/svg">
+          <rect width="1040" height="720" fill="#0b1220" /><defs>
+            <marker id="arrow-default" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+            </marker>
+            <marker id="arrow-primary" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
+            </marker>
+            <marker id="arrow-warn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#f59e0b" />
+            </marker>
+            <marker id="arrow-success" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#10b981" />
+            </marker>
+          </defs>
+
+          <!-- Bandas de capas sutiles -->
+          <rect x="14" y="12" width="1012" height="92" rx="12" fill="#0b1220" fill-opacity="0.45" stroke="#24324d" stroke-dasharray="4 4" />
+          <text x="28" y="30" fill="#94a3b8" font-size="11" font-weight="600">CAPA 1 · CANALES DE ENTRADA (API REST / WEBSOCKET / CLI / CÁMARA / CRON)</text>
+
+          <rect x="14" y="120" width="1012" height="122" rx="12" fill="#0b1220" fill-opacity="0.45" stroke="#24324d" stroke-dasharray="4 4" />
+          <text x="28" y="138" fill="#94a3b8" font-size="11" font-weight="600">CAPA 2 · ORQUESTACIÓN CENTRAL (LANGGRAPH + RAZONAMIENTO PURO, ITER ≤ 6)</text>
+
+          <rect x="14" y="258" width="1012" height="160" rx="12" fill="#0b1220" fill-opacity="0.45" stroke="#24324d" stroke-dasharray="4 4" />
+          <text x="28" y="276" fill="#94a3b8" font-size="11" font-weight="600">CAPA 3 · 6 AGENTES ESPECIALISTAS (100% NVIDIA NIM DEFAULT + RESCATE SILENCIOSO)</text>
+
+          <rect x="14" y="434" width="1012" height="126" rx="12" fill="#0b1220" fill-opacity="0.45" stroke="#24324d" stroke-dasharray="4 4" />
+          <text x="28" y="452" fill="#94a3b8" font-size="11" font-weight="600">CAPA 4 · CONTROL HUMANO (HITL) Y SALIDA OPTIMIZADA</text>
+
+          <rect x="14" y="576" width="1012" height="130" rx="12" fill="#0b1220" fill-opacity="0.45" stroke="#24324d" stroke-dasharray="4 4" />
+          <text x="28" y="594" fill="#94a3b8" font-size="11" font-weight="600">CAPA 5 · HERRAMIENTAS (@TOOL), MEMORIA MULTICAPA Y STACK NVIDIA</text>
+
+          <!-- ==================== ARISTAS (ACCIONES) ==================== -->
+          <!-- Entrada -> Supervisor -->
+          <g class="edge" data-flows="all analista pos tutor cron vision investigador">
+            <path d="M 520 92 L 520 138" fill="none" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow-primary)" class="edge-path" />
+            <text x="530" y="117" fill="#f1f5f9" font-size="10.5" font-weight="600" class="edge-label">event_source + JSON/Imagen</text>
+          </g>
+
+          <!-- Supervisor -> 6 Especialistas -->
+          <!-- Control -->
+          <g class="edge" data-flows="all cron vision">
+            <path d="M 465 196 C 320 205, 110 235, 100 296" fill="none" stroke="#22d3ee" stroke-width="1.8" marker-end="url(#arrow-default)" class="edge-path" />
+            <text x="155" y="238" fill="#94a3b8" font-size="10" class="edge-label">inventario / OCR / cron</text>
+          </g>
+          <!-- Vendedor -->
+          <g class="edge" data-flows="all pos">
+            <path d="M 472 204 C 380 228, 275 255, 266 296" fill="none" stroke="#22d3ee" stroke-width="1.8" marker-end="url(#arrow-default)" class="edge-path" />
+            <text x="305" y="254" fill="#94a3b8" font-size="10" class="edge-label">cobro POS / upsell</text>
+          </g>
+          <!-- Analista -->
+          <g class="edge" data-flows="all analista">
+            <path d="M 498 214 L 434 296" fill="none" stroke="#76b900" stroke-width="1.8" marker-end="url(#arrow-default)" class="edge-path" />
+            <text x="410" y="268" fill="#94a3b8" font-size="10" class="edge-label">flujo / márgenes</text>
+          </g>
+          <!-- Investigador -->
+          <g class="edge" data-flows="all investigador">
+            <path d="M 542 214 L 604 296" fill="none" stroke="#76b900" stroke-width="1.8" marker-end="url(#arrow-default)" class="edge-path" />
+            <text x="572" y="268" fill="#94a3b8" font-size="10" class="edge-label">mercado / 9 secs</text>
+          </g>
+          <!-- Publicista -->
+          <g class="edge" data-flows="all cron">
+            <path d="M 568 204 C 660 228, 765 255, 774 296" fill="none" stroke="#22d3ee" stroke-width="1.8" marker-end="url(#arrow-default)" class="edge-path" />
+            <text x="678" y="254" fill="#94a3b8" font-size="10" class="edge-label">campaña / video 9:16</text>
+          </g>
+          <!-- Tutor UI -->
+          <g class="edge" data-flows="all tutor">
+            <path d="M 575 196 C 720 205, 930 235, 940 296" fill="none" stroke="#22d3ee" stroke-width="1.8" marker-end="url(#arrow-default)" class="edge-path" />
+            <text x="795" y="238" fill="#94a3b8" font-size="10" class="edge-label">ui_state CoDi/SPEI/DiMo</text>
+          </g>
+
+          <!-- Retorno compound_chain (Control -> Supervisor -> Publicista) -->
+          <g class="edge" data-flows="all cron">
+            <path d="M 120 296 C 170 215, 340 175, 462 182" fill="none" stroke="#38bdf8" stroke-width="1.6" stroke-dasharray="5 3" marker-end="url(#arrow-primary)" class="edge-path" />
+            <text x="215" y="182" fill="#38bdf8" font-size="10" font-weight="600" class="edge-label">compound_chain (si hay alertas)</text>
+          </g>
+
+          <!-- Aristas hacia HITL approval_gate -->
+          <g class="edge" data-flows="all vision">
+            <path d="M 100 392 C 110 458, 220 486, 290 494" fill="none" stroke="#f59e0b" stroke-width="1.8" marker-end="url(#arrow-warn)" class="edge-path" />
+            <text x="112" y="472" fill="#f59e0b" font-size="10" font-weight="600" class="edge-label">alta / gasto crítico</text>
+          </g>
+          <g class="edge" data-flows="all pos">
+            <path d="M 266 392 C 275 435, 305 460, 326 474" fill="none" stroke="#f59e0b" stroke-width="1.8" marker-end="url(#arrow-warn)" class="edge-path" />
+            <text x="220" y="428" fill="#f59e0b" font-size="10" class="edge-label">descuento especial</text>
+          </g>
+          <g class="edge" data-flows="all cron">
+            <path d="M 745 392 C 675 450, 535 480, 448 492" fill="none" stroke="#f59e0b" stroke-width="1.8" marker-end="url(#arrow-warn)" class="edge-path" />
+            <text x="530" y="458" fill="#f59e0b" font-size="10" font-weight="600" class="edge-label">aprobar campaña 9:16</text>
+          </g>
+
+          <!-- Aristas directas hacia END (Salida optimizada) -->
+          <g class="edge" data-flows="all analista">
+            <path d="M 434 392 C 470 438, 690 468, 764 492" fill="none" stroke="#10b981" stroke-width="1.8" marker-end="url(#arrow-success)" class="edge-path" />
+          </g>
+          <g class="edge" data-flows="all investigador">
+            <path d="M 604 392 C 645 435, 725 462, 774 484" fill="none" stroke="#10b981" stroke-width="1.8" marker-end="url(#arrow-success)" class="edge-path" />
+          </g>
+          <g class="edge" data-flows="all tutor">
+            <path d="M 940 392 C 930 445, 888 474, 854 492" fill="none" stroke="#10b981" stroke-width="1.8" marker-end="url(#arrow-success)" class="edge-path" />
+            <text x="875" y="466" fill="#10b981" font-size="10" font-weight="600" class="edge-label">máx. 2 oraciones</text>
+          </g>
+          <g class="edge" data-flows="all pos">
+            <path d="M 295 392 C 400 442, 660 478, 762 498" fill="none" stroke="#10b981" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrow-success)" class="edge-path" />
+          </g>
+
+          <!-- HITL -> END (tras aprobación/rechazo) -->
+          <g class="edge" data-flows="all cron vision pos">
+            <path d="M 448 504 L 762 504" fill="none" stroke="#10b981" stroke-width="2" marker-end="url(#arrow-success)" class="edge-path" />
+            <text x="530" y="520" fill="#10b981" font-size="10" font-weight="600" class="edge-label">resume_orchestration() → COMMIT / Cancelar</text>
+          </g>
+
+          <!-- Conexiones a Capa 5 (Tools / BD / RAG / NIM Vision / Web / NeMo) -->
+          <!-- PostgreSQL -->
+          <g class="edge" data-flows="all analista pos cron vision">
+            <path d="M 80 392 L 105 612" fill="none" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="3 3" marker-end="url(#arrow-default)" class="edge-path" />
+            <path d="M 240 392 L 145 612" fill="none" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="3 3" marker-end="url(#arrow-default)" class="edge-path" />
+            <path d="M 412 392 L 180 612" fill="none" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="3 3" marker-end="url(#arrow-default)" class="edge-path" />
+            <path d="M 340 532 L 185 612" fill="none" stroke="#f59e0b" stroke-width="1.6" stroke-dasharray="3 3" marker-end="url(#arrow-warn)" class="edge-path" />
+          </g>
+          <!-- NIM Vision -->
+          <g class="edge" data-flows="all vision pos">
+            <path d="M 110 392 L 320 612" fill="none" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="3 3" marker-end="url(#arrow-default)" class="edge-path" />
+            <path d="M 266 392 L 340 612" fill="none" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="3 3" marker-end="url(#arrow-default)" class="edge-path" />
+          </g>
+          <!-- RAG Pagos CoDi/SPEI/DiMo -->
+          <g class="edge" data-flows="all tutor pos investigador">
+            <path d="M 920 392 L 580 612" fill="none" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arrow-primary)" class="edge-path" />
+            <path d="M 285 392 L 520 612" fill="none" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="3 3" marker-end="url(#arrow-default)" class="edge-path" />
+            <path d="M 595 392 L 555 612" fill="none" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="3 3" marker-end="url(#arrow-default)" class="edge-path" />
+          </g>
+          <!-- Tavily + Reportes -->
+          <g class="edge" data-flows="all investigador">
+            <path d="M 624 392 L 730 612" fill="none" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="3 3" marker-end="url(#arrow-default)" class="edge-path" />
+          </g>
+          <!-- NeMo SFT / Guardrails -->
+          <g class="edge" data-flows="all cron pos tutor vision">
+            <path d="M 405 532 L 885 612" fill="none" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="3 3" marker-end="url(#arrow-default)" class="edge-path" />
+          </g>
+
+          <!-- ==================== NODOS ==================== -->
+
+          <!-- CAPA 1: Cliente / Canales -->
+          <g class="node-group" data-node="entrada" data-flows="all analista pos tutor cron vision investigador">
+            <rect x="330" y="42" width="380" height="50" rx="25" fill="#162138" stroke="#38bdf8" stroke-width="2" />
+            <text x="520" y="64" text-anchor="middle" fill="#f1f5f9" font-size="13" font-weight="700">Cliente / App Móvil / CLI / Cámara / Cron</text>
+            <text x="520" y="81" text-anchor="middle" fill="#94a3b8" font-size="10.5">REST JSON · SSE · WebSocket /ws/orchestrate · CLI Rich</text>
+          </g>
+
+          <!-- CAPA 2: Supervisor (CÍRCULO CENTRAL) -->
+          <g class="node-group" data-node="supervisor" data-flows="all analista pos tutor cron vision investigador">
+            <circle cx="520" cy="186" r="50" fill="#162138" stroke="#76b900" stroke-width="3" />
+            <text x="520" y="177" text-anchor="middle" fill="#f1f5f9" font-size="13" font-weight="700">Supervisor</text>
+            <text x="520" y="193" text-anchor="middle" fill="#94a3b8" font-size="10">Nemotron 120B</text>
+            <text x="520" y="207" text-anchor="middle" fill="#38bdf8" font-size="9.5" font-weight="600">Razonamiento Puro</text>
+          </g>
+
+          <!-- CAPA 3: 6 Especialistas (RECTÁNGULOS REDONDEADOS) -->
+          <!-- 1. Control -->
+          <g class="node-group" data-node="control" data-flows="all cron vision">
+            <rect x="28" y="298" width="144" height="94" rx="14" fill="#162138" stroke="#22d3ee" stroke-width="2.2" />
+            <circle cx="44" cy="314" r="5" fill="#22d3ee" />
+            <text x="102" y="320" text-anchor="middle" fill="#f1f5f9" font-size="12.5" font-weight="700">Control</text>
+            <text x="100" y="337" text-anchor="middle" fill="#94a3b8" font-size="10">Nemotron Nano 8B</text>
+            <text x="100" y="355" text-anchor="middle" fill="#f1f5f9" font-size="10">Inventario · OCR</text>
+            <text x="100" y="370" text-anchor="middle" fill="#f1f5f9" font-size="10">Catálogo · Caducidad</text>
+            <text x="100" y="384" text-anchor="middle" fill="#f59e0b" font-size="9" font-weight="600">Lectura + Escritura HITL</text>
+          </g>
+
+          <!-- 2. Vendedor -->
+          <g class="node-group" data-node="vendedor" data-flows="all pos">
+            <rect x="194" y="298" width="144" height="94" rx="14" fill="#162138" stroke="#22d3ee" stroke-width="2.2" />
+            <circle cx="210" cy="314" r="5" fill="#22d3ee" />
+            <text x="268" y="320" text-anchor="middle" fill="#f1f5f9" font-size="12.5" font-weight="700">Vendedor POS</text>
+            <text x="266" y="337" text-anchor="middle" fill="#94a3b8" font-size="10">Nemotron Nano 8B</text>
+            <text x="266" y="355" text-anchor="middle" fill="#f1f5f9" font-size="10">Carrito · Upsell</text>
+            <text x="266" y="370" text-anchor="middle" fill="#f1f5f9" font-size="10">CoDi / SPEI / DiMo</text>
+            <text x="266" y="384" text-anchor="middle" fill="#f59e0b" font-size="9" font-weight="600">Sin revelar costo + HITL</text>
+          </g>
+
+          <!-- 3. Analista -->
+          <g class="node-group" data-node="analista" data-flows="all analista">
+            <rect x="360" y="298" width="144" height="94" rx="14" fill="#162138" stroke="#76b900" stroke-width="2.2" />
+            <circle cx="376" cy="314" r="5" fill="#76b900" />
+            <text x="434" y="320" text-anchor="middle" fill="#f1f5f9" font-size="12.5" font-weight="700">Analista</text>
+            <text x="432" y="337" text-anchor="middle" fill="#94a3b8" font-size="10">Nemotron 120B</text>
+            <text x="432" y="355" text-anchor="middle" fill="#f1f5f9" font-size="10">Flujo Caja · Márgenes</text>
+            <text x="432" y="370" text-anchor="middle" fill="#f1f5f9" font-size="10">Rotación Top SKUs</text>
+            <text x="432" y="384" text-anchor="middle" fill="#10b981" font-size="9" font-weight="600">Solo Lectura</text>
+          </g>
+
+          <!-- 4. Investigador -->
+          <g class="node-group" data-node="investigador" data-flows="all investigador">
+            <rect x="526" y="298" width="144" height="94" rx="14" fill="#162138" stroke="#76b900" stroke-width="2.2" />
+            <circle cx="542" cy="314" r="5" fill="#76b900" />
+            <text x="600" y="320" text-anchor="middle" fill="#f1f5f9" font-size="12.5" font-weight="700">Investigador</text>
+            <text x="598" y="337" text-anchor="middle" fill="#94a3b8" font-size="10">Nemotron 120B</text>
+            <text x="598" y="355" text-anchor="middle" fill="#f1f5f9" font-size="10">Tavily Web + Scraping</text>
+            <text x="598" y="370" text-anchor="middle" fill="#f1f5f9" font-size="10">Reporte 9 Secciones</text>
+            <text x="598" y="384" text-anchor="middle" fill="#38bdf8" font-size="9" font-weight="600">Indexa en FAISS</text>
+          </g>
+
+          <!-- 5. Publicista -->
+          <g class="node-group" data-node="publicista" data-flows="all cron">
+            <rect x="692" y="298" width="144" height="94" rx="14" fill="#162138" stroke="#22d3ee" stroke-width="2.2" />
+            <circle cx="708" cy="314" r="5" fill="#22d3ee" />
+            <text x="766" y="320" text-anchor="middle" fill="#f1f5f9" font-size="12.5" font-weight="700">Publicista</text>
+            <text x="764" y="337" text-anchor="middle" fill="#94a3b8" font-size="10">Nemotron Nano 8B</text>
+            <text x="764" y="355" text-anchor="middle" fill="#f1f5f9" font-size="10">Copy · CTA · Remate</text>
+            <text x="764" y="370" text-anchor="middle" fill="#f1f5f9" font-size="10">Video Vertical 9:16</text>
+            <text x="764" y="384" text-anchor="middle" fill="#f59e0b" font-size="9" font-weight="600">Requiere HITL</text>
+          </g>
+
+          <!-- 6. Tutor UI -->
+          <g class="node-group" data-node="tutor_ui" data-flows="all tutor">
+            <rect x="858" y="298" width="154" height="94" rx="14" fill="#162138" stroke="#22d3ee" stroke-width="2.2" />
+            <circle cx="874" cy="314" r="5" fill="#22d3ee" />
+            <text x="937" y="320" text-anchor="middle" fill="#f1f5f9" font-size="12.5" font-weight="700">Tutor UI</text>
+            <text x="935" y="337" text-anchor="middle" fill="#94a3b8" font-size="10">Nemotron Nano 8B</text>
+            <text x="935" y="355" text-anchor="middle" fill="#f1f5f9" font-size="10">Guía CoDi / SPEI / DiMo</text>
+            <text x="935" y="370" text-anchor="middle" fill="#f1f5f9" font-size="10">Solución Errores App</text>
+            <text x="935" y="384" text-anchor="middle" fill="#10b981" font-size="9" font-weight="600">Máx. 2 oraciones</text>
+          </g>
+
+          <!-- CAPA 4: HITL Approval Gate + END -->
+          <g class="node-group" data-node="approval_gate" data-flows="all cron vision pos">
+            <rect x="292" y="472" width="156" height="62" rx="12" fill="#162138" stroke="#f59e0b" stroke-width="2.5" />
+            <text x="370" y="497" text-anchor="middle" fill="#f59e0b" font-size="12" font-weight="700">approval_gate (HITL)</text>
+            <text x="370" y="513" text-anchor="middle" fill="#94a3b8" font-size="9.5">Pausa [s] Aprobar / [n] / [e]</text>
+            <text x="370" y="526" text-anchor="middle" fill="#f1f5f9" font-size="9">COMMIT Real + Feedback SFT</text>
+          </g>
+
+          <g class="node-group" data-node="end" data-flows="all analista pos tutor cron vision investigador">
+            <circle cx="808" cy="503" r="42" fill="#162138" stroke="#10b981" stroke-width="2.8" />
+            <text x="808" y="499" text-anchor="middle" fill="#10b981" font-size="13" font-weight="700">END</text>
+            <text x="808" y="515" text-anchor="middle" fill="#94a3b8" font-size="9.5">Respuesta JSON</text>
+          </g>
+
+          <!-- CAPA 5: Subsistemas / Memoria / NVIDIA -->
+          <g class="node-group" data-node="postgres" data-flows="all analista pos cron vision">
+            <rect x="30" y="614" width="188" height="76" rx="10" fill="#162138" stroke="#60a5fa" stroke-width="1.8" />
+            <text x="124" y="636" text-anchor="middle" fill="#f1f5f9" font-size="11.5" font-weight="700">PostgreSQL (tiendita-db)</text>
+            <text x="124" y="653" text-anchor="middle" fill="#94a3b8" font-size="9.5">v_inventario · v_por_caducar</text>
+            <text x="124" y="667" text-anchor="middle" fill="#94a3b8" font-size="9.5">v_margen · registrar_venta()</text>
+            <text x="124" y="681" text-anchor="middle" fill="#60a5fa" font-size="9" font-weight="600">Pool Thread-Safe + pgvector</text>
+          </g>
+
+          <g class="node-group" data-node="vision" data-flows="all vision pos">
+            <rect x="234" y="614" width="188" height="76" rx="10" fill="#162138" stroke="#f472b6" stroke-width="1.8" />
+            <text x="328" y="636" text-anchor="middle" fill="#f1f5f9" font-size="11.5" font-weight="700">NVIDIA NIM Vision (VL)</text>
+            <text x="328" y="653" text-anchor="middle" fill="#94a3b8" font-size="9.5">nemotron-3.5-super-vl-120b</text>
+            <text x="328" y="667" text-anchor="middle" fill="#94a3b8" font-size="9.5">Catálogo · POS · OCR Ticket</text>
+            <text x="328" y="681" text-anchor="middle" fill="#f472b6" font-size="9" font-weight="600">Imágenes Reales Base64</text>
+          </g>
+
+          <g class="node-group" data-node="rag" data-flows="all tutor pos investigador">
+            <rect x="438" y="614" width="194" height="76" rx="10" fill="#162138" stroke="#a78bfa" stroke-width="1.8" />
+            <text x="535" y="636" text-anchor="middle" fill="#f1f5f9" font-size="11.5" font-weight="700">RAG Dual CoDi/SPEI/DiMo</text>
+            <text x="535" y="653" text-anchor="middle" fill="#94a3b8" font-size="9.5">FAISS (969 frags) + pgvector</text>
+            <text x="535" y="667" text-anchor="middle" fill="#94a3b8" font-size="9.5">Banxico + guias.json + Rerank</text>
+            <text x="535" y="681" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">embeddings.npz (4096-d)</text>
+          </g>
+
+          <g class="node-group" data-node="web" data-flows="all investigador">
+            <rect x="648" y="614" width="166" height="76" rx="10" fill="#162138" stroke="#fb923c" stroke-width="1.8" />
+            <text x="731" y="636" text-anchor="middle" fill="#f1f5f9" font-size="11.5" font-weight="700">Tavily + Reportes</text>
+            <text x="731" y="653" text-anchor="middle" fill="#94a3b8" font-size="9.5">Búsqueda Web + Scraping</text>
+            <text x="731" y="667" text-anchor="middle" fill="#94a3b8" font-size="9.5">data/reportes/*.json & .md</text>
+            <text x="731" y="681" text-anchor="middle" fill="#fb923c" font-size="9" font-weight="600">Memoria Histórica</text>
+          </g>
+
+          <g class="node-group" data-node="nemo" data-flows="all cron pos tutor vision">
+            <rect x="830" y="614" width="182" height="76" rx="10" fill="#162138" stroke="#38bdf8" stroke-width="1.8" />
+            <text x="921" y="636" text-anchor="middle" fill="#f1f5f9" font-size="11.5" font-weight="700">NeMo Guardrails + SFT</text>
+            <text x="921" y="653" text-anchor="middle" fill="#94a3b8" font-size="9.5">rails.co (Colang) + guards.py</text>
+            <text x="921" y="667" text-anchor="middle" fill="#94a3b8" font-size="9.5">nemo_customizer_train.jsonl</text>
+            <text x="921" y="681" text-anchor="middle" fill="#38bdf8" font-size="9" font-weight="600">LoRA + Circuit Breaker</text>
+          </g>
+        </svg>

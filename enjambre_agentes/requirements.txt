@@ -1,0 +1,47 @@
+# --- Proveedores LLM & Orquestación LangChain / LangGraph ---
+langchain
+langchain-core
+langchain-community
+langgraph
+langchain-nvidia-ai-endpoints
+nemoguardrails
+langchain-google-genai
+google-generativeai>=0.8.6
+langchain-openai
+openai
+langchain-groq>=0.1.5
+langchain-cohere>=0.1.7
+langchain-ollama
+
+# --- Búsqueda Web, Scraping y Documentos (Agente Investigador) ---
+tavily-python
+langchain-tavily
+beautifulsoup4
+lxml
+pypdf
+pandas
+httpx
+
+# --- RAG Local, FAISS & Embeddings Abiertos ---
+faiss-cpu
+langchain-huggingface
+huggingface-hub
+sentence-transformers
+
+# --- Base de Datos & RAG Vectorial Persistente ---
+psycopg[binary]
+asyncpg
+sqlalchemy[asyncio]>=2.0.0
+pgvector
+
+# --- API, Servidor HTTP & CLI ---
+fastapi
+uvicorn[standard]
+pydantic>=2.0
+pyyaml
+rich
+
+# --- Utilidades ---
+python-dotenv
+aiofiles
+requests

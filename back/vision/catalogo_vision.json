@@ -1,0 +1,9 @@
+{
+  "_comentario": "Clase del modelo de visión -> producto del inventario. Las claves deben coincidir con vision/clases.txt. 'fondo' = no hay producto. Precios aproximados (docs/catalogo_demo.md).",
+  "agua_1l": {"sku": "AGUA-CIEL-1L", "nombre": "Agua Ciel 1 L", "precio_unitario": 15.0, "categoria": "Bebidas"},
+  "agua_bonafont": {"sku": "AGUA-BON-1L", "nombre": "Agua Bonafont 1 L", "precio_unitario": 15.0, "categoria": "Bebidas"},
+  "agua_members_mark": {"sku": "AGUA-MM-1L", "nombre": "Agua Member's Mark 1 L", "precio_unitario": 10.0, "categoria": "Bebidas"},
+  "coca_cola": {"sku": "COCA-600", "nombre": "Coca-Cola 600 ml", "precio_unitario": 20.0, "categoria": "Bebidas"},
+  "doritos": {"sku": "DORITOS", "nombre": "Doritos (Nacho o Pizzerola)", "precio_unitario": 20.0, "categoria": "Botanas"},
+  "chokis": {"sku": "CHOKIS", "nombre": "Galletas Chokis", "precio_unitario": 20.0, "categoria": "Galletas"}
+}
