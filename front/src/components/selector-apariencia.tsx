@@ -1,5 +1,5 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { NombreIcono } from '@/constants';
@@ -17,6 +17,7 @@ import {
 } from '@/theme';
 import { aplicarApariencia } from '@/utils/apariencia';
 
+import { Aviso } from './aviso';
 import { Boton } from './boton';
 import { HojaInferior } from './hoja-inferior';
 import { Tocable } from './tocable';
@@ -35,7 +36,26 @@ export function SelectorApariencia() {
   const [abierta, setAbierta] = useState(false);
   const [elegida, setElegida] = useState<PreferenciaApariencia>(preferenciaApariencia);
   const [aplicando, setAplicando] = useState(false);
+  /** El reinicio automático no ocurrió: la elección ya está guardada, falta reabrir la app a mano. */
+  const [reabrirAMano, setReabrirAMano] = useState(false);
+  const temporizador = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sinCambios = elegida === preferenciaApariencia;
+
+  useEffect(() => () => {
+    if (temporizador.current) clearTimeout(temporizador.current);
+  }, []);
+
+  function aplicar() {
+    setAplicando(true);
+    setReabrirAMano(false);
+    void aplicarApariencia(elegida).catch(() => undefined);
+    // Si el reinicio funciona, la app se recarga y este temporizador desaparece con ella.
+    // Si no, no dejamos el botón en "Reiniciando…" para siempre.
+    temporizador.current = setTimeout(() => {
+      setAplicando(false);
+      setReabrirAMano(true);
+    }, 2500);
+  }
 
   return (
     <>
@@ -72,12 +92,9 @@ export function SelectorApariencia() {
             tamano="principal"
             cargando={aplicando}
             textoCargando="Reiniciando…"
-            deshabilitado={sinCambios}
+            deshabilitado={sinCambios && !reabrirAMano}
             motivoDeshabilitado="Elige una opción distinta a la actual"
-            onPress={() => {
-              setAplicando(true);
-              void aplicarApariencia(elegida);
-            }}
+            onPress={aplicar}
           />
         }
       >
@@ -121,6 +138,13 @@ export function SelectorApariencia() {
             );
           })}
         </View>
+        {reabrirAMano ? (
+          <Aviso
+            tipo="info"
+            titulo="No pudimos reiniciar solos."
+            mensaje="Ya guardamos tu elección. Cierra la app por completo y ábrela de nuevo para ver el cambio."
+          />
+        ) : null}
         <Text style={estilos.nota}>
           Ahora se ve en modo {esquemaActivo}. Para aplicar el cambio la app se reinicia; tus ventas y conversaciones
           guardadas no se pierden.
