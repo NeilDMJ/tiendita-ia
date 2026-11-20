@@ -32,6 +32,13 @@ const catalogo: Producto[] = [
   { sku: 'AGUA-1L', nombre: 'Agua natural 1 L', precio_unitario: 12, existencia: 20, caducidad: '2027-12-01', categoria: 'Bebidas' },
   { sku: 'PAPAS-45', nombre: 'Papas fritas 45 g', precio_unitario: 17, existencia: 15, caducidad: '2027-03-18', categoria: 'Abarrotes' },
   { sku: 'ATUN-140', nombre: 'Atún en agua 140 g', precio_unitario: 26, existencia: 4, caducidad: '2028-01-10', categoria: 'Abarrotes' },
+  // Productos que reconoce el modelo de visión real (back/vision/catalogo_vision.json): mismos SKU
+  { sku: 'AGUA-CIEL-1L', nombre: 'Agua Ciel 1 L', precio_unitario: 15, existencia: 24, caducidad: '2027-12-01', categoria: 'Bebidas' },
+  { sku: 'AGUA-BON-1L', nombre: 'Agua Bonafont 1 L', precio_unitario: 15, existencia: 30, caducidad: '2027-12-01', categoria: 'Bebidas' },
+  { sku: 'AGUA-MM-1L', nombre: "Agua Member's Mark 1 L", precio_unitario: 10, existencia: 24, caducidad: '2027-12-01', categoria: 'Bebidas' },
+  { sku: 'COCA-600', nombre: 'Coca-Cola 600 ml', precio_unitario: 20, existencia: 35, caducidad: '2027-04-15', categoria: 'Bebidas' },
+  { sku: 'DORITOS', nombre: 'Doritos (Nacho o Pizzerola)', precio_unitario: 20, existencia: 18, caducidad: '2027-03-18', categoria: 'Botanas' },
+  { sku: 'CHOKIS', nombre: 'Galletas Chokis', precio_unitario: 20, existencia: 15, caducidad: '2027-02-10', categoria: 'Galletas' },
 ];
 
 const masVendidosSkus = ['REF-COLA-600', 'TORT-1KG', 'HUEVO-12', 'LECHE-ENT-1L', 'PAN-BLANCO-680', 'AGUA-1L'];
@@ -47,7 +54,7 @@ export const quitarAcentos = (t: string) =>
 
 export async function exigirConexion() {
   const estado = await NetInfo.fetch();
-  if (estado.isConnected === false || estado.isInternetReachable === false) throw new ErrorApi('sin_conexion');
+  if (estado.isConnected === false) throw new ErrorApi('sin_conexion'); // ver use-conexion.ts
 }
 
 export function mockBuscarProductos(texto: string, limite: number): Producto[] {
