@@ -15,16 +15,16 @@ export interface ChipFiltroProps {
 }
 
 /**
- * M3 Filter chip con alto 48 (EXC-2). Seleccionado = `secondaryContainer` + check + peso 700
+ * M3 Filter chip con alto 48 (EXC-2). Seleccionado = `primaryContainer` + check + peso 700
  * (no depende solo del color).
  */
 export function ChipFiltro({ texto, seleccionado, onPress, accessibilityHint, rol = 'checkbox' }: ChipFiltroProps) {
-  const contenido = seleccionado ? color.onSecondaryContainer : color.onSurfaceVariant;
+  const contenido = seleccionado ? color.onPrimaryContainer : color.onSurfaceVariant;
   return (
     <Tocable
       onPress={onPress}
       colorContenido={contenido}
-      radio={shape.small}
+      radio={shape.full}
       accessibilityRole={rol}
       accessibilityState={{ checked: seleccionado }}
       accessibilityLabel={texto}
@@ -54,14 +54,14 @@ const estilos = StyleSheet.create({
     justifyContent: 'center',
     gap: espacio.s,
     paddingHorizontal: espacio.l,
-    borderRadius: shape.small,
+    borderRadius: shape.full,
   },
   // EXC-10: borde `outline` (no `outlineVariant`) para que el límite del chip tenga ≥ 3:1
   normal: { borderWidth: bordes.fino, borderColor: color.outline, backgroundColor: 'transparent' },
   seleccionado: {
     borderWidth: bordes.fino,
-    borderColor: color.secondaryContainer,
-    backgroundColor: color.secondaryContainer,
+    borderColor: color.primaryContainer,
+    backgroundColor: color.primaryContainer,
     paddingLeft: espacio.s,
   },
   texto: { ...type.labelLarge },

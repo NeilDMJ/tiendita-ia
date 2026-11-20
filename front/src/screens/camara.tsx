@@ -134,7 +134,7 @@ function BotonIconoCamara({
   etiqueta?: string;
   seleccionado?: boolean;
 }) {
-  const contenido = seleccionado ? color.onPrimary : color.onSecondaryContainer;
+  const contenido = seleccionado ? color.onPrimary : color.onPrimaryContainer;
   return (
     <View style={estilos.columnaBoton}>
       <Tocable
@@ -691,7 +691,7 @@ const estilos = StyleSheet.create({
     borderRadius: shape.full,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: color.secondaryContainer,
+    backgroundColor: color.primaryContainer,
   },
   botonIconoSeleccionado: { backgroundColor: color.primary },
   textoOscuro: { ...type.labelLarge, color: color.inverseOnSurface, textAlign: 'center' },

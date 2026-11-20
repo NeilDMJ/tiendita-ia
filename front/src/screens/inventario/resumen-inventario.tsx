@@ -90,11 +90,11 @@ export function ResumenInventarioCard({ resumen }: ResumenInventarioCardProps) {
                 <MaterialCommunityIcons
                   name="alert-circle"
                   size={iconos.chico}
-                  color={color.tertiary}
+                  color={color.warning}
                   accessibilityElementsHidden
                   importantForAccessibility="no"
                 />
-                <Text style={estilos.textoAlertaMalva}>
+                <Text style={estilos.textoAlertaAviso}>
                   {productosConStockBajo} con poco stock
                 </Text>
               </View>
@@ -118,11 +118,11 @@ export function ResumenInventarioCard({ resumen }: ResumenInventarioCardProps) {
                 <MaterialCommunityIcons
                   name="calendar-clock"
                   size={iconos.chico}
-                  color={color.tertiary}
+                  color={color.warning}
                   accessibilityElementsHidden
                   importantForAccessibility="no"
                 />
-                <Text style={estilos.textoAlertaMalva}>
+                <Text style={estilos.textoAlertaAviso}>
                   {productosPorCaducar} por caducar esta semana
                 </Text>
               </View>
@@ -194,8 +194,8 @@ const estilos = StyleSheet.create({
     ...type.bodyLarge,
     color: color.error,
   },
-  textoAlertaMalva: {
+  textoAlertaAviso: {
     ...type.bodyLarge,
-    color: color.tertiary,
+    color: color.warning,
   },
 });

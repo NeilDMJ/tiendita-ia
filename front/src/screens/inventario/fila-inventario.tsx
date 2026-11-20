@@ -15,7 +15,7 @@ export interface FilaInventarioProps {
  * Fila de producto en la lista de inventario (M3 List item de 3 líneas, 00-sistema §9.9).
  *
  * Muestra: nombre, precio, existencia con chip de estado, y fecha de caducidad
- * con señal visual de alerta (por caducar → tertiaryContainer, caducado → errorContainer).
+ * con señal visual de alerta (por caducar → warningContainer, caducado → errorContainer).
  *
  * Nielsen #6: reconocimiento antes que recuerdo — toda la info relevante está visible.
  * Nielsen #4: consistencia — mismos colores de alerta que en Inicio (stock bajo / agotado).
@@ -59,7 +59,7 @@ export function FilaInventario({ producto }: FilaInventarioProps) {
             <MaterialCommunityIcons
               name={caducado ? 'calendar-alert' : porCaducar ? 'calendar-clock' : 'calendar'}
               size={iconos.chico}
-              color={caducado ? color.error : porCaducar ? color.onTertiaryContainer : color.onSurfaceVariant}
+              color={caducado ? color.error : porCaducar ? color.onWarningContainer : color.onSurfaceVariant}
               accessibilityElementsHidden
               importantForAccessibility="no"
             />
@@ -93,7 +93,7 @@ export function FilaInventario({ producto }: FilaInventarioProps) {
 
         {(porCaducar || caducado) && caducidad ? (
           <View style={[estilos.chipCaducidad, caducado ? estilos.chipCaducado : estilos.chipPorCaducar]}>
-            <Text style={[estilos.textoChipPeq, { color: caducado ? color.onErrorContainer : color.onTertiaryContainer }]}>
+            <Text style={[estilos.textoChipPeq, { color: caducado ? color.onErrorContainer : color.onWarningContainer }]}>
               {caducado ? 'Caducado' : `${diasParaCaducar} días`}
             </Text>
           </View>
@@ -111,7 +111,7 @@ function chipEstilo(agotado: boolean, stockBajo: boolean) {
 
 function chipColorTexto(agotado: boolean, stockBajo: boolean): string {
   if (agotado) return color.onErrorContainer;
-  if (stockBajo) return color.onTertiaryContainer;
+  if (stockBajo) return color.onWarningContainer;
   return color.onSurfaceVariant;
 }
 
@@ -181,7 +181,7 @@ const estilos = StyleSheet.create({
     fontFamily: fuente.bold,
   },
   textoPorCaducar: {
-    color: color.onTertiaryContainer,
+    color: color.onWarningContainer,
     fontFamily: fuente.medium,
   },
   columnaEstado: {
@@ -200,7 +200,7 @@ const estilos = StyleSheet.create({
     backgroundColor: color.surfaceContainerLow,
   },
   chipPoco: {
-    backgroundColor: color.tertiaryContainer,
+    backgroundColor: color.warningContainer,
   },
   chipAgotado: {
     backgroundColor: color.errorContainer,
@@ -214,7 +214,7 @@ const estilos = StyleSheet.create({
     borderRadius: shape.small,
   },
   chipPorCaducar: {
-    backgroundColor: color.tertiaryContainer,
+    backgroundColor: color.warningContainer,
   },
   chipCaducado: {
     backgroundColor: color.errorContainer,

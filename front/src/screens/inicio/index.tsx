@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { buscarProductos } from '@/api/negocio';
 import { Dialogo } from '@/components/dialogo';
+import { Marca } from '@/components/marca';
 import { Tocable } from '@/components/tocable';
 import { EXISTENCIA_BAJA, SEGUNDOS_VENTA_MANUAL } from '@/constants';
 import { useCarrito } from '@/estado/carrito';
@@ -162,15 +163,7 @@ export function PantallaInicio() {
       >
         {/* 1. Bienvenida según zona horaria */}
         <View style={estilos.cabeceraBienvenida}>
-          <View style={estilos.iconoBienvenida}>
-            <MaterialCommunityIcons
-              name="storefront-outline"
-              size={iconos.linea}
-              color={color.onPrimaryContainer}
-              accessibilityElementsHidden
-              importantForAccessibility="no"
-            />
-          </View>
+          <Marca soloIcono />
           <View style={estilos.textosBienvenida}>
             <Text style={estilos.saludoTexto} accessibilityRole="header">
               {saludo}

@@ -212,7 +212,7 @@ const estilos = StyleSheet.create({
   obligatorio: { ...type.bodyLarge, color: color.onSurfaceVariant },
   caja: {
     minHeight: tactil.principal,
-    borderRadius: shape.extraSmall,
+    borderRadius: shape.medium,
     flexDirection: 'row',
     alignItems: 'center',
     gap: espacio.s,

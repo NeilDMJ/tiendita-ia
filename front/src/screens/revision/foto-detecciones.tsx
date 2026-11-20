@@ -52,7 +52,7 @@ export function FotoDetecciones({ uri, items }: FotoDeteccionesProps) {
             .map((i) => {
               const [x, y, w, h] = i.caja!;
               const nivel = nivelDeItem(i);
-              const borde = nivel === 'falta' ? color.error : nivel === 'baja' ? color.tertiary : color.primary;
+              const borde = nivel === 'falta' ? color.error : nivel === 'baja' ? color.warning : color.primary;
               return (
                 <View
                   key={i.clave}

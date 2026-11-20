@@ -145,14 +145,14 @@ export function AlertasDia({
                     <MaterialCommunityIcons
                       name={agotado ? 'close-circle' : 'alert-circle'}
                       size={iconos.chico}
-                      color={agotado ? color.onErrorContainer : color.onTertiaryContainer}
+                      color={agotado ? color.onErrorContainer : color.onWarningContainer}
                       accessibilityElementsHidden
                       importantForAccessibility="no"
                     />
                     <Text
                       style={[
                         estilos.textoChip,
-                        { color: agotado ? color.onErrorContainer : color.onTertiaryContainer },
+                        { color: agotado ? color.onErrorContainer : color.onWarningContainer },
                       ]}
                     >
                       {agotado ? 'Agotado' : `Bajo (≤ ${EXISTENCIA_BAJA})`}
@@ -265,7 +265,7 @@ const estilos = StyleSheet.create({
     borderRadius: shape.small,
   },
   chipPoco: {
-    backgroundColor: color.tertiaryContainer,
+    backgroundColor: color.warningContainer,
   },
   chipAgotado: {
     backgroundColor: color.errorContainer,

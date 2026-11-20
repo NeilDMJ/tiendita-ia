@@ -76,7 +76,7 @@ function Destino({
                 style={[
                   StyleSheet.absoluteFill,
                   estilos.capa,
-                  { backgroundColor: activo ? color.onSecondaryContainer : color.onSurfaceVariant },
+                  { backgroundColor: activo ? color.onPrimaryContainer : color.onSurfaceVariant },
                   { opacity: hover && !pressed && !enfocado ? estado.hover : estado.pressed },
                 ]}
               />
@@ -100,7 +100,7 @@ function Destino({
 /**
  * M3 Navigation bar (00-sistema §9.14) para `Tabs` de Expo Router. Se oculta con el teclado abierto
  * si la pestaña activa pide `tabBarHideOnKeyboard`.
- * Activo = píldora `secondaryContainer` + icono relleno + etiqueta 700 (no depende del color).
+ * Activo = píldora `primaryContainer` + icono relleno + etiqueta 700 (no depende del color).
  * Etiquetas siempre visibles; máximo 4 destinos.
  */
 export function BarraNavegacion({ state, descriptors, emitter, navigateToTab, insets }: BottomTabBarProps) {
@@ -115,7 +115,7 @@ export function BarraNavegacion({ state, descriptors, emitter, navigateToTab, in
         const { options } = descriptors[route.key];
         const etiqueta = typeof options.title === 'string' ? options.title : route.name;
         const badge = options.tabBarBadge;
-        const colorIcono = activo ? color.onSecondaryContainer : color.onSurfaceVariant;
+        const colorIcono = activo ? color.onPrimaryContainer : color.onSurfaceVariant;
         const etiquetaLector =
           options.tabBarAccessibilityLabel ??
           (badge !== undefined ? `${etiqueta}, ${badge} ${badge === 1 ? 'alerta' : 'alertas'}` : etiqueta);
@@ -163,7 +163,7 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  indicador: { borderRadius: shape.full, backgroundColor: color.secondaryContainer },
+  indicador: { borderRadius: shape.full, backgroundColor: color.primaryContainer },
   capa: { borderRadius: shape.full },
   badge: {
     position: 'absolute',

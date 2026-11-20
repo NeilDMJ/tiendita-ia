@@ -25,9 +25,9 @@ const NIVELES: Record<NivelConfianza, Apariencia> = {
   },
   baja: {
     icono: 'help-circle',
-    colorIcono: color.onTertiaryContainer,
-    colorTexto: color.onTertiaryContainer,
-    fondo: color.tertiaryContainer,
+    colorIcono: color.onWarningContainer,
+    colorTexto: color.onWarningContainer,
+    fondo: color.warningContainer,
     texto: 'Revisa',
   },
   falta: {

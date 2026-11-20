@@ -245,7 +245,7 @@ export function TarjetaAccion({
 
 const estilos = StyleSheet.create({
   tarjeta: {
-    borderRadius: shape.medium,
+    borderRadius: shape.large,
     padding: espacio.l,
     gap: espacio.m,
     backgroundColor: color.surfaceContainerLow,

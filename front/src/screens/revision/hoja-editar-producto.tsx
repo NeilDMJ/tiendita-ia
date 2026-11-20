@@ -305,7 +305,7 @@ const estilos = StyleSheet.create({
   secundario: { ...type.bodyLarge, color: color.onSurfaceVariant, flexShrink: 1 },
   filaIcono: { flexDirection: 'row', alignItems: 'center', gap: espacio.s },
   motivo: { flexDirection: 'row', alignItems: 'center', gap: espacio.xs },
-  // opción elegida: secondaryContainer + radio relleno + "Elegido"
+  // opción elegida: primaryContainer + radio relleno + "Elegido"
   elegido: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -314,11 +314,11 @@ const estilos = StyleSheet.create({
     paddingHorizontal: espacio.l,
     paddingVertical: espacio.s,
     borderRadius: shape.medium,
-    backgroundColor: color.secondaryContainer,
+    backgroundColor: color.primaryContainer,
   },
-  textoElegido: { color: color.onSecondaryContainer },
-  secundarioElegido: { ...type.bodyLarge, color: color.onSecondaryContainer },
-  marcaElegido: { ...type.labelLarge, color: color.onSecondaryContainer, ...pesoActivo },
+  textoElegido: { color: color.onPrimaryContainer },
+  secundarioElegido: { ...type.bodyLarge, color: color.onPrimaryContainer },
+  marcaElegido: { ...type.labelLarge, color: color.onPrimaryContainer, ...pesoActivo },
   sugerencia: {
     minHeight: tactil.principal,
     flexDirection: 'row',

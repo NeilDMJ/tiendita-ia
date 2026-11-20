@@ -125,3 +125,49 @@ En React Native el peso va en el nombre de la fuente: `fuente.regular|medium|sem
 - Logotipo con gradiente de marca (componente `Marca`) y titular con palabra destacada.
 - Modo oscuro (proveedor de tema).
 - Revisar visualmente cada pantalla: los cambios de radio y color afectan a los 21 componentes y no se auditó cada estado.
+
+---
+
+# Fase 3 — Componentes base
+
+Los componentes ya existían (una sola versión de cada uno, en `front/src/components/`). No se crearon variantes nuevas: se **alinearon a la identidad** y se corrigió el significado del color.
+
+## Cambios por componente
+
+| Componente | Cambio |
+|---|---|
+| `Boton` | Radio 10 (antes píldora). `filled` primario; `outlined` con borde y texto `primary`; `tonal` en azul suave (`primaryContainer`). Sigue: alto 48/56, estado cargando y deshabilitado legible. **Un solo `filled` por sección.** |
+| `Campo` | Radio 10 (antes 4). Etiqueta visible, ayuda y error debajo (ya existían). |
+| `ChipFiltro`, `ChipSugerencia` | Píldora (`full`). Seleccionado = `primaryContainer` + check + Inter bold (no depende solo del color). |
+| `BarraNavegacion` | Indicador activo en `primaryContainer`, icono relleno y etiqueta en negrita. |
+| `StepperCantidad` | Botones tonales en azul suave; radio 10. |
+| `TarjetaAccion`, `FilaProducto`, `Aviso` (tarjeta) | Radio 16, borde 1 px `outlineVariant`, sombra suave. |
+| `Snackbar` | Radio 6, fondo `inverseSurface`. |
+| Hojas de cobro / edición, cámara | Opción elegida en azul suave (antes gris azulado). |
+| **`Marca` (nuevo)** | Logotipo: icono de tienda blanco sobre el degradado de marca (48 dp). Uno de los dos únicos usos permitidos del degradado. Se usa en la cabecera de Inicio. |
+| **`ContenedorPantalla` (nuevo)** | Centra el contenido con ancho máximo 640 dp en web/tablet; en teléfono no cambia nada. Aplicado a Inicio, Cobrar, Inventario, Asistente, Historial y Venta. |
+
+## Color con significado
+
+El violeta (`tertiary`) se usaba para "ojo / por revisar / poco stock / por caducar". Con la identidad nueva el violeta es el **acento de marca**, no una alerta, así que esos usos pasaron al semántico `warning` (ámbar `#B45309` + `warningContainer` + `onWarningContainer`, todos ≥ 4.5:1):
+
+`FilaProducto` (borde "Revisa") · `IndicadorConfianza` · alertas de Inicio · filas y resumen de Inventario · recuadros de `foto-detecciones`.
+
+El gráfico del corte de caja sigue usando el violeta como una de sus 4 series (es acento, no alerta).
+
+## Estados de cada componente (Fase 3: lo que está cubierto)
+
+| Componente | Normal | Hover/pressed | Foco | Deshabilitado | Cargando | Error |
+|---|---|---|---|---|---|---|
+| Boton | ✅ | ✅ | ✅ (anillo) | ✅ | ✅ | variantes `*Error` |
+| Campo | ✅ | — | ✅ | ✅ | — | ✅ |
+| Chips | ✅ | ✅ | ✅ | — | — | — |
+| Tarjeta | ✅ | ✅ | ✅ | — | — | — |
+
+No se auditó el aspecto de **cada** estado en pantalla (solo se revisó Inicio, Cobrar, Inventario y Asistente en estado normal, en web).
+
+## Pendiente conocido (para la Fase 4)
+
+- En Inventario el botón flotante "Agregar mercancía" tapa los chips de filtro y las filas (también "Cobrar con foto" en Cobrar).
+- Título duplicado en Asistente (cabecera de pestaña + cabecera propia).
+- La pista de `BarraPasos` usa `secondaryContainer` (#E3E8F4) sobre `surface`: bajo contraste (~1.1:1). Es decorativa (el indicador `primary` y el texto "Paso X de 3" llevan la información), pero se revisará.

@@ -25,7 +25,7 @@ export function ChipSugerencia({ texto, onPress, icono, anchoCompleto, accessibi
     <Tocable
       onPress={onPress}
       colorContenido={color.onSurfaceVariant}
-      radio={shape.small}
+      radio={shape.full}
       accessibilityRole="button"
       accessibilityLabel={texto}
       accessibilityHint={accessibilityHint}
@@ -54,7 +54,7 @@ const estilos = StyleSheet.create({
     gap: espacio.s,
     paddingHorizontal: espacio.l,
     paddingVertical: espacio.xs,
-    borderRadius: shape.small,
+    borderRadius: shape.full,
     borderWidth: bordes.fino,
     borderColor: color.outline,
     backgroundColor: 'transparent',

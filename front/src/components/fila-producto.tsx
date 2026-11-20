@@ -44,7 +44,7 @@ const ETIQUETA_NIVEL: Record<NivelConfianza, string> = {
 
 /**
  * M3 List item de 3 líneas (00-sistema §9.9). Problemas como cards:
- * `baja` = card filled + borde izquierdo 4 dp `tertiary`; `falta` = card outlined 2 dp `error` (EXC-6).
+ * `baja` = card filled + borde izquierdo 4 dp `warning`; `falta` = card outlined 2 dp `error` (EXC-6).
  * `soloLectura` = list item de 1 línea (56).
  */
 export function FilaProducto({
@@ -198,12 +198,12 @@ const estilos = StyleSheet.create({
     backgroundColor: color.outlineVariant,
   },
   divisorCompleto: { left: 0 },
-  // card filled + borde izquierdo tertiary (forma además del chip "Revisa")
+  // card filled + borde izquierdo warning (forma además del chip "Revisa")
   filaBaja: {
     backgroundColor: color.surfaceContainerHighest,
-    borderRadius: shape.medium,
+    borderRadius: shape.large,
     borderLeftWidth: bordes.acento,
-    borderLeftColor: color.tertiary,
+    borderLeftColor: color.warning,
     paddingLeft: espacio.l - bordes.acento,
     marginBottom: espacio.s,
   },
@@ -212,7 +212,7 @@ const estilos = StyleSheet.create({
     backgroundColor: color.surface,
     borderWidth: bordes.grueso,
     borderColor: color.error,
-    borderRadius: shape.medium,
+    borderRadius: shape.large,
     paddingHorizontal: espacio.l - bordes.grueso,
     marginBottom: espacio.s,
   },

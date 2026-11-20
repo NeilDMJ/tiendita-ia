@@ -43,8 +43,8 @@ type Apariencia = { contenedor: string; contenido: string; borde?: string; nivel
 
 const VARIANTES: Record<VarianteM3, Apariencia> = {
   filled: { contenedor: color.primary, contenido: color.onPrimary, nivel: 0 },
-  tonal: { contenedor: color.secondaryContainer, contenido: color.onSecondaryContainer, nivel: 0 },
-  outlined: { contenedor: 'transparent', contenido: color.primary, borde: color.outline, nivel: 0 },
+  tonal: { contenedor: color.primaryContainer, contenido: color.onPrimaryContainer, nivel: 0 },
+  outlined: { contenedor: 'transparent', contenido: color.primary, borde: color.primary, nivel: 0 },
   text: { contenedor: 'transparent', contenido: color.primary, nivel: 0 },
   elevated: { contenedor: color.surfaceContainerLow, contenido: color.primary, nivel: 1 },
   outlinedError: { contenedor: 'transparent', contenido: color.error, borde: color.error, nivel: 0 },
@@ -52,7 +52,7 @@ const VARIANTES: Record<VarianteM3, Apariencia> = {
   textError: { contenedor: 'transparent', contenido: color.error, nivel: 0 },
 };
 
-/** M3 Buttons (00-sistema §9.1). Alto 48 / 56 (EXC-2), forma píldora, capa de estado 10 %. */
+/** Botones de la identidad (02-sistema-de-diseno). Alto 48 / 56 (EXC-2), radio 10, capa de estado 10 %. Solo UN `filled` por sección. */
 export function Boton({
   texto,
   onPress,
@@ -86,7 +86,7 @@ export function Boton({
       testID={testID}
       onPress={inactivo ? undefined : onPress}
       colorContenido={colorContenido}
-      radio={shape.full}
+      radio={shape.medium}
       sinCapa={inactivo}
       accessibilityRole="button"
       accessibilityLabel={etiqueta}
@@ -130,7 +130,7 @@ const estilos = StyleSheet.create({
     minWidth: tactil.minimo,
     paddingHorizontal: espacio.xl,
     paddingVertical: espacio.s,
-    borderRadius: shape.full,
+    borderRadius: shape.medium,
     justifyContent: 'center',
   },
   principal: { minHeight: tactil.principal },
