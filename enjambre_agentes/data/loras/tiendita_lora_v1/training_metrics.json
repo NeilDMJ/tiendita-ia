@@ -1,0 +1,123 @@
+{
+  "timestamp_utc": "2026-11-20T12:52:21.433244+00:00",
+  "status": "completed",
+  "hardware": {
+    "gpu": "NVIDIA GeForce RTX 5060 Laptop GPU",
+    "vram_total_mb": 8123.8,
+    "peak_vram_allocated_mb": 4243.0,
+    "vram_utilization_pct": 52.2,
+    "torch_version": "2.14.0+cu130",
+    "cuda_version": "13.0",
+    "precision": "bfloat16 (native Blackwell Tensor Cores)"
+  },
+  "model_and_lora": {
+    "base_model": "Qwen/Qwen2.5-1.5B-Instruct",
+    "lora_r": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "total_params": 1562179072,
+    "trainable_params": 18464768,
+    "trainable_pct": 1.182,
+    "adapter_path": "/home/m4r10/Documents/tiendita-ia/enjambre_agentes/data/loras/tiendita_lora_v1",
+    "adapter_size_mb": 70.49
+  },
+  "dataset": {
+    "train_samples": 99,
+    "eval_samples": 19,
+    "max_seq_len": 384,
+    "loss_masking": "assistant-only (labels=-100 en system/user)"
+  },
+  "hyperparameters": {
+    "epochs": 4,
+    "batch_size": 2,
+    "gradient_accumulation_steps": 4,
+    "effective_batch_size": 8,
+    "learning_rate": 0.0002,
+    "scheduler": "cosine_with_warmup",
+    "warmup_steps": 6,
+    "total_optimizer_steps": 52
+  },
+  "performance": {
+    "total_train_seconds": 63.06,
+    "tokens_per_second": 1047.8,
+    "baseline_eval_loss": 2.4007,
+    "final_eval_loss": 0.8921,
+    "eval_loss_reduction_pct": 62.84,
+    "baseline_perplexity": 11.03,
+    "final_perplexity": 2.44,
+    "perplexity_reduction_pct": 77.88,
+    "epoch_history": [
+      {
+        "epoch": 1,
+        "step": 13,
+        "train_loss": 2.155,
+        "eval_loss": 1.325,
+        "eval_perplexity": 3.76,
+        "learning_rate": 0.000189,
+        "epoch_seconds": 15.94,
+        "peak_vram_mb": 4241.3
+      },
+      {
+        "epoch": 2,
+        "step": 26,
+        "train_loss": 1.027,
+        "eval_loss": 0.9487,
+        "eval_perplexity": 2.58,
+        "learning_rate": 0.00012,
+        "epoch_seconds": 14.55,
+        "peak_vram_mb": 4242.3
+      },
+      {
+        "epoch": 3,
+        "step": 39,
+        "train_loss": 0.5653,
+        "eval_loss": 0.8789,
+        "eval_perplexity": 2.41,
+        "learning_rate": 3.7e-05,
+        "epoch_seconds": 15.65,
+        "peak_vram_mb": 4243.0
+      },
+      {
+        "epoch": 4,
+        "step": 52,
+        "train_loss": 0.3867,
+        "eval_loss": 0.8921,
+        "eval_perplexity": 2.44,
+        "learning_rate": 0.0,
+        "epoch_seconds": 16.91,
+        "peak_vram_mb": 4243.0
+      }
+    ]
+  },
+  "business_eval": {
+    "before_lora": {
+      "fase": "baseline_pre_lora",
+      "tutor_ui_max_2_sentences_pct": 100.0,
+      "tutor_ui_ok_count": "6/6",
+      "tutor_ui_secret_safe_pct": 100.0,
+      "vendedor_no_cost_leak_pct": 100.0,
+      "vendedor_leak_checks": "4/4",
+      "control_classification_pct": 66.7,
+      "control_checks": "2/3"
+    },
+    "after_lora": {
+      "fase": "post_lora",
+      "tutor_ui_max_2_sentences_pct": 100.0,
+      "tutor_ui_ok_count": "6/6",
+      "tutor_ui_secret_safe_pct": 100.0,
+      "vendedor_no_cost_leak_pct": 100.0,
+      "vendedor_leak_checks": "4/4",
+      "control_classification_pct": 66.7,
+      "control_checks": "2/3"
+    }
+  }
+}

@@ -73,6 +73,7 @@ function aMensajeLocal(respuesta: MensajeAsistente, contexto: ContextoAsistente 
     no_resuelto: respuesta.no_resuelto,
     sugerencias: respuesta.sugerencias?.slice(0, 3),
     acciones: acciones.length > 0 ? acciones : undefined,
+    traza_agentes: respuesta.traza_agentes,
     pasos: respuesta.pasos,
     advertencias: respuesta.advertencias,
     guia_verificada: respuesta.guia_verificada,

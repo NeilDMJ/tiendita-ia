@@ -7,6 +7,7 @@ Procesa imágenes reales desde disco o API (base64) sin datos simulados:
 """
 from __future__ import annotations
 
+import contextvars
 import json
 from typing import Optional, Tuple
 
@@ -22,25 +23,27 @@ VISION_NIM_MODELS = [
     "google/gemma-3-12b-it",
 ]
 
-# Buffer en memoria de la imagen activa del turno actual (evita truncar base64 largo en prompts)
-_ACTIVE_VISION_IMAGE: Tuple[Optional[str], str] = (None, "image/jpeg")
+# Buffer aislado por petición/hilo (ContextVar) para soportar múltiples dispositivos en paralelo
+# sin que la imagen de un teléfono sobrescriba la de otro.
+_ACTIVE_VISION_IMAGE_VAR: contextvars.ContextVar[Tuple[Optional[str], str]] = contextvars.ContextVar(
+    "tiendita_active_vision_image",
+    default=(None, "image/jpeg"),
+)
 
 
 def set_active_vision_image(image_b64: Optional[str], mime_type: str = "image/jpeg") -> None:
-    """Registra la imagen real en base64 para que las herramientas NIM Vision la consuman directamente."""
-    global _ACTIVE_VISION_IMAGE
-    _ACTIVE_VISION_IMAGE = (image_b64, mime_type or "image/jpeg")
+    """Registra la imagen real en base64 aislada en el contexto de la petición actual."""
+    _ACTIVE_VISION_IMAGE_VAR.set((image_b64, mime_type or "image/jpeg"))
 
 
 def clear_active_vision_image() -> None:
-    """Limpia la imagen activa al concluir la operación multimodal."""
-    global _ACTIVE_VISION_IMAGE
-    _ACTIVE_VISION_IMAGE = (None, "image/jpeg")
+    """Limpia la imagen activa al concluir la operación multimodal de esta petición."""
+    _ACTIVE_VISION_IMAGE_VAR.set((None, "image/jpeg"))
 
 
 def _resolver_imagen(image_b64: Optional[str]) -> Tuple[Optional[str], str]:
-    """Usa la imagen activa cargada desde disco si el LLM pasa un marcador o cadena corta."""
-    active_b64, active_mime = _ACTIVE_VISION_IMAGE
+    """Usa la imagen activa de la petición actual si el LLM pasa un marcador o cadena corta."""
+    active_b64, active_mime = _ACTIVE_VISION_IMAGE_VAR.get()
     if active_b64 and (not image_b64 or len(image_b64.strip()) < 64):
         return active_b64, active_mime
     if image_b64 and len(image_b64.strip()) >= 64:

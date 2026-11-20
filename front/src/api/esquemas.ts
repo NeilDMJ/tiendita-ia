@@ -75,11 +75,21 @@ export const PasoGuia = z.object({
 });
 export type PasoGuia = z.infer<typeof PasoGuia>;
 
+/** Traza de interacción del enjambre (modo Thinking: Supervisor -> Especialista -> HITL). */
+export const PasoAgente = z.object({
+  agente: z.string(),
+  rol: z.string().optional(),
+  resumen: z.string(),
+});
+export type PasoAgente = z.infer<typeof PasoAgente>;
+
 export const MensajeAsistente = z.object({
   rol: RolAsistente,
   texto: z.string(),
   acciones: z.array(AccionAsistente).max(3).optional(),
   no_resuelto: z.boolean().optional(),
+  /** Pasos de razonamiento e interacción entre agentes (modo Thinking, similar al CLI). */
+  traza_agentes: z.array(PasoAgente).optional(),
   // Guía bancaria (todos opcionales: el resto de roles no los usa)
   pasos: z.array(PasoGuia).optional(),
   advertencias: z.array(z.string()).optional(),

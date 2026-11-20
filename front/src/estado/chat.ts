@@ -5,7 +5,7 @@
  * Al servidor solo se manda un historial resumido (12 turnos, sin tarjetas).
  */
 import type { TipoError } from '@/api/cliente';
-import type { AccionAsistente, PasoGuia, RolAsistente, TurnoHistorial } from '@/api/esquemas';
+import type { AccionAsistente, PasoAgente, PasoGuia, RolAsistente, TurnoHistorial } from '@/api/esquemas';
 import type { EstadoTarjeta } from '@/components/tarjeta-accion';
 import { CHAT, ROLES } from '@/constants';
 
@@ -50,6 +50,8 @@ export type MensajeDelAsistente = {
   no_resuelto?: boolean;
   sugerencias?: string[];
   acciones?: AccionChat[];
+  /** Pasos de interacción del enjambre (modo Thinking: Supervisor -> Especialistas). */
+  traza_agentes?: PasoAgente[];
   /** Guía bancaria (rol 'banco'): pasos y avisos vienen siempre de guías verificadas, nunca del modelo. */
   pasos?: PasoGuia[];
   advertencias?: string[];

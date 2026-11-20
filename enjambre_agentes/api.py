@@ -111,6 +111,7 @@ app.add_middleware(
 
 # ─── Servicios de back/ montados en este mismo servidor (un solo puerto para la app) ──
 #   back/vision → /vision/pos-checkout, /vision/catalog-scan, /vision/receipt-ocr, /vision/salud
+#                 (si deseas separarlo al puerto 8001 con `python -m vision.server`, pon MOUNT_VISION_IN_API=0)
 #   back/app    → /asistente/mensaje (agente guía bancario) y /salud
 # back/ no es paquete (back/tests importa `app` como módulo de primer nivel): se agrega back/ al
 # FINAL del path para no tapar los paquetes de enjambre_agentes (config, tools, scripts...).
@@ -119,12 +120,15 @@ import sys  # noqa: E402
 _DIR_BACK = str(Path(__file__).resolve().parent.parent / "back")
 if _DIR_BACK not in sys.path:
     sys.path.append(_DIR_BACK)
-try:
-    from vision import router as vision_router  # noqa: E402
 
-    app.include_router(vision_router)
-except ImportError as _e:  # sin onnxruntime/pillow el resto de la API sigue funcionando
-    print(f"⚠ Visión deshabilitada: {_e}. Instala: uv add onnxruntime pillow numpy python-multipart")
+_MOUNT_VISION_IN_API = os.getenv("MOUNT_VISION_IN_API", "1").strip().lower() in {"1", "true", "yes"}
+if _MOUNT_VISION_IN_API:
+    try:
+        from vision import router as vision_router  # noqa: E402
+
+        app.include_router(vision_router)
+    except ImportError as _e:  # sin onnxruntime/pillow el resto de la API sigue funcionando
+        print(f"⚠ Visión deshabilitada: {_e}. Instala: uv add onnxruntime pillow numpy python-multipart")
 
 _ciclo_banco = None
 try:

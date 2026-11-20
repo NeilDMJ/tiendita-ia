@@ -49,6 +49,7 @@ venv/
 *.pt
 *.pth
 *.safetensors
+*.gguf
 *.onnx
 *.engine
 *.ckpt

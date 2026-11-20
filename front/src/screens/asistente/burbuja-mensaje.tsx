@@ -1,8 +1,9 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn, useReducedMotion } from 'react-native-reanimated';
 
-import type { PasoGuia, RolAsistente } from '@/api/esquemas';
+import type { PasoAgente, PasoGuia, RolAsistente } from '@/api/esquemas';
 import { Boton } from '@/components/boton';
 import { datosRol } from '@/constants';
 import { motivoFallo, type MensajeChat } from '@/estado/chat';
@@ -12,6 +13,31 @@ import { limpiarFormato } from '@/utils/texto-chat';
 
 const ENTRADA = FadeIn.duration(motion.duration.short4);
 
+type IconoMci = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
+
+function iconoParaAgente(rol?: string): IconoMci {
+  switch ((rol ?? '').toLowerCase()) {
+    case 'supervisor':
+      return 'compass-outline';
+    case 'control':
+      return 'package-variant-closed';
+    case 'vendedor':
+      return 'cash-register';
+    case 'analista':
+      return 'chart-line';
+    case 'investigador':
+      return 'magnify';
+    case 'publicista':
+      return 'bullhorn-outline';
+    case 'tutor_ui':
+      return 'cellphone-check';
+    case 'hitl':
+      return 'shield-check-outline';
+    default:
+      return 'robot-outline';
+  }
+}
+
 /** Icono + nombre del oficio sobre la burbuja (rol = icono + nombre, nunca color). */
 export function CabeceraRol({ rol }: { rol: RolAsistente }) {
   const r = datosRol(rol);
@@ -19,6 +45,70 @@ export function CabeceraRol({ rol }: { rol: RolAsistente }) {
     <View style={estilos.cabecera} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
       <MaterialCommunityIcons name={r.icono} size={iconos.linea} color={color.onSurfaceVariant} />
       <Text style={estilos.nombreRol}>{r.nombre}</Text>
+    </View>
+  );
+}
+
+/**
+ * Modo Thinking del enjambre: muestra paso a paso cómo interactuaron los agentes
+ * (Supervisor -> Especialistas -> HITL) igual que en el CLI, colapsable con un toque.
+ */
+function TrazaAgentes({ pasos }: { pasos: PasoAgente[] }) {
+  const [abierto, setAbierto] = useState(true);
+  const nombresFlujo = pasos
+    .map((p) => p.agente.split(' ')[0])
+    .filter((v, i, arr) => arr[i - 1] !== v)
+    .join(' → ');
+
+  return (
+    <View style={estilos.thinkingCard}>
+      <Pressable
+        onPress={() => setAbierto((v) => !v)}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: abierto }}
+        accessibilityLabel={`Pensamiento del enjambre: ${nombresFlujo}. Toca para ${abierto ? 'ocultar' : 'ver'} pasos.`}
+        style={estilos.thinkingHeader}
+      >
+        <View style={estilos.thinkingTitleRow}>
+          <MaterialCommunityIcons name="head-cog-outline" size={iconos.chico} color={color.primary} />
+          <Text style={estilos.thinkingTitle} numberOfLines={1}>
+            Thinking · {nombresFlujo}
+          </Text>
+        </View>
+        <MaterialCommunityIcons
+          name={abierto ? 'chevron-up' : 'chevron-down'}
+          size={iconos.linea}
+          color={color.onSurfaceVariant}
+        />
+      </Pressable>
+
+      {abierto ? (
+        <View style={estilos.thinkingBody}>
+          {pasos.map((paso, idx) => (
+            <View
+              key={`${paso.agente}-${idx}`}
+              style={estilos.thinkingStep}
+              accessible
+              accessibilityLabel={`${paso.agente}: ${paso.resumen}`}
+            >
+              <View style={estilos.thinkingRailCol}>
+                <View style={estilos.thinkingBadgeIcon}>
+                  <MaterialCommunityIcons
+                    name={iconoParaAgente(paso.rol)}
+                    size={14}
+                    color={color.primary}
+                  />
+                </View>
+                {idx < pasos.length - 1 ? <View style={estilos.thinkingConnector} /> : null}
+              </View>
+              <View style={estilos.thinkingStepContent}>
+                <Text style={estilos.thinkingAgentName}>{paso.agente}</Text>
+                <Text style={estilos.thinkingStepText}>{paso.resumen}</Text>
+              </View>
+            </View>
+          ))}
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -70,7 +160,7 @@ export interface BurbujaMensajeProps {
 /**
  * Burbuja de chat armada con tokens M3 (02-asistente §2.2): tendero a la derecha en `primaryContainer`,
  * asistente a la izquierda en `surfaceContainerHigh`; esquina del autor recortada (`extraSmall`).
- * Un solo elemento accesible por burbuja: "Tú: …. 10:42" / "Cuentas: …. 10:42".
+ * Incluye panel colapsable de "Modo Thinking" cuando el enjambre multiagente reporta su traza.
  */
 export function BurbujaMensaje({
   mensaje,
@@ -96,6 +186,9 @@ export function BurbujaMensaje({
     >
       {!esTendero && cabecera ? <CabeceraRol rol={mensaje.rol} /> : null}
       {esTendero && cabecera && letraGrande ? <Text style={estilos.tu}>Tú</Text> : null}
+
+      {!esTendero && mensaje.traza_agentes?.length ? <TrazaAgentes pasos={mensaje.traza_agentes} /> : null}
+
       <View
         accessible
         accessibilityLabel={`${quien}: ${texto}. ${hora(mensaje.creado_en)}.${etiquetaEstado}`}
@@ -157,7 +250,7 @@ export function BurbujaMensaje({
 }
 
 const estilos = StyleSheet.create({
-  bloque: { maxWidth: '85%', gap: espacio.xs },
+  bloque: { maxWidth: '88%', gap: espacio.xs },
   derecha: { alignSelf: 'flex-end', alignItems: 'flex-end', marginLeft: tactil.minimo },
   izquierda: { alignSelf: 'flex-start', alignItems: 'flex-start', marginRight: tactil.minimo },
   anchoCompleto: { maxWidth: '100%', marginLeft: 0, marginRight: 0, alignSelf: 'stretch' },
@@ -178,6 +271,79 @@ const estilos = StyleSheet.create({
   textoFallo: { ...type.labelLarge, color: color.error, flexShrink: 1 },
   accionesFallo: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-end', gap: tactil.separacion },
   botonDerecha: { alignSelf: 'flex-end' },
+  // Modo Thinking (traza de interacción de agentes)
+  thinkingCard: {
+    alignSelf: 'stretch',
+    backgroundColor: color.surfaceContainerLow,
+    borderRadius: shape.medium,
+    borderLeftWidth: 3,
+    borderLeftColor: color.primary,
+    paddingHorizontal: espacio.m,
+    paddingVertical: espacio.s,
+    gap: espacio.s,
+  },
+  thinkingHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: espacio.s,
+    minHeight: 32,
+  },
+  thinkingTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: espacio.xs,
+    flex: 1,
+  },
+  thinkingTitle: {
+    ...type.labelLarge,
+    color: color.primary,
+    flexShrink: 1,
+  },
+  thinkingBody: {
+    gap: espacio.s,
+    paddingTop: espacio.xs,
+  },
+  thinkingStep: {
+    flexDirection: 'row',
+    gap: espacio.s,
+    alignItems: 'stretch',
+  },
+  thinkingRailCol: {
+    alignItems: 'center',
+    width: 22,
+  },
+  thinkingBadgeIcon: {
+    width: 22,
+    height: 22,
+    borderRadius: shape.full,
+    backgroundColor: color.primaryContainer,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  thinkingConnector: {
+    flex: 1,
+    width: 2,
+    minHeight: 10,
+    backgroundColor: color.outlineVariant,
+    marginTop: 2,
+  },
+  thinkingStepContent: {
+    flex: 1,
+    gap: 2,
+    paddingBottom: 2,
+  },
+  thinkingAgentName: {
+    ...type.labelLarge,
+    color: color.onSurface,
+  },
+  thinkingStepText: {
+    ...type.bodyLarge,
+    fontSize: 13,
+    lineHeight: 18,
+    color: color.onSurfaceVariant,
+  },
+  // Guía bancaria
   guia: { gap: espacio.s, alignSelf: 'stretch', backgroundColor: color.surfaceContainerLow, borderRadius: shape.large, padding: espacio.l },
   guiaEstado: { ...type.labelLarge, color: color.onSurfaceVariant },
   paso: { flexDirection: 'row', gap: espacio.m, alignItems: 'flex-start' },

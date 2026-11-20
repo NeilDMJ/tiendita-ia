@@ -30,7 +30,7 @@ from config.keys import DATABASE_URL
 # Pool de conexiones PostgreSQL thread-safe con cierre limpio
 # ---------------------------------------------------------------------------
 
-_POOL_MAX_SIZE = 8
+_POOL_MAX_SIZE = 24
 _pool_queue: queue.LifoQueue[psycopg.Connection] = queue.LifoQueue(maxsize=_POOL_MAX_SIZE)
 _pool_lock = threading.Lock()
 _pool_closed = False

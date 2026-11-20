@@ -57,64 +57,68 @@ def consultar_guia_pago_digital(
 
 
 @tool
-def generate_promo_copy(product_name: str, trigger: Literal["caducidad", "sobrestock", "general"]) -> str:
+def generate_promo_copy(
+    product_name: str,
+    trigger: Literal["caducidad", "sobrestock", "general"],
+    precio_actual: Optional[float] = None,
+    descuento_pct: Optional[float] = 20.0,
+) -> str:
     """
-    Genera un texto publicitario altamente persuasivo y localizado para WhatsApp o redes sociales.
+    Prepara el brief estructurado y cálculo de precio promocional para que el agente redacte
+    un copy publicitario original (no genérico) adaptado a WhatsApp, redes sociales y mostrador.
     """
-    if trigger == "caducidad":
-        copy = (
-            f"¡OFERTA RELÁMPAGO EN TIENDITA! Hoy tenemos {product_name} con descuento especial de remate "
-            f"fresco para disfrutar hoy mismo en familia. ¡Pocas piezas en mostrador!"
-        )
-    elif trigger == "sobrestock":
-        copy = (
-            f"¡Surtido en grande! Llévate tu {product_name} favorito a precio de paquete de temporada. "
-            f"Ven a tu tiendita de confianza y ahorra en tu canasta semanal."
-        )
-    else:
-        copy = (
-            f"Encuentra siempre fresco y al mejor precio tu {product_name} en Tiendita IA. "
-            f"¡Abierto todos los días con atención rápida y pago digital disponible!"
-        )
-    
+    precio_promo = (
+        round(float(precio_actual) * (1.0 - (float(descuento_pct or 0.0) / 100.0)), 2)
+        if precio_actual is not None and precio_actual > 0
+        else None
+    )
     return json.dumps({
-        "status": "success",
+        "status": "brief_ready",
         "producto": product_name,
         "trigger": trigger,
-        "copy_text": copy
+        "precio_actual": precio_actual,
+        "descuento_pct": descuento_pct,
+        "precio_promo_calculado": precio_promo,
+        "instruccion_redaccion": (
+            "Redacta un copy original, cercano y específico para este producto en español de México, "
+            "destacando el ahorro real y urgencia sin usar frases genéricas repetitivas."
+        ),
     }, ensure_ascii=False)
 
 
 @tool
-def generate_video_prompt(product_name: str, trigger: Literal["caducidad", "sobrestock", "general"]) -> str:
+def generate_video_prompt(
+    product_name: str,
+    trigger: Literal["caducidad", "sobrestock", "general"],
+    precio_promo: Optional[float] = None,
+) -> str:
     """
-    Crea un prompt cinematográfico vertical en formato 9:16 con duración de 5 segundos
-    para modelos generativos de video (NVIDIA / Runway / Pika) ante sobrestock o caducidad.
+    Devuelve la especificación técnica vertical 9:16 (5s) para que el agente redacte
+    la dirección visual original y locución adaptada al producto real.
     """
-    prompt_visual = (
-        f"Vertical commercial video 9:16 aspect ratio, 5 seconds duration. Close-up cinematic macro shot of {product_name} "
-        f"on a clean modern Mexican grocery counter. Crisp studio lighting, vibrant warm colors, shallow depth of field. "
-        f"Dynamic camera tilt-down revealing fresh texture and premium packaging, with a subtle golden hour glow. "
-        f"High production value, 4K resolution, hyperrealistic commercial aesthetic."
-    )
-    guion_off = f"¡Aprovecha hoy {product_name} al mejor precio en tu tiendita vecina!"
-    
     return json.dumps({
-        "status": "success",
+        "status": "spec_ready",
         "aspect_ratio": "9:16",
         "duration_seconds": 5,
         "trigger": trigger,
         "producto": product_name,
-        "video_prompt": prompt_visual,
-        "guion_locucion": guion_off
+        "precio_promo": precio_promo,
+        "requisitos_escena": [
+            "Formato vertical 9:16, duración exacta 5 segundos",
+            "Plano macro inicial del producto real sobre mostrador de tiendita mexicana",
+            "Mostrar etiqueta clara con precio promocional y cierre con llamado a la acción",
+        ],
     }, ensure_ascii=False)
 
 
 @tool
 def generate_cta(product_name: str, discount_pct: Optional[float] = 20.0) -> str:
     """
-    Produce un llamado a la acción (CTA) directo y apremiante para incentivar la visita o compra inmediata.
+    Devuelve parámetros estructurados de descuento y urgencia para formular un CTA único para el producto.
     """
-    pct_text = f" con {int(discount_pct)}% de descuento" if discount_pct else ""
-    cta = f"¡Corre por tu {product_name}{pct_text}! Disponible hasta agotar existencias en mostrador."
-    return json.dumps({"status": "success", "cta": cta}, ensure_ascii=False)
+    return json.dumps({
+        "status": "brief_ready",
+        "producto": product_name,
+        "descuento_pct": discount_pct,
+        "objetivo": "Llamado a la acción breve (máx. 1 oración) enfocado en visita hoy mismo al mostrador.",
+    }, ensure_ascii=False)

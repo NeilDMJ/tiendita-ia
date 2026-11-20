@@ -77,8 +77,17 @@ export function solicitudDesdeChat(idAccion: string, datos: DatosConfirmarVenta)
   };
 }
 
-/** POST /promociones/{id}/aprobar (Fase 6). Con mocks es una SIMULACIÓN: no se publica nada. */
+/** POST /promociones/{id}/aprobar o POST /orchestrate/resume si viene del enjambre HITL. */
 export async function aprobarPromocion(promoId: string): Promise<void> {
+  if (promoId.startsWith('swarm:')) {
+    const threadId = promoId.slice('swarm:'.length);
+    await pedir('/orchestrate/resume', z.unknown(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ thread_id: threadId, action: 'approve' }),
+    });
+    return;
+  }
   if (USAR_MOCKS) return mockAprobarPromocion(promoId);
   await pedir(`/promociones/${encodeURIComponent(promoId)}/aprobar`, z.unknown(), { method: 'POST' });
 }

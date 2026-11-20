@@ -1,0 +1,12 @@
+{
+  "version": "pagos_digitales_v2",
+  "created_at": "2026-11-20T10:07:54.141842+00:00",
+  "total_docs": 969,
+  "precomputed_npz": {
+    "loaded": true,
+    "modelo_origen": "nvidia/nemotron-3.5-embed-8b",
+    "dimension": 4096,
+    "total_vectores": 934
+  },
+  "embedding_model": "sentence-transformers/all-MiniLM-L6-v2"
+}

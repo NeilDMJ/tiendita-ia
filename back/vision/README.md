@@ -1,22 +1,22 @@
 # Servicio de visión
 
 Expone a la app el clasificador de productos entrenado en NVIDIA DLI (`vision/artefactos/v1/best.onnx`).
-Se monta dentro de la API de agentes (`enjambre_agentes/api.py`), así la app usa un solo `EXPO_PUBLIC_API_URL`.
+Corre de forma independiente en el puerto **`8001`** (`VISION_PORT`, configurable) para no interferir con la API del enjambre de agentes (`8000`).
+*(Si en algún momento deseas volver a montarlo en el mismo puerto `8000` junto al enjambre, define `MOUNT_VISION_IN_API=1` en `enjambre_agentes/.env`).*
 
-## Levantar
+## Levantar (puerto 8001)
 
 ```bash
-cd enjambre_agentes
-uv run uvicorn api:app --host 0.0.0.0 --port 8000
+cd back
+../enjambre_agentes/.venv/bin/python -m vision.server
+
+# O con uvicorn directo / otro puerto:
+VISION_PORT=8001 ../enjambre_agentes/.venv/bin/uvicorn vision:app --host 0.0.0.0 --port 8001
 ```
 
-- Documentación interactiva: `http://localhost:8000/docs` → sección **Visión**.
-- Desde el celular (misma red Wi-Fi): en `front/.env`
-  ```
-  EXPO_PUBLIC_API_URL=http://<IP-de-la-laptop>:8000
-  EXPO_PUBLIC_USE_MOCKS=0
-  ```
-  La IP se ve con `ip -4 addr` (Linux). Si el celular no conecta, revisar el firewall del puerto 8000.
+- Documentación interactiva: `http://localhost:8001/docs` → sección **Visión**.
+- Desde el celular (misma red Wi-Fi): usar `http://<IP-de-la-laptop>:8001` para `/vision/*` (y `http://<IP-de-la-laptop>:8000` para el enjambre).
+  La IP se ve con `ip -4 addr` (Linux). Si el celular no conecta, revisar el firewall del puerto `8001`.
 
 ## Endpoints
 

@@ -18,6 +18,7 @@ import concurrent.futures
 import contextlib
 import contextvars
 import os
+import threading
 import time
 from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple
 import yaml
@@ -43,8 +44,8 @@ from config.keys import (
 _CONFIG_YAML_PATH = os.path.join(os.path.dirname(__file__), "agentes.yaml")
 
 PROVIDERS = ["NVIDIA", "Gemini", "Groq", "Cohere", "Ollama", "HuggingFace"]
-ACTIVE_PROBE_ORDER = ["NVIDIA", "Gemini", "Groq", "Cohere", "Ollama"]
-FALLBACK_PRIORITY_ORDER = ["NVIDIA", "Gemini", "Groq", "Cohere", "Ollama"]
+ACTIVE_PROBE_ORDER = ["NVIDIA", "Groq", "Cohere", "Gemini", "Ollama"]
+FALLBACK_PRIORITY_ORDER = ["NVIDIA", "Groq", "Cohere", "Gemini", "Ollama"]
 
 AGENT_ROLES = [
     "supervisor",
@@ -81,13 +82,14 @@ DEFAULT_ROLE_TEMPERATURES: Dict[str, float] = {
 }
 
 # Caché de detección de proveedores activos (TTL en segundos)
+_STATE_LOCK = threading.RLock()
 _CACHE_TTL_SECONDS = 120.0
 _cached_active_providers: Optional[Dict[str, List[str]]] = None
 _cached_provider_status: Dict[str, Dict[str, Any]] = {}
 _cached_timestamp: float = 0.0
 
-# Circuit Breaker por proveedor (evita repetir esperas de red/504/429 en cada paso del grafo)
-_CIRCUIT_COOLDOWN_SECONDS = 90.0
+# Circuit Breaker por proveedor (evita repetir esperas de red/410/403/504/429 entre dispositivos)
+_CIRCUIT_COOLDOWN_SECONDS = 300.0
 _tripped_providers: Dict[str, float] = {}
 
 # Override global opcional y override acotado por petición (FastAPI / CLI)
@@ -101,7 +103,8 @@ def _marcar_proveedor_caido(provider: str) -> None:
     """Marca temporalmente un proveedor en cooldown tras error de red/timeout/cuota."""
     prov = _normalizar_proveedor(provider)
     if prov:
-        _tripped_providers[prov] = time.time() + _CIRCUIT_COOLDOWN_SECONDS
+        with _STATE_LOCK:
+            _tripped_providers[prov] = time.time() + _CIRCUIT_COOLDOWN_SECONDS
 
 
 def _proveedor_en_cooldown(provider: str) -> bool:
@@ -109,22 +112,24 @@ def _proveedor_en_cooldown(provider: str) -> bool:
     prov = _normalizar_proveedor(provider)
     if not prov:
         return False
-    expira = _tripped_providers.get(prov)
-    if expira is None:
-        return False
-    if time.time() >= expira:
-        _tripped_providers.pop(prov, None)
-        return False
-    return True
+    with _STATE_LOCK:
+        expira = _tripped_providers.get(prov)
+        if expira is None:
+            return False
+        if time.time() >= expira:
+            _tripped_providers.pop(prov, None)
+            return False
+        return True
 
 
 def _limpiar_cooldown_proveedor(provider: Optional[str] = None) -> None:
-    if provider:
-        prov = _normalizar_proveedor(provider)
-        if prov:
-            _tripped_providers.pop(prov, None)
-    else:
-        _tripped_providers.clear()
+    with _STATE_LOCK:
+        if provider:
+            prov = _normalizar_proveedor(provider)
+            if prov:
+                _tripped_providers.pop(prov, None)
+        else:
+            _tripped_providers.clear()
 
 
 # ---------------------------------------------------------------------------
@@ -681,20 +686,23 @@ def _instanciar_chat_model(
 ) -> Optional[BaseChatModel]:
     """Instancia un `BaseChatModel` concreto con timeouts cortos para evitar bloqueos de 30-60s."""
     prov_norm = (_normalizar_proveedor(provider) or "NVIDIA").upper()
-    retries = 0 if es_fallback else 1
-    req_timeout = 12.0 if es_fallback else 15.0
+    retries = 0
+    req_timeout = 10.0 if es_fallback else 12.0
 
     try:
         if prov_norm == "NVIDIA":
             if not _credencial_valida(NVIDIA_API_KEY):
                 return None
             from langchain_nvidia_ai_endpoints import ChatNVIDIA
-            return ChatNVIDIA(
+            llm_nv = ChatNVIDIA(
                 model=model_name,
                 nvidia_api_key=NVIDIA_API_KEY,
                 base_url=NVIDIA_BASE_URL,
                 temperature=temperature,
             )
+            if hasattr(llm_nv, "_client") and hasattr(llm_nv._client, "timeout"):
+                llm_nv._client.timeout = (4.0, req_timeout)
+            return llm_nv
 
         if prov_norm == "GEMINI":
             if not _credencial_valida(GEMINI_API_KEY):
@@ -746,6 +754,7 @@ def _instanciar_chat_model(
                 model=model_name,
                 base_url=OLLAMA_BASE_URL,
                 temperature=temperature,
+                client_kwargs={"timeout": 20.0},
             )
     except Exception:
         return None

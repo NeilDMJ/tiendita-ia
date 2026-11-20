@@ -5,9 +5,12 @@ Exporta exactamente: run_orchestration, run_orchestration_stream y resume_orches
 """
 from __future__ import annotations
 
+import asyncio
+import contextvars
 import json
+import threading
 import uuid
-from typing import Any, AsyncGenerator, Dict, Optional
+from typing import Any, AsyncGenerator, Dict, Optional, Tuple
 from langchain_core.messages import AIMessage
 from langgraph.graph import StateGraph, START, END
 from langgraph.checkpoint.memory import MemorySaver
@@ -182,6 +185,26 @@ def build_graph():
 # Instancia compilada singleton del grafo
 tiendita_graph = build_graph()
 
+# Locks por thread_id: permiten que N dispositivos distintos (distintos thread_id) corran 100% en
+# paralelo, mientras serializan clics duplicados simultáneos sobre el mismo hilo sin corromper estado.
+_THREAD_LOCKS_GUARD = threading.Lock()
+_THREAD_LOCKS: Dict[str, threading.Lock] = {}
+_MAX_TRACKED_THREAD_LOCKS = 512
+
+
+def _get_thread_lock(thread_id: str) -> threading.Lock:
+    with _THREAD_LOCKS_GUARD:
+        lock = _THREAD_LOCKS.get(thread_id)
+        if lock is None:
+            if len(_THREAD_LOCKS) >= _MAX_TRACKED_THREAD_LOCKS:
+                # Limpiar locks inactivos para evitar crecimiento ilimitado en memoria
+                inactivos = [k for k, lk in _THREAD_LOCKS.items() if not lk.locked()]
+                for k in inactivos[: len(inactivos) // 2 or 1]:
+                    _THREAD_LOCKS.pop(k, None)
+            lock = threading.Lock()
+            _THREAD_LOCKS[thread_id] = lock
+        return lock
+
 
 def run_orchestration(
     input_text: str,
@@ -210,8 +233,9 @@ def run_orchestration(
         "errores": []
     }
     
-    with override_model_context(provider=provider, model_name=model_name):
-        return tiendita_graph.invoke(initial_state, config=config)
+    with _get_thread_lock(tid):
+        with override_model_context(provider=provider, model_name=model_name):
+            return tiendita_graph.invoke(initial_state, config=config)
 
 
 async def run_orchestration_stream(
@@ -224,7 +248,8 @@ async def run_orchestration_stream(
     model_name: Optional[str] = None,
 ) -> AsyncGenerator[Dict[str, Any], None]:
     """
-    Transmite en tiempo real (SSE / streaming) los eventos de cada nodo en el grafo.
+    Transmite en tiempo real (SSE / streaming) los eventos de cada nodo en el grafo
+    sin bloquear el event loop de asyncio (seguro para múltiples dispositivos simultáneos).
     Nombre exacto estipulado para compatibilidad con api.py.
     """
     tid = thread_id or str(uuid.uuid4())
@@ -238,10 +263,33 @@ async def run_orchestration_stream(
         "iteration_count": 0,
         "errores": []
     }
-    
-    with override_model_context(provider=provider, model_name=model_name):
-        for event in tiendita_graph.stream(initial_state, config=config):
-            yield event
+
+    loop = asyncio.get_running_loop()
+    cola: asyncio.Queue[Tuple[str, Any]] = asyncio.Queue()
+    _sentinel = ("__done__", None)
+
+    def _worker() -> None:
+        try:
+            with _get_thread_lock(tid):
+                with override_model_context(provider=provider, model_name=model_name):
+                    for event in tiendita_graph.stream(initial_state, config=config):
+                        loop.call_soon_threadsafe(cola.put_nowait, ("event", event))
+        except Exception as exc:
+            loop.call_soon_threadsafe(cola.put_nowait, ("error", exc))
+        finally:
+            loop.call_soon_threadsafe(cola.put_nowait, _sentinel)
+
+    ctx = contextvars.copy_context()
+    hilo = threading.Thread(target=ctx.run, args=(_worker,), daemon=True)
+    hilo.start()
+
+    while True:
+        kind, payload = await cola.get()
+        if kind == "__done__":
+            break
+        if kind == "error":
+            raise payload
+        yield payload
 
 
 def resume_orchestration(
@@ -255,23 +303,24 @@ def resume_orchestration(
     Nombre exacto estipulado para compatibilidad con api.py y cli_tester.py.
     """
     config = {"configurable": {"thread_id": thread_id}}
-    
-    estado_actual = tiendita_graph.get_state(config)
-    pending = estado_actual.values.get("pending_approval") if estado_actual else None
-    
-    if pending:
-        pending["status"] = "approved" if approved else "rejected"
-        pending["human_notes"] = notes or correction
-        # Registrar feedback para fine-tuning LoRA NeMo Customizer
-        from tools.few_shot_retriever import record_hitl_feedback
-        record_hitl_feedback(
-            agent_role="hitl_operator",
-            user_input=str(pending.get("description")),
-            agent_output=pending.get("proposed_data"),
-            human_approved=approved,
-            correction=correction,
-            notes=notes
-        )
-        tiendita_graph.update_state(config, {"pending_approval": pending})
+
+    with _get_thread_lock(thread_id):
+        estado_actual = tiendita_graph.get_state(config)
+        pending = estado_actual.values.get("pending_approval") if estado_actual else None
         
-    return tiendita_graph.invoke(None, config=config)
+        if pending:
+            pending["status"] = "approved" if approved else "rejected"
+            pending["human_notes"] = notes or correction
+            # Registrar feedback para fine-tuning LoRA NeMo Customizer
+            from tools.few_shot_retriever import record_hitl_feedback
+            record_hitl_feedback(
+                agent_role="hitl_operator",
+                user_input=str(pending.get("description")),
+                agent_output=pending.get("proposed_data"),
+                human_approved=approved,
+                correction=correction,
+                notes=notes
+            )
+            tiendita_graph.update_state(config, {"pending_approval": pending})
+            
+        return tiendita_graph.invoke(None, config=config)
