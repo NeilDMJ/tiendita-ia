@@ -51,6 +51,9 @@ dependencies = [
     "pillow",
     "numpy",
     "python-multipart",
+    # Asistente bancario: back/app sirve /asistente/mensaje
+    "pydantic-settings",
+    "httpx",
 ]
 
 [tool.uv]

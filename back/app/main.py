@@ -1,8 +1,14 @@
-"""API del agente guía bancario. Uso: uvicorn app.main:app --port 8000 (desde back/)."""
+"""API del agente guía bancario.
+
+Dos formas de usarla:
+- Sola: uvicorn app.main:app --port 8000 (desde back/).
+- Unida al servidor de la Tiendita: enjambre_agentes/api.py monta `router` y llama a `ciclo_de_vida`
+  en su propio arranque (un solo puerto y una sola EXPO_PUBLIC_API_URL para la app).
+"""
 import asyncio
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from . import llm
@@ -22,14 +28,7 @@ async def ciclo_de_vida(_: FastAPI):
         tarea.cancel()
 
 
-app = FastAPI(title="Guía bancaria — backend", version="0.2.0", lifespan=ciclo_de_vida)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[o.strip() for o in get_settings().cors_origins.split(",") if o.strip()],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+router = APIRouter(tags=["Asistente bancario"])
 
 
 def generador(s: Settings) -> GeneradorTexto:
@@ -46,7 +45,7 @@ def generador(s: Settings) -> GeneradorTexto:
     return generar
 
 
-@app.get("/salud")
+@router.get("/salud")
 async def salud() -> dict:
     s = get_settings()
     try:
@@ -61,7 +60,7 @@ async def salud() -> dict:
     }
 
 
-@app.post("/asistente/mensaje", response_model=MensajeAsistente, response_model_exclude_none=True)
+@router.post("/asistente/mensaje", response_model=MensajeAsistente, response_model_exclude_none=True)
 async def asistente_mensaje(solicitud: SolicitudMensaje) -> MensajeAsistente:
     # response_model_exclude_none: el zod del front usa .optional(), que rechaza null.
     cfg = get_settings()
@@ -70,3 +69,14 @@ async def asistente_mensaje(solicitud: SolicitudMensaje) -> MensajeAsistente:
         return await buscar_hibrido(cfg, consulta)
 
     return await responder(solicitud.texto, generador(cfg), [t.a_mensaje() for t in solicitud.historial], buscar)
+
+
+# Servidor independiente (el de siempre): mismas rutas, CORS y precalentamiento.
+app = FastAPI(title="Guía bancaria — backend", version="0.2.0", lifespan=ciclo_de_vida)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[o.strip() for o in get_settings().cors_origins.split(",") if o.strip()],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+app.include_router(router)
