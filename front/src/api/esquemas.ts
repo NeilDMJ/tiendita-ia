@@ -42,7 +42,7 @@ export type RespuestaReceiptOcr = z.infer<typeof RespuestaReceiptOcr>;
 export type ModoCamara = 'cobro' | 'alta' | 'ticket';
 
 // ---------- Asistente ----------
-export const RolAsistente = z.enum(['caja', 'bodega', 'cuentas', 'promociones', 'tutor', 'general', 'banco']);
+export const RolAsistente = z.enum(['caja', 'bodega', 'cuentas', 'promociones', 'tutor', 'general', 'banco', 'usuario']);
 export type RolAsistente = z.infer<typeof RolAsistente>;
 
 export const AccionAsistente = z.object({
@@ -71,6 +71,9 @@ export const MensajeAsistente = z.object({
   advertencias: z.array(z.string()).optional(),
   guia_verificada: z.boolean().optional(),
   respuestas_rapidas: z.array(z.string()).optional(),
+  // Contexto de la conversación: se devuelve en `historial` para que el back entienda los seguimientos
+  banco: z.string().optional(),
+  operacion: z.string().optional(),
 });
 export type MensajeAsistente = z.infer<typeof MensajeAsistente>;
 

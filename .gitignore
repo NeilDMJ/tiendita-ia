@@ -1,4 +1,5 @@
 # Secretos
+API_nvidia
 .env
 .env.*
 !.env.example

@@ -42,6 +42,18 @@ const AVISO_BLOQUEO: MensajeAsistente = {
     'No envié tu mensaje porque parece traer datos privados (tarjeta, CLABE, NIP o clave). Por tu seguridad, no los escribas aquí. Cuéntame lo que quieres hacer sin esos datos y te guío.',
 };
 
+/** Últimos turnos para dar contexto al back. Lo del usuario va anonimizado y sin datos sensibles. */
+function construirHistorial(burbujas: Burbuja[]): MensajeAsistente[] {
+  return burbujas
+    .flatMap((b): MensajeAsistente[] => {
+      if (b.autor === 'agente') return [b.mensaje];
+      if (b.autor !== 'usuario') return [];
+      const a = anonimizar(b.texto);
+      return a.bloquear ? [] : [{ rol: 'usuario', texto: a.texto }];
+    })
+    .slice(-8);
+}
+
 let contador = 0;
 const nuevoId = () => `m${++contador}`;
 
@@ -57,11 +69,8 @@ export default function Asistente() {
   };
 
   const envio = useMutation({
-    mutationFn: (enviar: string) =>
-      enviarMensaje(
-        enviar,
-        burbujas.flatMap((b) => (b.autor === 'agente' ? [b.mensaje] : [])),
-      ),
+    mutationFn: ({ texto: enviar, historial }: { texto: string; historial: MensajeAsistente[] }) =>
+      enviarMensaje(enviar, historial),
     onSuccess: (mensaje) => agregar({ id: nuevoId(), autor: 'agente', mensaje }),
     onError: (e) =>
       agregar({
@@ -83,7 +92,7 @@ export default function Asistente() {
       agregar({ id: nuevoId(), autor: 'agente', mensaje: AVISO_BLOQUEO });
       return;
     }
-    envio.mutate(seguro);
+    envio.mutate({ texto: seguro, historial: construirHistorial(burbujas) });
   };
 
   return (

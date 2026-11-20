@@ -46,6 +46,17 @@ App Expo (chat) ──HTTPS──► Backend FastAPI propio ──► NIM (build
 - El backend responde con JSON estructurado (§2) y la app lo pinta como lista de pasos numerados + advertencias + botones de respuesta rápida.
 - Se mantiene el patrón `USAR_MOCKS` para trabajar sin backend.
 
+### Proveedor del modelo: nube o local
+
+El backend (`back/`) usa un único cliente OpenAI-compatible y el proveedor se elige con `LLM_PROVIDER`:
+
+| Opción | Modelo por defecto | Cuándo usarla |
+|---|---|---|
+| **NIM** (`nim`) | `nvidia/nemotron-3.5-bolt-e4b` | Mejor calidad y velocidad; el texto, ya anonimizado, sale hacia NVIDIA |
+| **Ollama** (`ollama`) | `qwen2.5:3b` (cabe en 6 GB de VRAM) | Privacidad máxima: nada sale del equipo; sin internet |
+
+`LLM_FALLBACK=ollama` permite caer al modelo local si la nube falla. En ambos casos los pasos provienen de guías verificadas y el modelo solo redacta el texto introductorio. Detalles en `back/README.md`.
+
 ### Prototipo vs. producción
 
 | Componente | Hackathon (prototipo) | Producción |
