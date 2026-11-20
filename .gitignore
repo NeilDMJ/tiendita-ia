@@ -65,3 +65,7 @@ wheels_dli/
 /vision.zip
 /wheels_dli.zip
 wheels_torch/
+
+# Pesos del modelo de visión oficial (los usa back/vision; el .engine solo corre en la T4 del DLI)
+!vision/artefactos/v1/best.onnx
+!vision/artefactos/v1/best.pt
