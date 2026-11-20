@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from . import llm
 from .config import Settings, get_settings
+from .conocimiento import buscar_hibrido
 from .esquemas import MensajeAsistente, SolicitudMensaje
 from .servicio import GeneradorTexto, responder
 
@@ -63,4 +64,9 @@ async def salud() -> dict:
 @app.post("/asistente/mensaje", response_model=MensajeAsistente, response_model_exclude_none=True)
 async def asistente_mensaje(solicitud: SolicitudMensaje) -> MensajeAsistente:
     # response_model_exclude_none: el zod del front usa .optional(), que rechaza null.
-    return await responder(solicitud.texto, generador(get_settings()), solicitud.historial)
+    cfg = get_settings()
+
+    async def buscar(consulta: str):
+        return await buscar_hibrido(cfg, consulta)
+
+    return await responder(solicitud.texto, generador(cfg), solicitud.historial, buscar)

@@ -85,4 +85,71 @@ def indice() -> Indice:
 
 
 # ¿La pregunta es sobre estos productos de pago? (detección sin modelo)
-TEMA_CONSULTA = re.compile(r"\b(dimo|codi|spei|cobro digital|dinero m[oó]vil|cep|comprobante electr[oó]nico de pago)\b", re.I)
+TEMA_CONSULTA = re.compile(
+    r"\b(dimo|codi|spei|cobro digital|dinero m[oó]vil|cep|comprobante electr[oó]nico de pago|c[oó]digo qr|qr|"
+    r"sin terminal|solo con (?:el |su |mi )?(?:n[uú]mero|celular|tel[eé]fono))\b",
+    re.I,
+)
+
+
+# ---------- búsqueda híbrida: palabras clave (BM25) + significado (embeddings de NVIDIA) ----------
+
+SALIDA_EMBEDDINGS = Path(__file__).parent / "datos" / "embeddings.npz"
+
+
+@lru_cache
+def _vectores():
+    """(matriz normalizada, ids, modelo) o None si aún no se construyeron los embeddings."""
+    if not SALIDA_EMBEDDINGS.exists():
+        return None
+    import numpy as np
+
+    d = np.load(SALIDA_EMBEDDINGS, allow_pickle=False)
+    return d["v"].astype("float32"), [str(i) for i in d["ids"]], str(d["modelo"])
+
+
+async def _embeber_consulta(s, consulta: str):
+    import httpx
+
+    r = None
+    try:
+        async with httpx.AsyncClient(timeout=s.embed_timeout_s) as cliente:
+            r = await cliente.post(
+                f"{s.nim_base_url}/embeddings",
+                headers={"Authorization": f"Bearer {s.nvidia_api_key}"},
+                json={"model": _vectores()[2], "input": [consulta], "input_type": "query", "encoding_format": "float", "truncate": "END"},
+            )
+        r.raise_for_status()
+        return r.json()["data"][0]["embedding"]
+    except (httpx.HTTPError, KeyError, IndexError, ValueError):
+        return None  # sin embeddings: se usa solo BM25 (nunca se rompe el chat)
+
+
+async def buscar_hibrido(s, consulta: str, k: int = 4) -> list[Fragmento]:
+    """Fusiona BM25 y similitud de embeddings con Reciprocal Rank Fusion. Cae a BM25 si falla NVIDIA.
+
+    Privacidad: solo sale hacia NVIDIA la consulta ya anonimizada.
+    """
+    idx = indice()
+    lexico = idx.buscar(consulta, k=20, minimo=0.5)
+    vecs = _vectores()
+    if vecs is None or not s.nvidia_api_key or s.llm_provider != "nim":
+        return lexico[:k]  # Ollama = modo privado: nada sale del equipo
+    q = await _embeber_consulta(s, consulta)
+    if q is None:
+        return lexico[:k]
+    import numpy as np
+
+    matriz, ids, _ = vecs
+    qv = np.asarray(q, dtype="float32")
+    qv /= np.linalg.norm(qv)
+    sim = matriz @ qv
+    semantico_idx = np.argsort(-sim)[:20]
+    por_id = {f.id: f for f in idx.fragmentos}
+    semantico = [por_id[ids[i]] for i in semantico_idx if sim[i] >= 0.2 and ids[i] in por_id]
+    puntaje: dict[str, float] = {}
+    for lista in (lexico, semantico):
+        for r, f in enumerate(lista):
+            puntaje[f.id] = puntaje.get(f.id, 0.0) + 1.0 / (60 + r)
+    orden = sorted(puntaje, key=puntaje.get, reverse=True)[:k]  # type: ignore[arg-type]
+    return [por_id[i] for i in orden]

@@ -218,3 +218,26 @@ def test_seguimiento_de_consulta_sigue_en_consulta():
     historial = [MensajeAsistente(rol="usuario", texto="qué es codi"), MensajeAsistente(rol="banco", texto="x", operacion="consulta")]
     r = correr("¿y cuánto cobra de comisión?", modelo("No tiene costo."), historial)
     assert r.operacion == "consulta"
+
+
+def test_consulta_usa_el_buscador_inyectado():
+    from app.conocimiento import Fragmento
+
+    llamadas = []
+
+    async def buscar(consulta):
+        llamadas.append(consulta)
+        return [Fragmento("x#1", "x.md", "Doc X", "", "CoDi permite cobrar con un código QR.", "u", "alta")]
+
+    gen = modelo("CoDi sirve para cobrar con QR.")
+    r = asyncio.run(responder("qué es codi", gen, None, buscar))
+    assert llamadas and "código QR" in gen.llamadas[0][0]["content"] and "Doc X" in r.texto
+
+
+def test_busqueda_hibrida_cae_a_palabras_clave_si_nvidia_falla():
+    from app.config import Settings
+    from app.conocimiento import buscar_hibrido
+
+    s = Settings(nvidia_api_key="invalida", llm_provider="nim", nim_base_url="http://127.0.0.1:9", embed_timeout_s=1)
+    assert asyncio.run(buscar_hibrido(s, "qué es codi"))  # sin red: usa BM25
+    assert asyncio.run(buscar_hibrido(Settings(nvidia_api_key="", llm_provider="ollama"), "qué es codi"))

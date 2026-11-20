@@ -10,7 +10,7 @@ from collections.abc import Awaitable, Callable
 from typing import Any
 
 from .anonimizar import anonimizar
-from .conocimiento import TEMA_CONSULTA, indice
+from .conocimiento import TEMA_CONSULTA, Fragmento, indice
 from .deteccion import (
     BANCOS,
     FRASE_OP,
@@ -27,6 +27,8 @@ from .llm import REGLAS, SISTEMA_CLASIFICAR, SISTEMA_CONSULTA, SISTEMA_INTRO, Er
 
 # generar(mensajes, max_tokens=..., temperature=...) -> texto del modelo (puede lanzar ErrorLLM)
 GeneradorTexto = Callable[..., Awaitable[str]]
+# buscar(consulta) -> fragmentos de conocimiento (en producción: híbrido BM25 + embeddings)
+Buscador = Callable[[str], Awaitable[list[Fragmento]]]
 
 TURNOS_DE_CONTEXTO = 8
 NOMBRES_BANCOS = {nombre for _, nombre in BANCOS}
@@ -175,10 +177,13 @@ SALTO = chr(10)
 RAPIDAS_CONSULTA = ["¿Qué es CoDi?", "¿Qué es DiMo?", "¿Cómo cobro con CoDi?"]
 
 
-async def _consultar(t: str, turnos: list[MensajeAsistente], generar: GeneradorTexto) -> MensajeAsistente:
+async def _consultar(
+    t: str, turnos: list[MensajeAsistente], generar: GeneradorTexto, buscar: Buscador | None = None
+) -> MensajeAsistente:
     """Responde sobre DiMo/CoDi/SPEI solo con fragmentos de los documentos de Banxico."""
     previas = " ".join(m.texto for m in turnos[-2:] if m.rol == "usuario")  # contexto de un seguimiento
-    fragmentos = indice().buscar(f"{previas} {t}", k=4)
+    consulta = f"{previas} {t}"
+    fragmentos = await buscar(consulta) if buscar else indice().buscar(consulta, k=4)
     if not fragmentos:
         return _banco(SIN_INFORMACION, operacion="consulta", respuestas_rapidas=RAPIDAS_CONSULTA)
     fuentes = SALTO.join(f"- {f.texto}" for f in fragmentos)
@@ -206,7 +211,10 @@ async def _consultar(t: str, turnos: list[MensajeAsistente], generar: GeneradorT
 # ---------- punto de entrada ----------
 
 async def responder(
-    texto: str, generar: GeneradorTexto, historial: list[MensajeAsistente] | None = None
+    texto: str,
+    generar: GeneradorTexto,
+    historial: list[MensajeAsistente] | None = None,
+    buscar: Buscador | None = None,
 ) -> MensajeAsistente:
     seguro = anonimizar(texto)
     if seguro.bloquear:  # nunca llega al modelo
@@ -223,7 +231,7 @@ async def responder(
 
     en_consulta = bool(turnos) and turnos[-1].rol == "banco" and turnos[-1].operacion == "consulta"
     if TEMA_CONSULTA.search(t) or (en_consulta and not (banco_msg or operacion_msg)):
-        return await _consultar(t, turnos, generar)
+        return await _consultar(t, turnos, generar, buscar)
 
     if not (banco_msg or operacion_msg):  # el mensaje no trae pistas por sí solo
         if banco and operacion:  # seguimiento dentro de una operación en curso

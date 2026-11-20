@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     ollama_base_url: str = "http://localhost:11434/v1"
     ollama_model: str = "qwen2.5:3b"
 
+    embed_model: str = "nvidia/nemotron-3.5-embed-8b"
+    embed_timeout_s: float = 6  # si tarda más, la búsqueda usa solo palabras clave
+
     llm_timeout_s: float = 25
     llm_max_tokens: int = 600
     cors_origins: str = "*"
